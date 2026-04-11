@@ -1,60 +1,71 @@
-document.getElementById('formVeiculo').addEventListener('submit', function(e) {
-    e.preventDefault();
-    salvarVeiculo();
-});
-
+// Função para Salvar ou Atualizar Veículo
 function salvarVeiculo() {
-    const veiculos = JSON.parse(localStorage.getItem("vehicles")) || [];
-    
-    const novoVeiculo = {
-        id: Date.now(),
-        nome: document.getElementById('nome').value,
-        placa: document.getElementById('placa').value.toUpperCase(),
-        ano: document.getElementById('ano').value,
-        kmAtual: document.getElementById('kmInicial').value || 0,
-        ultimaTroca: document.getElementById('kmInicial').value || 0
-    };
+    const nome = document.getElementById('nome').value;
+    const placa = document.getElementById('placa').value.toUpperCase();
+    const kmAtual = document.getElementById('kmAtual').value;
+    const kmTroca = document.getElementById('kmTroca').value;
 
-    veiculos.push(novoVeiculo);
+    if (!nome || !placa || !kmAtual || !kmTroca) {
+        alert("Preencha todos os campos corretamente.");
+        return;
+    }
+
+    let veiculos = JSON.parse(localStorage.getItem("vehicles")) || [];
+
+    // Verifica se a placa já existe para não duplicar
+    const indexExistente = veiculos.findIndex(v => v.placa === placa);
+    
+    const novoVeiculo = { nome, placa, kmAtual, kmTroca };
+
+    if (indexExistente !== -1) {
+        veiculos[indexExistente] = novoVeiculo; // Atualiza
+    } else {
+        veiculos.push(novoVeiculo); // Adiciona novo
+    }
+
     localStorage.setItem("vehicles", JSON.stringify(veiculos));
     
-    document.getElementById('formVeiculo').reset();
-    renderizarVeiculos();
+    // Limpa os campos
+    document.getElementById('nome').value = "";
+    document.getElementById('placa').value = "";
+    document.getElementById('kmAtual').value = "";
+    document.getElementById('kmTroca').value = "";
+
+    alert("Veículo salvo com sucesso!");
+    renderizarTabela();
 }
 
-function renderizarVeiculos() {
+// Função para listar os veículos na tabela
+function renderizarTabela() {
     const veiculos = JSON.parse(localStorage.getItem("vehicles")) || [];
-    const tabela = document.getElementById('tabelaVeiculos');
-    tabela.innerHTML = "";
+    const tbody = document.getElementById('tabelaVeiculos');
+    
+    if (!tbody) return;
 
-    veiculos.forEach(v => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td><strong>${v.nome}</strong></td>
-            <td><span class="plate-badge">${v.placa}</span></td>
-            <td>${v.ano}</td>
-            <td>${v.kmAtual} km</td>
-            <td>${v.ultimaTroca} km</td>
-            <td style="text-align: center;">
-                <button class="btn-small btn-danger" onclick="excluirVeiculo(${v.id})">
-                    <i class="fas fa-trash"></i>
+    tbody.innerHTML = veiculos.map((v, index) => `
+        <tr>
+            <td>${v.nome}</td>
+            <td><strong>${v.placa}</strong></td>
+            <td>${v.kmAtual} KM</td>
+            <td>${v.kmTroca} KM</td>
+            <td>
+                <button class="btn-delete" onclick="excluirVeiculo(${index})">
+                    <i class="fas fa-trash-alt"></i> Excluir
                 </button>
             </td>
-        `;
-        tabela.appendChild(tr);
-    });
-
-    document.getElementById('totalAtivos').innerText = veiculos.length;
+        </tr>
+    `).join('');
 }
 
-function excluirVeiculo(id) {
-    if(confirm("Deseja realmente remover este veículo da frota?")) {
+// Função para Excluir Veículo
+function excluirVeiculo(index) {
+    if (confirm("Tem certeza que deseja remover este veículo da frota?")) {
         let veiculos = JSON.parse(localStorage.getItem("vehicles")) || [];
-        veiculos = veiculos.filter(v => v.id !== id);
+        veiculos.splice(index, 1);
         localStorage.setItem("vehicles", JSON.stringify(veiculos));
-        renderizarVeiculos();
+        renderizarTabela();
     }
 }
 
-// Inicializa a tabela ao carregar
-renderizarVeiculos();
+// Carregar a tabela assim que abrir a página
+window.onload = renderizarTabela;
