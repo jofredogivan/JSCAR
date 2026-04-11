@@ -3,63 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Japan Security | Fleet Management</title>
+    <title>Japan Security | Home</title>
     <link rel="icon" type="image/png" href="icons/icon-192x192.png">
-    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0f0f0f">
-</head>
-<body>
-
-    <aside class="sidebar">
-        <div class="sidebar-header">
-            <div class="logo-area">
-                <i class="fas fa-shield-alt logo-icon"></i>
-                <div>
-                    <h2>JAPAN</h2>
-                    <span>SECURITY</span>
-                </div>
-            </div>
-        </div>
-
-        <nav class="sidebar-nav">
-            <ul>
-                <li><a href="dashboard.html" class="active"><i class="fas fa-chart-line"></i> Dashboard</a></li>
-                <li><a href="vistoria.html"><i class="fas fa-clipboard-check"></i> Vistoria</a></li>
-                <li><a href="entrada_saida.html"><i class="fas fa-exchange-alt"></i> Entrada/Saída</a></li>
-                <li><a href="maintenance.html"><i class="fas fa-tools"></i> Manutenção</a></li>
-                <li><a href="backup.html"><i class="fas fa-database"></i> Backup</a></li>
-            </ul>
-        </nav>
-
-        <div class="sidebar-footer">
-            <p><i class="fas fa-car"></i> JS Car v2.0</p>
-        </div>
-    </aside>
-
-    <main class="main-content">
-        <header class="top-bar">
-            <h1>Painel de Controle</h1>
-            <div class="user-info">
-                <span>Operador</span>
-                <i class="fas fa-user-circle"></i>
-            </div>
-        </header>
-
-        <section class="content-body">
-            <div class="welcome-card">
-                <h2>Bem-vindo ao Japan Security Car</h2>
-                <p>Selecione uma opção no menu lateral para iniciar o gerenciamento.</p>
-            </div>
-        </section>
-    </main>
-
-    <script>
-        if ("serviceWorker" in navigator) {
-            navigator.serviceWorker.register("service-worker.js");
+    <style>
+        .home-container {
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* 2 colunas */
+            gap: 15px;
+            margin-top: 20px;
         }
-    </script>
+        .menu-card {
+            background: #2a2a2a;
+            border-radius: 12px;
+            padding: 25px 10px;
+            text-align: center;
+            text-decoration: none;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 4px solid #e63946; /* Detalhe Japan Security */
+            transition: transform 0.2s;
+        }
+        .menu-card i { font-size: 2.5rem; color: #e63946; }
+        .menu-card span { font-weight: bold; font-size: 0.9rem; }
+        .menu-card:active { transform: scale(0.95); }
+        .header-home { text-align: center; padding: 30px 0; }
+        .header-home img { width: 80px; margin-bottom: 10px; }
+    </style>
+</head>
+<body style="background: #1a1a1a; padding-bottom: 40px;">
+
+    <div class="header-home">
+        <i class="fas fa-shield-alt" style="font-size: 3rem; color: #e63946;"></i>
+        <h2 style="color: white; margin-top: 10px;">JAPAN SECURITY</h2>
+        <p style="color: #888; font-size: 0.8rem;">SISTEMA DE GESTÃO DE FROTA</p>
+    </div>
+
+    <div class="home-container">
+        <a href="dashboard.html" class="menu-card">
+            <i class="fas fa-chart-line"></i>
+            <span>DASHBOARD</span>
+        </a>
+        <a href="vistoria.html" class="menu-card">
+            <i class="fas fa-clipboard-check"></i>
+            <span>VISTORIA</span>
+        </a>
+        <a href="entrada_saida.html" class="menu-card">
+            <i class="fas fa-exchange-alt"></i>
+            <span>MOVIMENTAÇÃO</span>
+        </a>
+        <a href="maintenance.html" class="menu-card">
+            <i class="fas fa-tools"></i>
+            <span>MANUTENÇÃO</span>
+        </a>
+        <a href="vehicles.html" class="menu-card">
+            <i class="fas fa-car"></i>
+            <span>VEÍCULOS</span>
+        </a>
+        <a href="backup.html" class="menu-card">
+            <i class="fas fa-database"></i>
+            <span>BACKUP</span>
+        </a>
+    </div>
+
 </body>
 </html>
