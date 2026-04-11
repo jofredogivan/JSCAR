@@ -6,25 +6,68 @@
     <title>Japan Security | Dashboard</title>
     <link rel="icon" type="image/png" href="icons/icon-192x192.png">
     <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
+    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="has-sidebar">
+
     <aside class="sidebar">
-        <div class="sidebar-header"><i class="fas fa-shield-alt logo-icon"></i><h2>JAPAN</h2></div>
+        <div class="sidebar-header">
+            <div class="logo-area">
+                <i class="fas fa-shield-alt logo-icon"></i>
+                <div><h2>JAPAN</h2><span>SECURITY</span></div>
+            </div>
+        </div>
         <nav class="sidebar-nav">
-            <ul><li><a href="index.html"><i class="fas fa-home"></i> Menu</a></li></ul>
+            <ul>
+                <li><a href="index.html"><i class="fas fa-home"></i> Menu Principal</a></li>
+                <li><a href="dashboard.html" class="active"><i class="fas fa-chart-pie"></i> Dashboard</a></li>
+                <li><a href="vistoria.html"><i class="fas fa-clipboard-check"></i> Vistoria</a></li>
+                <li><a href="entrada_saida.html"><i class="fas fa-exchange-alt"></i> Movimentação</a></li>
+                <li><a href="maintenance.html"><i class="fas fa-tools"></i> Manutenção</a></li>
+                <li><a href="vehicles.html"><i class="fas fa-car"></i> Veículos</a></li>
+                <li><a href="backup.html"><i class="fas fa-database"></i> Backup</a></li>
+            </ul>
         </nav>
     </aside>
+
     <main class="main-content">
         <a href="index.html" class="btn-voltar"><i class="fas fa-arrow-left"></i> Voltar ao Menu</a>
-        <header class="top-bar"><h1>Resumo da Frota</h1></header>
-        <div class="card" style="max-width: 500px; margin: 0 auto;">
-            <div class="card-header"><i class="fas fa-chart-pie"></i> Status Operacional</div>
-            <canvas id="chartStatus"></canvas>
-        </div>
+
+        <header class="top-bar">
+            <h1>Dashboard Operacional</h1>
+        </header>
+
+        <section class="content-body">
+            <div class="row">
+                <div class="card" style="flex: 1; text-align: center;">
+                    <div class="card-header" style="justify-content: center;"><i class="fas fa-car"></i> Frota Total</div>
+                    <h2 id="totalVeiculos" style="font-size: 2.5rem; margin-top: 10px;">0</h2>
+                </div>
+                <div class="card" style="flex: 1; text-align: center;">
+                    <div class="card-header" style="justify-content: center;"><i class="fas fa-exclamation-circle"></i> Alertas</div>
+                    <h2 id="totalAlertas" style="font-size: 2.5rem; margin-top: 10px; color: #e63946;">0</h2>
+                </div>
+            </div>
+
+            <div class="card" style="max-width: 450px; margin: 0 auto;">
+                <div class="card-header"><i class="fas fa-chart-pie"></i> Status de Manutenção</div>
+                <div style="padding: 10px;">
+                    <canvas id="chartStatus"></canvas>
+                </div>
+            </div>
+
+            <div class="card mt-20">
+                <div class="card-header"><i class="fas fa-bell"></i> Notificações e Prazos</div>
+                <div id="listaNotificacoes">
+                    </div>
+            </div>
+        </section>
     </main>
+
     <script src="js/dashboard.js"></script>
 </body>
 </html>
