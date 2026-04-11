@@ -18,10 +18,15 @@
     --border-color: #3d3d3d;
 }
 
-body {
+/* Garante que o corpo da página permita rolagem vertical sempre que necessário */
+html, body {
     background-color: var(--dark-bg);
     color: var(--text-white);
     line-height: 1.6;
+    min-height: 100%;
+    height: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 
 /* =========================================
@@ -92,6 +97,8 @@ body {
     padding: 30px;
     max-width: 1200px;
     margin: 0 auto;
+    min-height: 100vh;
+    display: block;
 }
 
 .top-bar {
@@ -180,19 +187,10 @@ body {
     transition: 0.2s;
 }
 
-.check-item:active {
-    background: #444;
-}
-
 .check-item input[type="checkbox"] {
     width: 20px;
     height: 20px;
     accent-color: var(--primary-red);
-}
-
-.check-item span {
-    font-size: 0.9rem;
-    font-weight: 500;
 }
 
 /* =========================================
@@ -211,13 +209,21 @@ body {
     transition: 0.3s; 
 }
 
-.btn-primary:hover { filter: brightness(1.2); }
-
 .btn-secondary { background: #444; color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; }
 .btn-accent { background: #2ecc71; color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; }
 
+.btn-delete {
+    background: #c0392b;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.8rem;
+}
+
 .btn-voltar {
-    display: none; /* Escondido por padrão no PC */
+    display: none;
     background: #333;
     color: white;
     padding: 12px 18px;
@@ -231,8 +237,14 @@ body {
 /* =========================================
    TABELAS E UTILITÁRIOS
    ========================================= */
-.table-responsive { width: 100%; overflow-x: auto; }
-.modern-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+.table-responsive { 
+    width: 100%; 
+    overflow-x: auto; 
+    -webkit-overflow-scrolling: touch;
+    margin-top: 10px;
+}
+
+.modern-table { width: 100%; border-collapse: collapse; }
 .modern-table th { background: #111; color: var(--primary-red); text-align: left; padding: 15px; font-size: 0.85rem; text-transform: uppercase; }
 .modern-table td { padding: 15px; border-bottom: 1px solid var(--border-color); font-size: 0.9rem; }
 
@@ -244,9 +256,14 @@ body {
 @media (max-width: 768px) {
     .sidebar { display: none !important; }
     .has-sidebar { padding-left: 0 !important; }
-    .main-content { padding: 15px !important; }
     
-    .btn-voltar { display: inline-block; } /* Mostra botão voltar no mobile */
+    .main-content { 
+        padding: 15px !important; 
+        height: auto !important;
+        overflow-y: visible !important;
+    }
+    
+    .btn-voltar { display: inline-block; }
 
     .row {
         flex-direction: column;
@@ -254,12 +271,15 @@ body {
     }
 
     .checklist-grid {
-        grid-template-columns: repeat(2, 1fr); /* 2 colunas no telemóvel */
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .modern-table th, .modern-table td {
+        padding: 10px 8px;
+        font-size: 0.8rem;
     }
 
     .modern-input {
-        font-size: 16px; /* Evita zoom automático no iOS */
+        font-size: 16px;
     }
-
-    .top-bar h1 { font-size: 1.4rem; }
 }
