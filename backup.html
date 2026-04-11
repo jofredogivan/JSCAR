@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Japan Security | Backup</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="has-sidebar">
+
+    <aside class="sidebar">
+        </aside>
+
+    <main class="main-content">
+        <header class="top-bar">
+            <div class="header-title">
+                <button class="btn-icon" onclick="history.back()"><i class="fas fa-arrow-left"></i></button>
+                <h1>Segurança e Backup</h1>
+            </div>
+        </header>
+
+        <section class="content-body">
+            <div class="grid-container">
+                
+                <div class="card">
+                    <div class="card-header"><i class="fas fa-download"></i> Exportar Banco de Dados</div>
+                    <div class="p-20">
+                        <p class="text-dim">Gere um arquivo de segurança contendo todos os veículos, vistorias, manutenções e logs de movimento.</p>
+                        <button class="btn-primary mt-20" onclick="exportarDados()">
+                            <i class="fas fa-file-export"></i> Gerar Arquivo .JSON
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header"><i class="fas fa-upload"></i> Restaurar Backup</div>
+                    <div class="p-20">
+                        <p class="text-dim">Selecione um arquivo .json gerado anteriormente para restaurar o sistema.</p>
+                        <div class="input-group mt-20">
+                            <input type="file" id="arquivoBackup" class="modern-input" accept=".json">
+                        </div>
+                        <div class="alert-box">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            Atenção: A importação substituirá todos os dados atuais!
+                        </div>
+                        <button class="btn-secondary" onclick="importarDados()">
+                            <i class="fas fa-file-import"></i> Iniciar Restauração
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <script src="js/backup.js"></script>
+</body>
+</html>

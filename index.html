@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Japan Security | Fleet Management</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0f0f0f">
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-area">
+                <i class="fas fa-shield-alt logo-icon"></i>
+                <div>
+                    <h2>JAPAN</h2>
+                    <span>SECURITY</span>
+                </div>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <ul>
+                <li><a href="dashboard.html" class="active"><i class="fas fa-chart-line"></i> Dashboard</a></li>
+                <li><a href="vistoria.html"><i class="fas fa-clipboard-check"></i> Vistoria</a></li>
+                <li><a href="entrada_saida.html"><i class="fas fa-exchange-alt"></i> Entrada/Saída</a></li>
+                <li><a href="maintenance.html"><i class="fas fa-tools"></i> Manutenção</a></li>
+                <li><a href="backup.html"><i class="fas fa-database"></i> Backup</a></li>
+            </ul>
+        </nav>
+
+        <div class="sidebar-footer">
+            <p><i class="fas fa-car"></i> JS Car v2.0</p>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="top-bar">
+            <h1>Painel de Controle</h1>
+            <div class="user-info">
+                <span>Operador</span>
+                <i class="fas fa-user-circle"></i>
+            </div>
+        </header>
+
+        <section class="content-body">
+            <div class="welcome-card">
+                <h2>Bem-vindo ao Japan Security Car</h2>
+                <p>Selecione uma opção no menu lateral para iniciar o gerenciamento.</p>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        if ("serviceWorker" in navigator) {
+            navigator.serviceWorker.register("service-worker.js");
+        }
+    </script>
+</body>
+</html>

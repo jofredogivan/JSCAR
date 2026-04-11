@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Japan Security | Controle</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body class="has-sidebar">
+
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-area"><i class="fas fa-shield-alt logo-icon"></i><div><h2>JAPAN</h2><span>SECURITY</span></div></div>
+        </div>
+        <nav class="sidebar-nav">
+            <ul>
+                <li><a href="dashboard.html"><i class="fas fa-chart-line"></i> <span>Dashboard</span></a></li>
+                <li><a href="vistoria.html"><i class="fas fa-clipboard-check"></i> <span>Vistoria</span></a></li>
+                <li><a href="entrada_saida.html" class="active"><i class="fas fa-exchange-alt"></i> <span>Entrada/Saída</span></a></li>
+                <li><a href="maintenance.html"><i class="fas fa-tools"></i> <span>Manutenção</span></a></li>
+                <li><a href="vehicles.html"><i class="fas fa-car"></i> <span>Veículos</span></a></li>
+                <li><a href="backup.html"><i class="fas fa-database"></i> <span>Backup</span></a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <header class="top-bar">
+            <h1>Controle de Movimentação</h1>
+            <div class="status-indicator"><span class="pulse-online"></span> SISTEMA ATIVO</div>
+        </header>
+
+        <section class="content-body">
+            <div class="card form-card">
+                <div class="card-header"><i class="fas fa-plus-circle"></i> Novo Registro</div>
+                <div class="row">
+                    <div class="input-group">
+                        <label>Veículo</label>
+                        <input list="listaVeiculos" id="veiculo" class="modern-input" placeholder="Placa..." onchange="puxarKmAutomatico()">
+                        <datalist id="listaVeiculos"></datalist>
+                    </div>
+                    <div class="input-group">
+                        <label>Tipo</label>
+                        <select id="tipo" class="modern-input">
+                            <option value="Saída">Saída</option>
+                            <option value="Entrada">Entrada</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>KM Atual</label>
+                        <input id="km" type="number" class="modern-input" placeholder="Puxado da base">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="input-group"><label>Motorista/Vigilante</label><input id="motorista" class="modern-input"></div>
+                    <div class="input-group"><label>Observação</label><input id="obs" class="modern-input" placeholder="Ex: Ronda, Abastecer..."></div>
+                </div>
+                <button class="btn-primary" onclick="salvar()"><i class="fas fa-save"></i> Registrar</button>
+            </div>
+
+            <div class="card filter-card mt-20">
+                <div class="card-header"><i class="fas fa-filter"></i> Filtro e PDF por Veículo</div>
+                <div class="row">
+                    <div class="input-group"><label>De:</label><input type="date" id="dataInicio" class="modern-input"></div>
+                    <div class="input-group"><label>Até:</label><input type="date" id="dataFim" class="modern-input"></div>
+                </div>
+                <div style="padding: 0 20px 20px; display: flex; gap: 10px;">
+                    <button class="btn-secondary" onclick="renderizarTabela()"><i class="fas fa-search"></i> Filtrar</button>
+                    <button class="btn-accent" onclick="gerarPDF()"><i class="fas fa-file-pdf"></i> Exportar PDF por Carro</button>
+                </div>
+            </div>
+
+            <div class="card table-card mt-20">
+                <div class="table-responsive">
+                    <table class="modern-table">
+                        <thead>
+                            <tr>
+                                <th>Data/Hora</th>
+                                <th>Veículo</th>
+                                <th>Tipo</th>
+                                <th>Motorista</th>
+                                <th>KM</th>
+                                <th>Observação</th>
+                                <th>Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabela"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+    <script src="js/entrada_saida.js"></script>
+</body>
+</html>

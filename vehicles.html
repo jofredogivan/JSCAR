@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Japan Security | Cadastro de Veículos</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="has-sidebar">
+
+    <aside class="sidebar">
+        </aside>
+
+    <main class="main-content">
+        <header class="top-bar">
+            <div class="header-title">
+                <button class="btn-icon" onclick="history.back()"><i class="fas fa-arrow-left"></i></button>
+                <h1>Gestão da Frota</h1>
+            </div>
+        </header>
+
+        <section class="content-body">
+            <div class="grid-container">
+                
+                <div class="card form-card">
+                    <div class="card-header"><i class="fas fa-plus-circle"></i> Novo Veículo</div>
+                    
+                    <form id="formVeiculo" class="modern-form">
+                        <div class="input-group">
+                            <label>Identificação (Ex: VTR-01)</label>
+                            <input id="nome" class="modern-input" placeholder="Nome do veículo" required>
+                        </div>
+
+                        <div class="row">
+                            <div class="input-group">
+                                <label>Placa</label>
+                                <input id="placa" class="modern-input" placeholder="ABC-1234" required>
+                            </div>
+                            <div class="input-group">
+                                <label>Ano</label>
+                                <input id="ano" class="modern-input" placeholder="2024">
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label>Quilometragem de Cadastro</label>
+                            <input id="kmInicial" type="number" class="modern-input" placeholder="Ex: 0">
+                        </div>
+
+                        <button type="submit" class="btn-primary"><i class="fas fa-save"></i> Adicionar à Frota</button>
+                    </form>
+                </div>
+
+                <div class="card info-card">
+                    <div class="card-header"><i class="fas fa-info-circle"></i> Status Global</div>
+                    <div class="status-content">
+                        <p>Total de ativos: <strong id="totalAtivos">0</strong></p>
+                        <p>Última atualização: <span id="lastUpdate">--/--</span></p>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="card table-card mt-20">
+                <div class="card-header"><i class="fas fa-car-side"></i> Veículos Ativos</div>
+                <div class="table-responsive">
+                    <table class="modern-table">
+                        <thead>
+                            <tr>
+                                <th>Nome/Prefixo</th>
+                                <th>Placa</th>
+                                <th>Ano</th>
+                                <th>KM Atual</th>
+                                <th>Última Troca</th>
+                                <th style="text-align: center;">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelaVeiculos"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="js/vehicles.js"></script>
+</body>
+</html>

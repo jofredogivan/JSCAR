@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Japan Security | Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="has-sidebar">
+
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-area">
+                <i class="fas fa-shield-alt logo-icon"></i>
+                <div><h2>JAPAN</h2><span>SECURITY</span></div>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <ul>
+                <li><a href="dashboard.html" class="active"><i class="fas fa-chart-line"></i> <span>Dashboard</span></a></li>
+                <li><a href="vistoria.html"><i class="fas fa-clipboard-check"></i> <span>Vistoria</span></a></li>
+                <li><a href="entrada_saida.html"><i class="fas fa-exchange-alt"></i> <span>Entrada/Saída</span></a></li>
+                <li><a href="maintenance.html"><i class="fas fa-tools"></i> <span>Manutenção</span></a></li>
+                <li><a href="vehicles.html"><i class="fas fa-car"></i> <span>Veículos</span></a></li>
+                <li><a href="backup.html"><i class="fas fa-database"></i> <span>Backup</span></a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <header class="top-bar">
+            <h1>Painel de Controle Operacional</h1>
+            <div class="status-indicator"><span class="pulse-online"></span> SISTEMA ATIVO</div>
+        </header>
+
+        <section class="content-body">
+            <div class="dashboard-grid">
+                <div class="dash-card">
+                    <div class="dash-icon"><i class="fas fa-car"></i></div>
+                    <div class="dash-info"><h3>Frota</h3><p id="totalVehicles">0</p></div>
+                </div>
+                <div class="dash-card warning">
+                    <div class="dash-icon"><i class="fas fa-tools"></i></div>
+                    <div class="dash-info"><h3>Na Oficina</h3><p id="inMaintenance">0</p></div>
+                </div>
+                <div class="dash-card success">
+                    <div class="dash-icon"><i class="fas fa-clipboard-check"></i></div>
+                    <div class="dash-info"><h3>Vistorias</h3><p id="totalVistorias">0</p></div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="card">
+                    <div class="card-header"><i class="fas fa-chart-line"></i> Movimentação Semanal</div>
+                    <div style="padding: 20px; height: 300px;"><canvas id="chartMovimentacao"></canvas></div>
+                </div>
+                <div class="card">
+                    <div class="card-header"><i class="fas fa-chart-pie"></i> Status da Frota</div>
+                    <div style="padding: 20px; height: 300px;"><canvas id="chartStatus"></canvas></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="js/dashboard.js"></script>
+</body>
+</html>
