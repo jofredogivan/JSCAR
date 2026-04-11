@@ -3,33 +3,128 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Japan Security | Veículos</title>
+    <title>Japan Security | Vistoria</title>
     <link rel="icon" type="image/png" href="icons/icon-192x192.png">
     <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body class="has-sidebar">
+
     <aside class="sidebar">
-        <div class="sidebar-header"><h2>JAPAN</h2></div>
-        <nav class="sidebar-nav"><ul><li><a href="index.html"><i class="fas fa-home"></i> Menu</a></li></ul></nav>
+        <div class="sidebar-header">
+            <div class="logo-area">
+                <i class="fas fa-shield-alt logo-icon"></i>
+                <div><h2>JAPAN</h2><span>SECURITY</span></div>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <ul>
+                <li><a href="index.html"><i class="fas fa-home"></i> Menu Principal</a></li>
+                <li><a href="dashboard.html"><i class="fas fa-chart-pie"></i> Dashboard</a></li>
+                <li><a href="vistoria.html" class="active"><i class="fas fa-clipboard-check"></i> Vistoria</a></li>
+                <li><a href="entrada_saida.html"><i class="fas fa-exchange-alt"></i> Movimentação</a></li>
+                <li><a href="maintenance.html"><i class="fas fa-tools"></i> Manutenção</a></li>
+                <li><a href="vehicles.html"><i class="fas fa-car"></i> Veículos</a></li>
+                <li><a href="backup.html"><i class="fas fa-database"></i> Backup</a></li>
+            </ul>
+        </nav>
     </aside>
+
     <main class="main-content">
         <a href="index.html" class="btn-voltar"><i class="fas fa-arrow-left"></i> Voltar ao Menu</a>
-        <header class="top-bar"><h1>Cadastro de Viaturas</h1></header>
-        <div class="card form-card">
-            <div class="row">
-                <div class="input-group"><label>Veículo (Nome)</label><input id="nome" class="modern-input" placeholder="Ex: Gol G6"></div>
-                <div class="input-group"><label>Placa</label><input id="placa" class="modern-input" placeholder="ABC-1234"></div>
+
+        <header class="top-bar">
+            <h1>Vistoria de Viatura</h1>
+            <div class="status-indicator"><span class="pulse-online"></span> SISTEMA ATIVO</div>
+        </header>
+
+        <section class="content-body">
+            <div class="card form-card">
+                <div class="card-header"><i class="fas fa-camera"></i> Nova Vistoria</div>
+                
+                <div class="row">
+                    <div class="input-group">
+                        <label>Veículo</label>
+                        <input list="listaVeiculos" id="veiculo" class="modern-input" placeholder="Selecione..." onchange="puxarKmAutomatico()">
+                        <datalist id="listaVeiculos"></datalist>
+                    </div>
+                    <div class="input-group">
+                        <label>KM Atual</label>
+                        <input id="km" type="number" class="modern-input" placeholder="Puxado da base">
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="input-group">
+                        <label>Vigilante/Inspetor</label>
+                        <input id="vigilante" class="modern-input" placeholder="Nome do responsável">
+                    </div>
+                    <div class="input-group">
+                        <label>Foto da Avaria/Viatura (Opcional)</label>
+                        <input type="file" id="fotoVeiculo" class="modern-input" accept="image/*" capture="camera">
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="input-group">
+                        <label>Observação ou Detalhes da Avaria</label>
+                        <input id="obsAvaria" class="modern-input" placeholder="Ex: Risco na porta direita, pneu baixo...">
+                    </div>
+                </div>
+
+                <div class="checklist-grid mt-20">
+                    <label class="check-item"><input type="checkbox" id="oleo"> <span>Óleo</span></label>
+                    <label class="check-item"><input type="checkbox" id="agua"> <span>Água</span></label>
+                    <label class="check-item"><input type="checkbox" id="pneus"> <span>Pneus</span></label>
+                    <label class="check-item"><input type="checkbox" id="limpeza"> <span>Limpeza</span></label>
+                </div>
+
+                <button class="btn-primary mt-20" onclick="salvar()"><i class="fas fa-save"></i> Salvar Vistoria</button>
             </div>
-            <div class="row">
-                <div class="input-group"><label>KM Inicial</label><input id="kmAtual" type="number" class="modern-input"></div>
-                <div class="input-group"><label>Próxima Troca Óleo (KM)</label><input id="kmTroca" type="number" class="modern-input"></div>
+
+            <div class="card filter-card mt-20">
+                <div class="card-header"><i class="fas fa-filter"></i> Filtro e Relatório PDF</div>
+                <div class="row">
+                    <div class="input-group">
+                        <label>Início (Data e Hora):</label>
+                        <input type="datetime-local" id="dataInicio" class="modern-input">
+                    </div>
+                    <div class="input-group">
+                        <label>Fim (Data e Hora):</label>
+                        <input type="datetime-local" id="dataFim" class="modern-input">
+                    </div>
+                </div>
+                <div style="padding: 0 20px 20px; display: flex; gap: 10px;">
+                    <button class="btn-secondary" onclick="renderizarTabela()"><i class="fas fa-search"></i> Filtrar Lista</button>
+                    <button class="btn-accent" onclick="gerarPDF()"><i class="fas fa-file-pdf"></i> Gerar PDF Organizado</button>
+                </div>
             </div>
-            <button class="btn-primary" onclick="salvarVeiculo()"><i class="fas fa-save"></i> Salvar Veículo</button>
-        </div>
-        <div class="card table-card"><tbody id="tabelaVeiculos"></tbody></table></div>
+
+            <div class="card table-card mt-20">
+                <div class="table-responsive">
+                    <table class="modern-table">
+                        <thead>
+                            <tr>
+                                <th>Data/Hora</th>
+                                <th>Veículo</th>
+                                <th>Vigilante</th>
+                                <th>KM</th>
+                                <th>Avaria/Obs</th>
+                                <th>Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabela">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
     </main>
-    <script src="js/vehicles.js"></script>
+    <script src="js/vistoria.js"></script>
 </body>
 </html>
