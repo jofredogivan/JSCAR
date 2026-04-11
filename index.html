@@ -5,71 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Japan Security | Home</title>
     <link rel="icon" type="image/png" href="icons/icon-192x192.png">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
     <style>
-        .home-container {
-            padding: 20px;
-            display: grid;
-            grid-template-columns: repeat(2, 1fr); /* 2 colunas */
-            gap: 15px;
-            margin-top: 20px;
-        }
-        .menu-card {
-            background: #2a2a2a;
-            border-radius: 12px;
-            padding: 25px 10px;
-            text-align: center;
-            text-decoration: none;
-            color: white;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-            border-bottom: 4px solid #e63946; /* Detalhe Japan Security */
-            transition: transform 0.2s;
-        }
+        .home-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding: 20px; }
+        .menu-card { background: #2a2a2a; border-radius: 12px; padding: 25px 10px; text-align: center; text-decoration: none; color: white; display: flex; flex-direction: column; align-items: center; gap: 10px; border-bottom: 4px solid #e63946; }
         .menu-card i { font-size: 2.5rem; color: #e63946; }
-        .menu-card span { font-weight: bold; font-size: 0.9rem; }
-        .menu-card:active { transform: scale(0.95); }
-        .header-home { text-align: center; padding: 30px 0; }
-        .header-home img { width: 80px; margin-bottom: 10px; }
+        .menu-card span { font-weight: bold; font-size: 0.8rem; text-transform: uppercase; }
+        .header-home { text-align: center; padding: 40px 0 20px; }
     </style>
 </head>
-<body style="background: #1a1a1a; padding-bottom: 40px;">
-
+<body style="background: #1a1a1a;">
     <div class="header-home">
-        <i class="fas fa-shield-alt" style="font-size: 3rem; color: #e63946;"></i>
-        <h2 style="color: white; margin-top: 10px;">JAPAN SECURITY</h2>
-        <p style="color: #888; font-size: 0.8rem;">SISTEMA DE GESTÃO DE FROTA</p>
+        <i class="fas fa-shield-alt" style="font-size: 3.5rem; color: #e63946;"></i>
+        <h2 style="margin-top: 10px;">JAPAN SECURITY</h2>
+        <p style="color: #888; font-size: 0.8rem;">GESTÃO DE FROTA v2.0</p>
     </div>
-
     <div class="home-container">
-        <a href="dashboard.html" class="menu-card">
-            <i class="fas fa-chart-line"></i>
-            <span>DASHBOARD</span>
-        </a>
-        <a href="vistoria.html" class="menu-card">
-            <i class="fas fa-clipboard-check"></i>
-            <span>VISTORIA</span>
-        </a>
-        <a href="entrada_saida.html" class="menu-card">
-            <i class="fas fa-exchange-alt"></i>
-            <span>MOVIMENTAÇÃO</span>
-        </a>
-        <a href="maintenance.html" class="menu-card">
-            <i class="fas fa-tools"></i>
-            <span>MANUTENÇÃO</span>
-        </a>
-        <a href="vehicles.html" class="menu-card">
-            <i class="fas fa-car"></i>
-            <span>VEÍCULOS</span>
-        </a>
-        <a href="backup.html" class="menu-card">
-            <i class="fas fa-database"></i>
-            <span>BACKUP</span>
-        </a>
+        <a href="dashboard.html" class="menu-card"><i class="fas fa-chart-pie"></i><span>Dashboard</span></a>
+        <a href="vistoria.html" class="menu-card"><i class="fas fa-clipboard-check"></i><span>Vistoria</span></a>
+        <a href="entrada_saida.html" class="menu-card"><i class="fas fa-exchange-alt"></i><span>Movimentação</span></a>
+        <a href="maintenance.html" class="menu-card"><i class="fas fa-tools"></i><span>Manutenção</span></a>
+        <a href="vehicles.html" class="menu-card"><i class="fas fa-car"></i><span>Veículos</span></a>
+        <a href="backup.html" class="menu-card"><i class="fas fa-database"></i><span>Backup</span></a>
     </div>
-
 </body>
 </html>
