@@ -3,88 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Japan Security | Cadastro de Veículos</title>
+    <title>Japan Security | Veículos</title>
     <link rel="icon" type="image/png" href="icons/icon-192x192.png">
     <link rel="apple-touch-icon" href="icons/icon-192x192.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body class="has-sidebar">
-
     <aside class="sidebar">
-        </aside>
-
+        <div class="sidebar-header"><h2>JAPAN</h2></div>
+        <nav class="sidebar-nav"><ul><li><a href="index.html"><i class="fas fa-home"></i> Menu</a></li></ul></nav>
+    </aside>
     <main class="main-content">
-        <header class="top-bar">
-            <div class="header-title">
-                <button class="btn-icon" onclick="history.back()"><i class="fas fa-arrow-left"></i></button>
-                <h1>Gestão da Frota</h1>
+        <a href="index.html" class="btn-voltar"><i class="fas fa-arrow-left"></i> Voltar ao Menu</a>
+        <header class="top-bar"><h1>Cadastro de Viaturas</h1></header>
+        <div class="card form-card">
+            <div class="row">
+                <div class="input-group"><label>Veículo (Nome)</label><input id="nome" class="modern-input" placeholder="Ex: Gol G6"></div>
+                <div class="input-group"><label>Placa</label><input id="placa" class="modern-input" placeholder="ABC-1234"></div>
             </div>
-        </header>
-
-        <section class="content-body">
-            <div class="grid-container">
-                
-                <div class="card form-card">
-                    <div class="card-header"><i class="fas fa-plus-circle"></i> Novo Veículo</div>
-                    
-                    <form id="formVeiculo" class="modern-form">
-                        <div class="input-group">
-                            <label>Identificação (Ex: VTR-01)</label>
-                            <input id="nome" class="modern-input" placeholder="Nome do veículo" required>
-                        </div>
-
-                        <div class="row">
-                            <div class="input-group">
-                                <label>Placa</label>
-                                <input id="placa" class="modern-input" placeholder="ABC-1234" required>
-                            </div>
-                            <div class="input-group">
-                                <label>Ano</label>
-                                <input id="ano" class="modern-input" placeholder="2024">
-                            </div>
-                        </div>
-
-                        <div class="input-group">
-                            <label>Quilometragem de Cadastro</label>
-                            <input id="kmInicial" type="number" class="modern-input" placeholder="Ex: 0">
-                        </div>
-
-                        <button type="submit" class="btn-primary"><i class="fas fa-save"></i> Adicionar à Frota</button>
-                    </form>
-                </div>
-
-                <div class="card info-card">
-                    <div class="card-header"><i class="fas fa-info-circle"></i> Status Global</div>
-                    <div class="status-content">
-                        <p>Total de ativos: <strong id="totalAtivos">0</strong></p>
-                        <p>Última atualização: <span id="lastUpdate">--/--</span></p>
-                    </div>
-                </div>
-
+            <div class="row">
+                <div class="input-group"><label>KM Inicial</label><input id="kmAtual" type="number" class="modern-input"></div>
+                <div class="input-group"><label>Próxima Troca Óleo (KM)</label><input id="kmTroca" type="number" class="modern-input"></div>
             </div>
-
-            <div class="card table-card mt-20">
-                <div class="card-header"><i class="fas fa-car-side"></i> Veículos Ativos</div>
-                <div class="table-responsive">
-                    <table class="modern-table">
-                        <thead>
-                            <tr>
-                                <th>Nome/Prefixo</th>
-                                <th>Placa</th>
-                                <th>Ano</th>
-                                <th>KM Atual</th>
-                                <th>Última Troca</th>
-                                <th style="text-align: center;">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabelaVeiculos"></tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
+            <button class="btn-primary" onclick="salvarVeiculo()"><i class="fas fa-save"></i> Salvar Veículo</button>
+        </div>
+        <div class="card table-card"><tbody id="tabelaVeiculos"></tbody></table></div>
     </main>
-
     <script src="js/vehicles.js"></script>
 </body>
 </html>
