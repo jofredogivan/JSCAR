@@ -5,30 +5,73 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Japan Security | Veículos</title>
     <link rel="icon" type="image/png" href="icons/icon-192x192.png">
-    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body class="has-sidebar">
+
     <aside class="sidebar">
-        <div class="sidebar-header"><h2>JAPAN</h2></div>
-        <nav class="sidebar-nav"><ul><li><a href="index.html"><i class="fas fa-home"></i> Menu</a></li></ul></nav>
+        <div class="sidebar-header">
+            <div class="logo-area"><i class="fas fa-shield-alt logo-icon"></i><div><h2>JAPAN</h2><span>SECURITY</span></div></div>
+        </div>
+        <nav class="sidebar-nav">
+            <ul>
+                <li><a href="index.html"><i class="fas fa-home"></i> Menu Principal</a></li>
+                <li><a href="vehicles.html" class="active"><i class="fas fa-car"></i> Veículos</a></li>
+            </ul>
+        </nav>
     </aside>
+
     <main class="main-content">
         <a href="index.html" class="btn-voltar"><i class="fas fa-arrow-left"></i> Voltar ao Menu</a>
+        
         <header class="top-bar"><h1>Cadastro de Viaturas</h1></header>
-        <div class="card form-card">
-            <div class="row">
-                <div class="input-group"><label>Veículo (Nome)</label><input id="nome" class="modern-input" placeholder="Ex: Gol G6"></div>
-                <div class="input-group"><label>Placa</label><input id="placa" class="modern-input" placeholder="ABC-1234"></div>
+
+        <section class="content-body">
+            <div class="card form-card">
+                <div class="card-header"><i class="fas fa-plus-circle"></i> Novo Veículo</div>
+                <div class="row">
+                    <div class="input-group">
+                        <label>Nome/Modelo</label>
+                        <input id="nome" class="modern-input" placeholder="Ex: Gol G6">
+                    </div>
+                    <div class="input-group">
+                        <label>Placa</label>
+                        <input id="placa" class="modern-input" placeholder="ABC-1234">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="input-group">
+                        <label>KM Atual</label>
+                        <input id="kmAtual" type="number" class="modern-input">
+                    </div>
+                    <div class="input-group">
+                        <label>Próxima Troca de Óleo (KM)</label>
+                        <input id="kmTroca" type="number" class="modern-input">
+                    </div>
+                </div>
+                <button class="btn-primary" onclick="salvarVeiculo()"><i class="fas fa-save"></i> Salvar Veículo</button>
             </div>
-            <div class="row">
-                <div class="input-group"><label>KM Inicial</label><input id="kmAtual" type="number" class="modern-input"></div>
-                <div class="input-group"><label>Próxima Troca Óleo (KM)</label><input id="kmTroca" type="number" class="modern-input"></div>
+
+            <div class="card table-card mt-20">
+                <div class="card-header"><i class="fas fa-list"></i> Frota Cadastrada</div>
+                <div class="table-responsive">
+                    <table class="modern-table">
+                        <thead>
+                            <tr>
+                                <th>Modelo</th>
+                                <th>Placa</th>
+                                <th>KM Atual</th>
+                                <th>Prox. Troca</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelaVeiculos">
+                            </tbody>
+                    </table>
+                </div>
             </div>
-            <button class="btn-primary" onclick="salvarVeiculo()"><i class="fas fa-save"></i> Salvar Veículo</button>
-        </div>
-        <div class="card table-card"><tbody id="tabelaVeiculos"></tbody></table></div>
+        </section>
     </main>
     <script src="js/vehicles.js"></script>
 </body>
