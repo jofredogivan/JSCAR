@@ -1,89 +1,103 @@
-// Puxar KM automático igual ao Entrada/Saída
+// Função para puxar o KM automático ao selecionar o veículo
 function puxarKmAutomatico() {
     const placa = document.getElementById('veiculo').value.toUpperCase();
     const veiculos = JSON.parse(localStorage.getItem("vehicles")) || [];
     const vEncontrado = veiculos.find(v => v.placa.toUpperCase() === placa);
-    if (vEncontrado) document.getElementById('km').value = vEncontrado.kmAtual || 0;
+    if (vEncontrado) {
+        document.getElementById('km').value = vEncontrado.kmAtual || 0;
+    }
 }
 
-// Converter imagem
-async function obterBase64(file) {
+// Função para converter a imagem em Base64 (para salvar no LocalStorage)
+async function converterImagem(file) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
-        reader.readAsDataURL(file);
         reader.onload = () => resolve(reader.result);
         reader.onerror = error => reject(error);
+        reader.readAsDataURL(file);
     });
 }
 
+// Função Salvar Vistoria
 async function salvar() {
-    const placaDigitada = document.getElementById('veiculo').value.toUpperCase();
+    const placa = document.getElementById('veiculo').value.toUpperCase();
     const km = document.getElementById('km').value;
     const vigilante = document.getElementById('vigilante').value;
+    const obs = document.getElementById('obsAvaria').value;
     const fotoFile = document.getElementById('fotoVeiculo').files[0];
-    
-    if(!placaDigitada || !km) return alert("Preencha Placa e KM!");
 
-    const veiculosBase = JSON.parse(localStorage.getItem("vehicles")) || [];
-    const infoVeiculo = veiculosBase.find(v => v.placa.toUpperCase() === placaDigitada);
-    const nomeVeiculo = infoVeiculo ? infoVeiculo.nome : "Não Identificado";
-
-    let fotoBase64 = "";
-    if (fotoFile) fotoBase64 = await obterBase64(fotoFile);
-
-    const checklist = [];
-    if(document.getElementById('oleo').checked) checklist.push("Óleo");
-    if(document.getElementById('agua').checked) checklist.push("Água");
-    if(document.getElementById('pneus').checked) checklist.push("Pneus");
-    if(document.getElementById('limpeza').checked) checklist.push("Limpeza");
-
-    const vistoria = {
-        data: new Date().toLocaleDateString('pt-BR'),
-        hora: new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}),
-        placa: placaDigitada,
-        veiculoNome: nomeVeiculo,
-        km: km,
-        vigilante: vigilante,
-        foto: fotoBase64,
-        itens: checklist.join(', ')
+    // Checklist
+    const itens = {
+        oleo: document.getElementById('oleo').checked ? "OK" : "PENDENTE",
+        agua: document.getElementById('agua').checked ? "OK" : "PENDENTE",
+        pneus: document.getElementById('pneus').checked ? "OK" : "PENDENTE",
+        limpeza: document.getElementById('limpeza').checked ? "OK" : "PENDENTE",
+        macaco: document.getElementById('macaco').checked ? "OK" : "PENDENTE",
+        triangulo: document.getElementById('triangulo').checked ? "OK" : "PENDENTE"
     };
 
+    if (!placa || !km || !vigilante) {
+        return alert("Por favor, preencha Veículo, KM e Vigilante!");
+    }
+
+    let fotoBase64 = "";
+    if (fotoFile) {
+        fotoBase64 = await converterImagem(fotoFile);
+    }
+
+    const agora = new Date();
+    const registro = {
+        placa: placa,
+        km: km,
+        vigilante: vigilante,
+        obs: obs,
+        itens: itens,
+        foto: fotoBase64,
+        dataISO: agora.toISOString(), // Para o filtro funcionar
+        dataExibicao: agora.toLocaleString('pt-BR') // Para a tabela
+    };
+
+    // Salva no histórico de vistorias
     const vistorias = JSON.parse(localStorage.getItem("vistorias")) || [];
-    vistorias.unshift(vistoria);
+    vistorias.unshift(registro);
     localStorage.setItem("vistorias", JSON.stringify(vistorias));
 
-    // Atualiza KM na base global
-    let idx = veiculosBase.findIndex(v => v.placa.toUpperCase() === placaDigitada);
-    if (idx !== -1) { 
-        veiculosBase[idx].kmAtual = km; 
-        localStorage.setItem("vehicles", JSON.stringify(veiculosBase)); 
+    // Atualiza o KM na base do veículo
+    const veiculos = JSON.parse(localStorage.getItem("vehicles")) || [];
+    const idx = veiculos.findIndex(v => v.placa.toUpperCase() === placa);
+    if (idx !== -1) {
+        veiculos[idx].kmAtual = km;
+        localStorage.setItem("vehicles", JSON.stringify(veiculos));
     }
-    
+
+    alert("Vistoria salva com sucesso!");
     location.reload();
 }
 
+// Função para Renderizar Tabela com Filtro
 function renderizarTabela() {
     let dados = JSON.parse(localStorage.getItem("vistorias")) || [];
     const inicio = document.getElementById('dataInicio').value;
     const fim = document.getElementById('dataFim').value;
 
     if (inicio || fim) {
-        dados = dados.filter(i => {
-            const d = i.data.split('/').reverse().join('-');
-            return (!inicio || d >= inicio) && (!fim || d <= fim);
+        dados = dados.filter(item => {
+            const dataItem = item.dataISO;
+            return (!inicio || dataItem >= inicio) && (!fim || dataItem <= fim);
         });
     }
 
-    document.getElementById('tabela').innerHTML = dados.map((v, index) => `
+    const tbody = document.getElementById('tabela');
+    tbody.innerHTML = dados.map((v, index) => `
         <tr>
-            <td>${v.data} ${v.hora}</td>
-            <td><strong>${v.placa}</strong><br><small>${v.veiculoNome}</small></td>
+            <td>${v.dataExibicao}</td>
+            <td><strong>${v.placa}</strong></td>
             <td>${v.vigilante}</td>
             <td>${v.km} KM</td>
-            <td><small>${v.itens || 'Nenhum item'}</small></td>
+            <td><small>${v.obs || '-'}</small></td>
             <td>
                 <button class="btn-delete" onclick="excluirVistoria(${index})">
-                    <i class="fas fa-trash-alt"></i>
+                    <i class="fas fa-trash"></i>
                 </button>
             </td>
         </tr>
@@ -91,57 +105,84 @@ function renderizarTabela() {
 }
 
 function excluirVistoria(index) {
-    if (confirm("Excluir esta vistoria?")) {
-        let dados = JSON.parse(localStorage.getItem("vistorias")) || [];
-        dados.splice(index, 1);
-        localStorage.setItem("vistorias", JSON.stringify(dados));
+    if (confirm("Deseja excluir este registro?")) {
+        let vistorias = JSON.parse(localStorage.getItem("vistorias")) || [];
+        vistorias.splice(index, 1);
+        localStorage.setItem("vistorias", JSON.stringify(vistorias));
         renderizarTabela();
     }
 }
 
+// Função para Gerar PDF Organizado por Veículo
 function gerarPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
-    const dados = JSON.parse(localStorage.getItem("vistorias")) || [];
+    let dados = JSON.parse(localStorage.getItem("vistorias")) || [];
 
-    // AGRUPAR POR VEÍCULO
+    const inicio = document.getElementById('dataInicio').value;
+    const fim = document.getElementById('dataFim').value;
+
+    if (inicio || fim) {
+        dados = dados.filter(item => {
+            const dataItem = item.dataISO;
+            return (!inicio || dataItem >= inicio) && (!fim || dataItem <= fim);
+        });
+    }
+
+    if (dados.length === 0) return alert("Nenhum dado encontrado para o filtro.");
+
+    // Agrupar por veículo
     const agrupado = dados.reduce((acc, item) => {
-        const chave = `${item.placa} - ${item.veiculoNome}`;
-        if (!acc[chave]) acc[chave] = [];
-        acc[chave].push(item);
+        if (!acc[item.placa]) acc[item.placa] = [];
+        acc[item.placa].push(item);
         return acc;
     }, {});
 
     doc.setFontSize(16);
     doc.setTextColor(230, 57, 70);
-    doc.text("RELATÓRIO DE VISTORIAS POR VEÍCULO", 14, 15);
+    doc.text("RELATÓRIO DE VISTORIAS - JAPAN SECURITY", 14, 15);
 
     let yPos = 25;
-    Object.keys(agrupado).forEach(veiculo => {
-        if (yPos > 230) { doc.addPage(); yPos = 20; }
 
-        doc.setFillColor(230, 57, 70);
+    Object.keys(agrupado).forEach(placa => {
+        if (yPos > 240) { doc.addPage(); yPos = 20; }
+
+        doc.setFillColor(60, 60, 60);
         doc.rect(14, yPos, 182, 8, 'F');
         doc.setTextColor(255);
-        doc.text(`VEÍCULO: ${veiculo}`, 18, yPos + 5.5);
+        doc.setFontSize(10);
+        doc.text(`VEÍCULO: ${placa}`, 18, yPos + 5.5);
         doc.setTextColor(0);
+        
         yPos += 10;
+
+        const rows = agrupado[placa].map(v => [
+            v.dataExibicao,
+            v.vigilante,
+            v.km,
+            `Óleo: ${v.itens.oleo}\nÁgua: ${v.itens.agua}\nPneus: ${v.itens.pneus}\nLimpeza: ${v.itens.limpeza}\nMacaco: ${v.itens.macaco}\nTriângulo: ${v.itens.triangulo}`,
+            v.obs || "-"
+        ]);
 
         doc.autoTable({
             startY: yPos,
-            head: [['Data/Hora', 'Vigilante', 'KM', 'Checklist']],
-            body: agrupado[veiculo].map(v => [v.data + " " + v.hora, v.vigilante, v.km + " KM", v.itens]),
+            head: [['Data/Hora', 'Vigilante', 'KM', 'Checklist', 'Observações']],
+            body: rows,
             theme: 'grid',
-            headStyles: { fillColor: [60, 60, 60] }
+            styles: { fontSize: 8 },
+            headStyles: { fillColor: [230, 57, 70] }
         });
-        yPos = doc.lastAutoTable.finalY + 15;
+
+        yPos = doc.lastAutoTable.finalY + 10;
     });
 
-    doc.save('vistorias_japan_security.pdf');
+    doc.save(`vistorias_japan_security.pdf`);
 }
 
+// Ao carregar a página
 window.onload = () => {
-    const v = JSON.parse(localStorage.getItem("vehicles")) || [];
-    document.getElementById('listaVeiculos').innerHTML = v.map(i => `<option value="${i.placa}">${i.nome}</option>`).join('');
+    const veiculos = JSON.parse(localStorage.getItem("vehicles")) || [];
+    const datalist = document.getElementById('listaVeiculos');
+    datalist.innerHTML = veiculos.map(v => `<option value="${v.placa}">${v.nome}</option>`).join('');
     renderizarTabela();
 };
