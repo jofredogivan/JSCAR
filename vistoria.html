@@ -25,12 +25,7 @@
         <nav class="sidebar-nav">
             <ul>
                 <li><a href="index.html"><i class="fas fa-home"></i> Menu Principal</a></li>
-                <li><a href="dashboard.html"><i class="fas fa-chart-pie"></i> Dashboard</a></li>
                 <li><a href="vistoria.html" class="active"><i class="fas fa-clipboard-check"></i> Vistoria</a></li>
-                <li><a href="entrada_saida.html"><i class="fas fa-exchange-alt"></i> Movimentação</a></li>
-                <li><a href="maintenance.html"><i class="fas fa-tools"></i> Manutenção</a></li>
-                <li><a href="vehicles.html"><i class="fas fa-car"></i> Veículos</a></li>
-                <li><a href="backup.html"><i class="fas fa-database"></i> Backup</a></li>
             </ul>
         </nav>
     </aside>
@@ -40,7 +35,6 @@
 
         <header class="top-bar">
             <h1>Vistoria de Viatura</h1>
-            <div class="status-indicator"><span class="pulse-online"></span> SISTEMA ATIVO</div>
         </header>
 
         <section class="content-body">
@@ -55,17 +49,17 @@
                     </div>
                     <div class="input-group">
                         <label>KM Atual</label>
-                        <input id="km" type="number" class="modern-input" placeholder="Puxado da base">
+                        <input id="km" type="number" class="modern-input">
                     </div>
                 </div>
 
                 <div class="row">
                     <div class="input-group">
                         <label>Vigilante/Inspetor</label>
-                        <input id="vigilante" class="modern-input" placeholder="Nome do responsável">
+                        <input id="vigilante" class="modern-input" placeholder="Nome">
                     </div>
                     <div class="input-group">
-                        <label>Foto da Avaria/Viatura (Opcional)</label>
+                        <label>Foto da Viatura/Avaria</label>
                         <input type="file" id="fotoVeiculo" class="modern-input" accept="image/*" capture="camera">
                     </div>
                 </div>
@@ -73,35 +67,38 @@
                 <div class="row">
                     <div class="input-group">
                         <label>Observação ou Detalhes da Avaria</label>
-                        <input id="obsAvaria" class="modern-input" placeholder="Ex: Risco na porta direita, pneu baixo...">
+                        <input id="obsAvaria" class="modern-input" placeholder="Ex: Risco na porta, pneu baixo...">
                     </div>
                 </div>
 
-                <div class="checklist-grid mt-20">
+                <div class="card-header" style="margin-top: 20px;"><i class="fas fa-tasks"></i> Itens de Segurança</div>
+                <div class="checklist-grid mt-10">
                     <label class="check-item"><input type="checkbox" id="oleo"> <span>Óleo</span></label>
                     <label class="check-item"><input type="checkbox" id="agua"> <span>Água</span></label>
                     <label class="check-item"><input type="checkbox" id="pneus"> <span>Pneus</span></label>
                     <label class="check-item"><input type="checkbox" id="limpeza"> <span>Limpeza</span></label>
+                    <label class="check-item"><input type="checkbox" id="macaco"> <span>Macaco</span></label>
+                    <label class="check-item"><input type="checkbox" id="triangulo"> <span>Triângulo</span></label>
                 </div>
 
                 <button class="btn-primary mt-20" onclick="salvar()"><i class="fas fa-save"></i> Salvar Vistoria</button>
             </div>
 
             <div class="card filter-card mt-20">
-                <div class="card-header"><i class="fas fa-filter"></i> Filtro e Relatório PDF</div>
+                <div class="card-header"><i class="fas fa-filter"></i> Filtro por Período (Data e Hora)</div>
                 <div class="row">
                     <div class="input-group">
-                        <label>Início (Data e Hora):</label>
+                        <label>Início:</label>
                         <input type="datetime-local" id="dataInicio" class="modern-input">
                     </div>
                     <div class="input-group">
-                        <label>Fim (Data e Hora):</label>
+                        <label>Fim:</label>
                         <input type="datetime-local" id="dataFim" class="modern-input">
                     </div>
                 </div>
                 <div style="padding: 0 20px 20px; display: flex; gap: 10px;">
-                    <button class="btn-secondary" onclick="renderizarTabela()"><i class="fas fa-search"></i> Filtrar Lista</button>
-                    <button class="btn-accent" onclick="gerarPDF()"><i class="fas fa-file-pdf"></i> Gerar PDF Organizado</button>
+                    <button class="btn-secondary" onclick="renderizarTabela()">Filtrar Lista</button>
+                    <button class="btn-accent" onclick="gerarPDF()">Gerar PDF</button>
                 </div>
             </div>
 
@@ -114,12 +111,11 @@
                                 <th>Veículo</th>
                                 <th>Vigilante</th>
                                 <th>KM</th>
-                                <th>Avaria/Obs</th>
+                                <th>Obs</th>
                                 <th>Ação</th>
                             </tr>
                         </thead>
-                        <tbody id="tabela">
-                            </tbody>
+                        <tbody id="tabela"></tbody>
                     </table>
                 </div>
             </div>
