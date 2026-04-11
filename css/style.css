@@ -388,3 +388,69 @@ button {
 .badge-saida { background: #e67e22; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; }
 
 .mt-20 { margin-top: 20px; }
+
+/* AJUSTES PARA CELULAR (Telas menores que 768px) */
+@media (max-width: 768px) {
+    /* Remove a barra lateral fixa e joga para cima ou esconde */
+    .has-sidebar {
+        padding-left: 0 !important; /* Remove o recuo da sidebar */
+    }
+
+    .sidebar {
+        width: 100% !important;
+        height: auto !important;
+        position: relative !important;
+        padding: 10px 0;
+    }
+
+    .sidebar-header {
+        display: none; /* Esconde o logo grande no celular para ganhar espaço */
+    }
+
+    /* Transforma a lista de botões em uma linha horizontal com scroll */
+    .sidebar-nav ul {
+        display: flex;
+        flex-direction: row;
+        overflow-x: auto;
+        padding: 5px;
+        gap: 5px;
+    }
+
+    .sidebar-nav ul li {
+        flex: 0 0 auto; /* Impede os itens de esmagarem */
+    }
+
+    .sidebar-nav ul li a {
+        padding: 10px 15px;
+        font-size: 0.85rem;
+        white-space: nowrap; /* Impede o nome de quebrar linha */
+        display: flex;
+        flex-direction: column; /* Ícone em cima, texto embaixo */
+        align-items: center;
+        gap: 4px;
+    }
+
+    .sidebar-nav ul li a i {
+        font-size: 1.2rem;
+        margin: 0;
+    }
+
+    .sidebar-nav ul li a span {
+        font-size: 0.7rem;
+    }
+
+    /* Ajusta o conteúdo principal para não ficar por baixo do menu */
+    .main-content {
+        padding: 10px;
+    }
+
+    /* Ajusta as linhas (rows) do formulário para ficarem em coluna única */
+    .row {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .input-group {
+        width: 100% !important;
+    }
+}
