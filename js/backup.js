@@ -1,58 +1,73 @@
-function exportarDados() {
-    // Reúne todos os dados em um único objeto
-    const dadosSistema = {
+// === FUNÇÃO PARA EXPORTAR BACKUP ===
+function exportarBackup() {
+    const dados = {
         vehicles: JSON.parse(localStorage.getItem("vehicles")) || [],
         vistorias: JSON.parse(localStorage.getItem("vistorias")) || [],
-        maintenance: JSON.parse(localStorage.getItem("maintenance")) || [],
-        movimentos: JSON.parse(localStorage.getItem("movimentos")) || [],
-        exportadoEm: new Date().toLocaleString()
+        movimentacoes: JSON.parse(localStorage.getItem("movimentacoes")) || [],
+        manutencoes: JSON.parse(localStorage.getItem("manutencoes")) || []
     };
 
-    // Converte para string e cria o arquivo para download
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dadosSistema));
-    const downloadAnchorNode = document.createElement('a');
+    const dataString = JSON.stringify(dados, null, 2);
+    const blob = new Blob([dataString], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
     
-    const dataFormatada = new Date().toISOString().slice(0,10);
-    downloadAnchorNode.setAttribute("href", dataStr);
-    downloadAnchorNode.setAttribute("download", `backup_japan_security_${dataFormatada}.json`);
+    const link = document.createElement("a");
+    const dataAtual = new Date().toLocaleDateString('pt-BR').replace(/\//g, '-');
     
-    document.body.appendChild(downloadAnchorNode);
-    downloadAnchorNode.click();
-    downloadAnchorNode.remove();
+    link.href = url;
+    link.download = `backup_japan_security_${dataAtual}.json`;
+    link.click();
+    
+    URL.revokeObjectURL(url);
 }
 
-function importarDados() {
-    const input = document.getElementById('arquivoBackup');
-    
-    if (!input.files[0]) {
-        alert("Por favor, selecione um arquivo de backup primeiro.");
+// === FUNÇÃO PARA IMPORTAR/RESTAURAR BACKUP ===
+function importarBackup() {
+    const fileInput = document.getElementById('fileBackup');
+    const arquivo = fileInput.files[0];
+
+    if (!arquivo) {
+        alert("Por favor, selecione o arquivo de backup (.json) primeiro.");
         return;
     }
 
-    const confirmacao = confirm("Isso irá apagar todos os dados atuais e carregar os dados do arquivo. Deseja continuar?");
-    
-    if (confirmacao) {
-        const reader = new FileReader();
-        
-        reader.onload = function(e) {
-            try {
-                const dados = JSON.parse(e.target.result);
-                
-                // Distribui os dados de volta para as chaves do localStorage
-                if (dados.vehicles) localStorage.setItem("vehicles", JSON.stringify(dados.vehicles));
-                if (dados.vistorias) localStorage.setItem("vistorias", JSON.stringify(dados.vistorias));
-                if (dados.maintenance) localStorage.setItem("maintenance", JSON.stringify(dados.maintenance));
-                if (dados.movimentos) localStorage.setItem("movimentos", JSON.stringify(dados.movimentos));
+    const reader = new FileReader();
 
-                alert("Backup restaurado com sucesso! O sistema irá recarregar.");
-                window.location.href = "dashboard.html";
-                
-            } catch (err) {
-                alert("Erro ao ler o arquivo. Certifique-se de que é um backup válido do Japan Security Car.");
-                console.error(err);
+    reader.onload = function(e) {
+        try {
+            const dadosRestaurados = JSON.parse(e.target.result);
+
+            // Validação básica para ver se o arquivo é do sistema
+            if (!dadosRestaurados.vehicles && !dadosRestaurados.vistorias) {
+                throw new Error("Arquivo de backup inválido ou vazio.");
             }
-        };
-        
-        reader.readAsText(input.files[0]);
-    }
+
+            if (confirm("Isso irá apagar os dados atuais e restaurar os do arquivo. Deseja continuar?")) {
+                
+                // Limpa o banco de dados atual
+                localStorage.clear();
+
+                // Grava os novos dados chave por chave
+                if (dadosRestaurados.vehicles) 
+                    localStorage.setItem("vehicles", JSON.stringify(dadosRestaurados.vehicles));
+                
+                if (dadosRestaurados.vistorias) 
+                    localStorage.setItem("vistorias", JSON.stringify(dadosRestaurados.vistorias));
+                
+                if (dadosRestaurados.movimentacoes) 
+                    localStorage.setItem("movimentacoes", JSON.stringify(dadosRestaurados.movimentacoes));
+                
+                if (dadosRestaurados.manutencoes) 
+                    localStorage.setItem("manutencoes", JSON.stringify(dadosRestaurados.manutencoes));
+
+                alert("Dados restaurados com sucesso! O sistema será reiniciado.");
+                window.location.href = "index.html"; // Volta para a home
+            }
+        } catch (erro) {
+            console.error(erro);
+            alert("Erro ao restaurar: Verifique se o arquivo está correto.");
+        }
+    };
+
+    reader.readAsText(arquivo);
 }
