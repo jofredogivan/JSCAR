@@ -4,55 +4,47 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Japan Security | Backup</title>
-    <link rel="icon" type="image/png" href="icons/icon-192x192.png">
-    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
+    
+    <style>
+        /* Ajuste para garantir que funcione bem no celular sem a sidebar */
+        body { background: #121212; color: white; margin: 0; font-family: sans-serif; }
+        .main-content { margin-left: 0 !important; width: 100%; padding: 15px; box-sizing: border-box; }
+        .top-bar { padding: 20px 0; border-bottom: 1px solid #333; margin-bottom: 20px; }
+        .top-bar h1 { font-size: 1.4rem; color: #e63946; margin: 0; }
+        .card { background: #1e1e1e; border: 1px solid #333; border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+        .card-header { font-weight: bold; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; color: #e63946; }
+        .btn-voltar { color: #888; text-decoration: none; font-size: 0.9rem; display: block; margin-bottom: 10px; }
+        .modern-input { width: 100%; background: #222; border: 1px solid #444; color: white; padding: 12px; border-radius: 8px; margin-top: 10px; box-sizing: border-box; }
+        .btn-primary { width: 100%; padding: 15px; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; }
+    </style>
 </head>
-<body class="has-sidebar">
-
-    <aside class="sidebar">
-        <div class="sidebar-header">
-            <div class="logo-area">
-                <i class="fas fa-shield-alt logo-icon"></i>
-                <div><h2>JAPAN</h2><span>SECURITY</span></div>
-            </div>
-        </div>
-        <nav class="sidebar-nav">
-            <ul>
-                <li><a href="index.html"><i class="fas fa-home"></i> Início</a></li>
-                <li><a href="dashboard.html"><i class="fas fa-chart-line"></i> Dashboard</a></li>
-                <li><a href="entrada_saida.html"><i class="fas fa-exchange-alt"></i> Movimentação</a></li>
-                <li><a href="vistoria.html"><i class="fas fa-clipboard-check"></i> Vistoria</a></li>
-                <li><a href="maintenance.html"><i class="fas fa-tools"></i> Manutenção</a></li>
-                <li><a href="vehicles.html"><i class="fas fa-car"></i> Veículos</a></li>
-                <li><a href="backup.html" class="active"><i class="fas fa-database"></i> Backup</a></li>
-            </ul>
-        </nav>
-    </aside>
+<body>
 
     <main class="main-content">
         <a href="index.html" class="btn-voltar"><i class="fas fa-arrow-left"></i> Voltar ao Menu</a>
         
         <header class="top-bar">
-            <h1>Cópia de Segurança (IndexedDB)</h1>
+            <h1>Cópia de Segurança</h1>
         </header>
 
         <section class="content-body">
             <div class="card">
                 <div class="card-header"><i class="fas fa-file-export"></i> Exportar Dados</div>
-                <p style="color: #bbb; margin-bottom: 15px;">Gera um arquivo com todos os veículos, vistorias (incluindo fotos) e manutenções.</p>
+                <p style="color: #bbb; font-size: 0.9rem; margin-bottom: 15px;">Gera um arquivo com veículos, vistorias e fotos para segurança.</p>
                 <button class="btn-primary" style="background: #27ae60;" onclick="exportarBackup()">
-                    <i class="fas fa-download"></i> Baixar Arquivo de Backup
+                    <i class="fas fa-download"></i> Baixar Arquivo JSON
                 </button>
             </div>
 
-            <div class="card mt-20">
+            <div class="card">
                 <div class="card-header"><i class="fas fa-file-import"></i> Importar Dados</div>
-                <p style="color: #bbb; margin-bottom: 15px;">Atenção: A importação substituirá os dados atuais do banco de dados.</p>
+                <p style="color: #bbb; font-size: 0.9rem; margin-bottom: 15px;">Atenção: Isso substituirá as informações atuais deste aparelho.</p>
                 <input type="file" id="fileBackup" class="modern-input" accept=".json">
                 <button class="btn-primary" style="margin-top: 15px; background: #e67e22;" onclick="importarBackup()">
-                    <i class="fas fa-upload"></i> Restaurar Agora
+                    <i class="fas fa-upload"></i> Restaurar Banco de Dados
                 </button>
             </div>
         </section>
