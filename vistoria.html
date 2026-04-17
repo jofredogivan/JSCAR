@@ -4,109 +4,96 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Japan Security | Vistoria</title>
-    <link rel="icon" type="image/png" href="icons/icon-192x192.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="css/style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    
+    <style>
+        :root { --red: #e63946; --dark: #121212; --card: #1e1e1e; --border: #333; }
+        body { background: var(--dark); color: white; font-family: sans-serif; margin: 0; display: flex; }
+        .sidebar { width: 250px; background: #000; height: 100vh; border-right: 1px solid var(--border); position: fixed; }
+        .main { flex: 1; margin-left: 250px; padding: 30px; }
+        .card { background: var(--card); border-radius: 8px; padding: 20px; border: 1px solid var(--border); margin-bottom: 20px; }
+        .grid-inputs { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .input-group label { display: block; color: #888; font-size: 12px; margin-bottom: 5px; }
+        .modern-input { width: 100%; background: #2a2a2a; border: 1px solid var(--border); color: white; padding: 10px; border-radius: 4px; }
+        .checklist-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; padding: 15px; background: #151515; border-radius: 5px; }
+        .check-item { display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer; }
+        .btn { padding: 12px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .btn-save { background: var(--red); color: white; width: 100%; margin-top: 20px; }
+        .btn-pdf { background: #27ae60; color: white; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th { text-align: left; color: #888; padding: 12px; border-bottom: 2px solid var(--border); }
+        td { padding: 12px; border-bottom: 1px solid var(--border); }
+        .btn-delete { background: none; border: none; color: var(--red); cursor: pointer; font-size: 1.1rem; }
+        .btn-delete:hover { transform: scale(1.2); }
+        @media (max-width: 768px) { .sidebar { display: none; } .main { margin-left: 0; } .grid-inputs { grid-template-columns: 1fr; } }
+    </style>
 </head>
-<body class="has-sidebar">
-
+<body>
     <aside class="sidebar">
-        <div class="sidebar-header">
-            <div class="logo-area">
-                <i class="fas fa-shield-alt logo-icon"></i>
-                <div><h2>JAPAN</h2><span>SECURITY</span></div>
-            </div>
+        <div style="padding: 20px; text-align: center;">
+            <h2 style="color:var(--red); margin:0;">JAPAN</h2><span style="font-size:10px; letter-spacing:2px;">SECURITY</span>
         </div>
-        <nav class="sidebar-nav">
-            <ul>
-                <li><a href="index.html"><i class="fas fa-chart-line"></i> Dashboard</a></li>
-                <li><a href="entrada_saida.html"><i class="fas fa-exchange-alt"></i> Movimentação</a></li>
-                <li><a href="vistoria.html" class="active"><i class="fas fa-clipboard-check"></i> Vistoria</a></li>
-                <li><a href="maintenance.html"><i class="fas fa-tools"></i> Manutenção</a></li>
-                <li><a href="vehicles.html"><i class="fas fa-car"></i> Veículos</a></li>
-                <li><a href="backup.html"><i class="fas fa-database"></i> Backup</a></li>
-            </ul>
+        <nav style="margin-top:20px;">
+            <a href="index.html" style="display:block; padding:15px; color:#888; text-decoration:none;"><i class="fas fa-chart-line"></i> Dashboard</a>
+            <a href="vistoria.html" style="display:block; padding:15px; color:white; background:rgba(230,57,70,0.1); text-decoration:none; border-left:4px solid var(--red);"><i class="fas fa-clipboard-check"></i> Vistoria</a>
+            <a href="entrada_saida.html" style="display:block; padding:15px; color:#888; text-decoration:none;"><i class="fas fa-exchange-alt"></i> Movimentação</a>
+            <a href="vehicles.html" style="display:block; padding:15px; color:#888; text-decoration:none;"><i class="fas fa-car"></i> Veículos</a>
         </nav>
     </aside>
 
-    <main class="main-content">
-        <header class="top-bar">
-            <h1>Checklist de Vistoria</h1>
+    <main class="main">
+        <header style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
+            <h1 style="margin:0;">Vistoria de Viatura</h1>
+            <div style="font-size:12px; color:#27ae60;"><i class="fas fa-circle" style="animation: pulse 1.5s infinite;"></i> SISTEMA ATIVO</div>
         </header>
 
-        <section class="content-body">
-            <div class="card">
-                <div class="row">
-                    <div class="input-group">
-                        <label>Viatura</label>
-                        <input id="veiculo" class="modern-input" list="listaVeiculos" onchange="puxarKmAutomatico()" placeholder="Placa...">
-                        <datalist id="listaVeiculos"></datalist>
-                    </div>
-                    <div class="input-group">
-                        <label>KM Atual</label>
-                        <input id="km" type="number" class="modern-input">
-                    </div>
-                    <div class="input-group">
-                        <label>Vigilante Responsável</label>
-                        <input id="vigilante" class="modern-input">
-                    </div>
+        <div class="card">
+            <div class="grid-inputs">
+                <div class="input-group">
+                    <label>Veículo (Placa)</label>
+                    <input id="veiculo" class="modern-input" list="listaVeiculos" placeholder="Selecione...">
+                    <datalist id="listaVeiculos"></datalist>
                 </div>
-
-                <h3 style="margin: 20px 0 10px; color: var(--primary-color);">Itens de Verificação</h3>
-                <div class="checklist-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px;">
-                    <label class="check-item"><input type="checkbox" id="oleo"> Óleo de Motor</label>
-                    <label class="check-item"><input type="checkbox" id="agua"> Nível de Água</label>
-                    <label class="check-item"><input type="checkbox" id="pneus"> Calibragem Pneus</label>
-                    <label class="check-item"><input type="checkbox" id="limpeza"> Limpeza Interna</label>
-                    <label class="check-item"><input type="checkbox" id="farol_esq"> Farol Esquerdo</label>
-                    <label class="check-item"><input type="checkbox" id="farol_dir"> Farol Direito</label>
-                    <label class="check-item"><input type="checkbox" id="lanterna_esq"> Lanterna Esq.</label>
-                    <label class="check-item"><input type="checkbox" id="lanterna_dir"> Lanterna Dir.</label>
+                <div class="input-group">
+                    <label>KM Atual</label>
+                    <input id="km" type="number" class="modern-input" placeholder="00000">
                 </div>
-
-                <div class="input-group mt-20">
-                    <label>Foto da Viatura / Avarias</label>
-                    <input type="file" id="fotoVeiculo" accept="image/*" class="modern-input">
-                </div>
-
-                <div class="input-group mt-20">
-                    <label>Observações Adicionais</label>
-                    <textarea id="obsAvaria" class="modern-input" rows="3"></textarea>
-                </div>
-
-                <button class="btn-primary mt-20" onclick="salvar()">Finalizar Vistoria</button>
-            </div>
-
-            <div class="card mt-20" style="background: #1a1a1a;">
-                <div class="row" style="display: flex; gap: 10px; align-items: flex-end;">
-                    <div class="input-group">
-                        <label>Filtrar por Placa</label>
-                        <input type="text" id="veiculoFiltro" class="modern-input" placeholder="ABC-1234">
-                    </div>
-                    <button class="btn-primary" onclick="renderizarTabela()" style="background: #333;">Filtrar</button>
-                    <button class="btn-primary" onclick="gerarRelatorioVistoriaPDF()" style="background: #27ae60;"><i class="fas fa-file-pdf"></i> Exportar PDF</button>
+                <div class="input-group">
+                    <label>Vigilante / Inspetor</label>
+                    <input id="vigilante" class="modern-input" placeholder="Nome completo">
                 </div>
             </div>
 
-            <div class="card mt-20 table-card">
-                <div class="table-responsive">
-                    <table class="modern-table">
-                        <thead>
-                            <tr>
-                                <th>Data/Hora</th>
-                                <th>Viatura</th>
-                                <th>Vigilante</th>
-                                <th>KM</th>
-                                <th>Ação</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabelaVistoria"></tbody>
-                    </table>
-                </div>
+            <h4 style="color:var(--red); margin-bottom:10px;">Checklist de Segurança e Iluminação</h4>
+            <div class="checklist-grid">
+                <label class="check-item"><input type="checkbox" id="oleo"> Óleo</label>
+                <label class="check-item"><input type="checkbox" id="agua"> Água</label>
+                <label class="check-item"><input type="checkbox" id="pneus"> Pneus</label>
+                <label class="check-item"><input type="checkbox" id="limpeza"> Limpeza</label>
+                <label class="check-item"><input type="checkbox" id="macaco"> Macaco</label>
+                <label class="check-item"><input type="checkbox" id="triangulo"> Triângulo</label>
+                <label class="check-item"><input type="checkbox" id="farol_esq"> Farol Esq.</label>
+                <label class="check-item"><input type="checkbox" id="farol_dir"> Farol Dir.</label>
+                <label class="check-item"><input type="checkbox" id="lanterna_esq"> Lanterna Esq.</label>
+                <label class="check-item"><input type="checkbox" id="lanterna_dir"> Lanterna Dir.</label>
             </div>
-        </section>
+            
+            <button class="btn btn-save" onclick="salvar()"><i class="fas fa-save"></i> Salvar Vistoria</button>
+        </div>
+
+        <button class="btn btn-pdf" onclick="gerarRelatorioVistoriaPDF()"><i class="fas fa-file-pdf"></i> Gerar Relatório PDF</button>
+
+        <div class="card">
+            <h4 style="margin-top:0;">Histórico de Vistorias</h4>
+            <table>
+                <thead>
+                    <tr><th>Data</th><th>Veículo</th><th>Vigilante</th><th>KM</th><th>Ações</th></tr>
+                </thead>
+                <tbody id="tabelaVistoria"></tbody>
+            </table>
+        </div>
     </main>
 
     <script src="js/db.js"></script>
