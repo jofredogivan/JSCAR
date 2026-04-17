@@ -2,60 +2,74 @@
    ARQUIVO: js/vistoria.js
    ============================================================ */
 
-// 1. FUNÇÃO PARA CONVERTER IMAGEM EM BASE64 (Para salvar no LocalStorage)
-async function converterImagemParaBase64(arquivo) {
-    return new Promise((resolve, reject) => {
+// Função para comprimir a foto e economizar espaço no banco
+async function processarFoto(file) {
+    return new Promise((resolve) => {
         const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = error => reject(error);
-        reader.readAsDataURL(arquivo);
+        reader.readAsDataURL(file);
+        reader.onload = (e) => {
+            const img = new Image();
+            img.src = e.target.result;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const MAX_WIDTH = 800; // Largura máxima otimizada
+                const scale = MAX_WIDTH / img.width;
+                canvas.width = MAX_WIDTH;
+                canvas.height = img.height * scale;
+
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                
+                // Retorna a imagem em JPEG com 70% de qualidade
+                resolve(canvas.toDataURL('image/jpeg', 0.7));
+            };
+        };
     });
 }
 
-// 2. BUSCA KM AUTOMÁTICO AO SELECIONAR VEÍCULO
-function puxarKmAutomatico() {
+async function inicializar() {
+    const veiculos = await dbListar("vehicles");
+    const dl = document.getElementById('listaVeiculos');
+    if (dl) {
+        dl.innerHTML = veiculos.map(v => `<option value="${v.placa}">${v.nome}</option>`).join('');
+    }
+    renderizarTabela();
+}
+
+async function puxarKmAutomatico() {
     const placa = document.getElementById('veiculo').value.toUpperCase();
-    const veiculos = JSON.parse(localStorage.getItem("vehicles")) || [];
-    const v = veiculos.find(item => item.placa.toUpperCase() === placa);
-    if (v) {
-        document.getElementById('km').value = v.kmAtual || 0;
+    const veiculos = await dbListar("vehicles");
+    const vEncontrado = veiculos.find(v => v.placa === placa);
+    if (vEncontrado) {
+        document.getElementById('km').value = vEncontrado.kmAtual || "";
     }
 }
 
-// 3. SALVAR VISTORIA
 async function salvar() {
     const vInput = document.getElementById('veiculo');
     const kInput = document.getElementById('km');
     const vigInput = document.getElementById('vigilante');
-    const fotoInput = document.getElementById('fotoVeiculo');
-    const obsInput = document.getElementById('obsAvaria');
+    const fotoFile = document.getElementById('fotoVeiculo').files[0];
+    const obs = document.getElementById('obsAvaria').value;
 
-    // Validação básica
     if (!vInput.value || !kInput.value || !vigInput.value) {
-        alert("Por favor, preencha Veículo, KM e o nome do Vigilante.");
-        return;
+        return alert("Preencha Placa, KM e Vigilante!");
     }
 
     let fotoBase64 = "";
-    if (fotoInput.files.length > 0) {
-        try {
-            fotoBase64 = await converterImagemParaBase64(fotoInput.files[0]);
-        } catch (e) {
-            console.error("Erro ao processar imagem", e);
-        }
+    if (fotoFile) {
+        fotoBase64 = await processarFoto(fotoFile);
     }
 
-    // Criando o objeto da vistoria com os novos itens de checklist
-    const novaVistoria = {
+    const vistoria = {
         id: Date.now(),
-        dataIso: new Date().toISOString(),
+        placa: vInput.value.toUpperCase(),
+        km: parseInt(kInput.value),
+        vigilante: vigInput.value,
+        obs: obs,
+        foto: fotoBase64,
         data: new Date().toLocaleDateString('pt-BR'),
         hora: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-        veiculo: vInput.value.toUpperCase(),
-        km: kInput.value,
-        vigilante: vigInput.value,
-        obs: obsInput.value,
-        foto: fotoBase64,
         checklist: {
             oleo: document.getElementById('oleo').checked,
             agua: document.getElementById('agua').checked,
@@ -63,108 +77,52 @@ async function salvar() {
             limpeza: document.getElementById('limpeza').checked,
             macaco: document.getElementById('macaco').checked,
             triangulo: document.getElementById('triangulo').checked,
-            // Novos itens solicitados
-            farolEsq: document.getElementById('farol_esq').checked,
-            farolDir: document.getElementById('farol_dir').checked,
-            lanternaEsq: document.getElementById('lanterna_esq').checked,
-            lanternaDir: document.getElementById('lanterna_dir').checked
+            farol_esq: document.getElementById('farol_esq').checked,
+            farol_dir: document.getElementById('farol_dir').checked,
+            lanterna_esq: document.getElementById('lanterna_esq').checked,
+            lanterna_dir: document.getElementById('lanterna_dir').checked
         }
     };
 
-    // Salva na lista de vistorias
-    const listaVistorias = JSON.parse(localStorage.getItem("vistorias")) || [];
-    listaVistorias.unshift(novaVistoria);
-    localStorage.setItem("vistorias", JSON.stringify(listaVistorias));
+    await dbSalvar("vistorias", vistoria);
 
-    // Atualiza o KM no cadastro global de veículos
-    const veiculosBase = JSON.parse(localStorage.getItem("vehicles")) || [];
-    let idx = veiculosBase.findIndex(v => v.placa.toUpperCase() === vInput.value.toUpperCase());
-    if (idx !== -1) {
-        veiculosBase[idx].kmAtual = kInput.value;
-        localStorage.setItem("vehicles", JSON.stringify(veiculosBase));
+    // Também atualiza o KM na base do veículo
+    const veiculos = await dbListar("vehicles");
+    const vIdx = veiculos.find(v => v.placa === vistoria.placa);
+    if (vIdx) {
+        vIdx.kmAtual = vistoria.km;
+        await dbSalvar("vehicles", vIdx);
     }
 
     alert("Vistoria salva com sucesso!");
-    location.reload(); // Recarrega para limpar campos e atualizar tabela
+    location.reload();
 }
 
-// 4. RENDERIZAR TABELA COM FILTRO
-function renderizarTabela() {
-    let dados = JSON.parse(localStorage.getItem("vistorias")) || [];
+async function renderizarTabela() {
+    const dados = await dbListar("vistorias");
     const tbody = document.getElementById('tabela');
     if (!tbody) return;
-
-    const inicio = document.getElementById('dataInicio').value;
-    const fim = document.getElementById('dataFim').value;
-
-    if (inicio && fim) {
-        const dInicio = new Date(inicio);
-        const dFim = new Date(fim);
-        dados = dados.filter(item => {
-            const dItem = new Date(item.dataIso);
-            return dItem >= dInicio && dItem <= dFim;
-        });
-    }
 
     tbody.innerHTML = dados.map(v => `
         <tr>
             <td>${v.data}<br><small>${v.hora}</small></td>
-            <td><strong>${v.veiculo}</strong></td>
+            <td><strong>${v.placa}</strong></td>
             <td>${v.vigilante}</td>
             <td>${v.km} KM</td>
-            <td>${v.obs || 'S/ Obs'}</td>
             <td>
-                <button onclick="excluir(${v.id})" style="color:red; background:none; border:none; cursor:pointer;">
-                    <i class="fas fa-trash"></i>
+                <button onclick="excluirVistoria(${v.id})" style="background:none; border:none; color:#e63946; cursor:pointer;">
+                    <i class="fas fa-trash-alt"></i>
                 </button>
             </td>
         </tr>
     `).join('');
 }
 
-// 5. EXCLUIR VISTORIA
-function excluir(id) {
+async function excluirVistoria(id) {
     if (confirm("Excluir esta vistoria permanentemente?")) {
-        let dados = JSON.parse(localStorage.getItem("vistorias")) || [];
-        dados = dados.filter(d => d.id !== id);
-        localStorage.setItem("vistorias", JSON.stringify(dados));
+        await dbExcluir("vistorias", id);
         renderizarTabela();
     }
 }
 
-// 6. GERAR RELATÓRIO PDF
-function gerarPDF() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    const dados = JSON.parse(localStorage.getItem("vistorias")) || [];
-
-    doc.setFontSize(16);
-    doc.text("JAPAN SECURITY - RELATÓRIO DE VISTORIAS", 14, 15);
-
-    const rows = dados.map(v => [
-        `${v.data} ${v.hora}`,
-        v.veiculo,
-        v.vigilante,
-        `${v.km} KM`,
-        v.obs || '-'
-    ]);
-
-    doc.autoTable({
-        startY: 25,
-        head: [['Data/Hora', 'Veículo', 'Vigilante', 'KM', 'Observações']],
-        body: rows,
-        theme: 'grid'
-    });
-
-    doc.save('vistorias_japan_security.pdf');
-}
-
-// 7. INICIALIZAÇÃO AO CARREGAR PÁGINA
-window.onload = () => {
-    const veiculos = JSON.parse(localStorage.getItem("vehicles")) || [];
-    const dl = document.getElementById('listaVeiculos');
-    if (dl) {
-        dl.innerHTML = veiculos.map(v => `<option value="${v.placa}">${v.nome}</option>`).join('');
-    }
-    renderizarTabela();
-};
+window.onload = inicializar;
