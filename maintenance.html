@@ -8,6 +8,7 @@
     <link rel="apple-touch-icon" href="icons/icon-192x192.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 </head>
@@ -19,16 +20,19 @@
         </div>
         <nav class="sidebar-nav">
             <ul>
-                <li><a href="index.html"><i class="fas fa-home"></i> Menu Principal</a></li>
-                <li><a href="maintenance.html" class="active"><i class="fas fa-tools"></i> Manutenção</a></li>
-                <li><a href="vistoria.html"><i class="fas fa-clipboard-check"></i> Vistoria</a></li>
+                <li><a href="index.html"><i class="fas fa-home"></i> Início</a></li>
+                <li><a href="dashboard.html"><i class="fas fa-chart-line"></i> Dashboard</a></li>
                 <li><a href="entrada_saida.html"><i class="fas fa-exchange-alt"></i> Movimentação</a></li>
+                <li><a href="vistoria.html"><i class="fas fa-clipboard-check"></i> Vistoria</a></li>
+                <li><a href="maintenance.html" class="active"><i class="fas fa-tools"></i> Manutenção</a></li>
+                <li><a href="vehicles.html"><i class="fas fa-car"></i> Veículos</a></li>
+                <li><a href="backup.html"><i class="fas fa-database"></i> Backup</a></li>
             </ul>
         </nav>
     </aside>
 
     <main class="main-content">
-        <a href="index.html" class="btn-voltar"><i class="fas fa-arrow-left"></i> Voltar ao Menu</a>
+        <a href="index.html" class="btn-voltar"><i class="fas fa-arrow-left"></i> Menu Principal</a>
 
         <header class="top-bar"><h1>Manutenção Preventiva</h1></header>
 
@@ -37,7 +41,7 @@
                 <div class="card-header"><i class="fas fa-wrench"></i> Novo Serviço</div>
                 <div class="row">
                     <div class="input-group">
-                        <label>Veículo (Placa)</label>
+                        <label>Viatura (Placa)</label>
                         <input list="listaVeiculos" id="veiculo" class="modern-input" placeholder="Selecione..." onchange="puxarKmAutomatico()">
                         <datalist id="listaVeiculos"></datalist>
                     </div>
@@ -52,14 +56,14 @@
             </div>
 
             <div class="card filter-card mt-20">
-                <div class="card-header"><i class="fas fa-filter"></i> Filtro por Período</div>
+                <div class="card-header"><i class="fas fa-filter"></i> Relatórios</div>
                 <div class="row">
                     <div class="input-group"><label>De:</label><input type="date" id="dataInicio" class="modern-input"></div>
                     <div class="input-group"><label>Até:</label><input type="date" id="dataFim" class="modern-input"></div>
                 </div>
                 <div style="padding: 0 20px 20px; display: flex; gap: 10px;">
-                    <button class="btn-primary" style="background: #555;" onclick="renderizarTabela()">Filtrar</button>
-                    <button class="btn-primary" style="background: #2ecc71;" onclick="gerarPDF()">PDF Organizado</button>
+                    <button class="btn-secondary" onclick="renderizarTabela()">Filtrar</button>
+                    <button class="btn-accent" onclick="gerarPDF()">Gerar PDF Organizado</button>
                 </div>
             </div>
 
@@ -76,12 +80,15 @@
                                 <th>Ação</th>
                             </tr>
                         </thead>
-                        <tbody id="tabela"></tbody>
+                        <tbody id="tabela">
+                            </tbody>
                     </table>
                 </div>
             </div>
         </section>
     </main>
+
+    <script src="js/db.js"></script>
     <script src="js/maintenance.js"></script>
 </body>
 </html>
