@@ -1,5 +1,9 @@
+/* ============================================================
+   ARQUIVO: js/db.js - Engine de Dados IndexedDB
+   ============================================================ */
+
 const dbName = "JapanSecurityDB";
-const dbVersion = 3; // Versão atualizada para incluir novos campos
+const dbVersion = 4; // Subi para 4 para garantir a criação da nova tabela
 
 function abrirDB() {
     return new Promise((resolve, reject) => {
@@ -7,15 +11,22 @@ function abrirDB() {
 
         request.onupgradeneeded = (e) => {
             const db = e.target.result;
-            // Criação das tabelas se não existirem
+            
+            // Tabela de Veículos
             if (!db.objectStoreNames.contains("vehicles")) {
                 db.createObjectStore("vehicles", { keyPath: "id" });
             }
+            // Tabela de Vistorias
             if (!db.objectStoreNames.contains("vistorias")) {
                 db.createObjectStore("vistorias", { keyPath: "id" });
             }
+            // Tabela de Movimentação (Entrada/Saída)
             if (!db.objectStoreNames.contains("movimentacao")) {
                 db.createObjectStore("movimentacao", { keyPath: "id" });
+            }
+            // Tabela de Manutenções (Adicionada agora para evitar erros)
+            if (!db.objectStoreNames.contains("manutencoes")) {
+                db.createObjectStore("manutencoes", { keyPath: "id" });
             }
         };
 
@@ -24,8 +35,7 @@ function abrirDB() {
     });
 }
 
-// FUNÇÕES GLOBAIS QUE O CONSOLE DISSE QUE ESTÃO FALTANDO:
-
+// Salvar ou Atualizar (Put)
 async function dbSalvar(storeName, objeto) {
     const db = await abrirDB();
     return new Promise((resolve, reject) => {
@@ -37,17 +47,19 @@ async function dbSalvar(storeName, objeto) {
     });
 }
 
+// Listar todos os registros
 async function dbListar(storeName) {
     const db = await abrirDB();
     return new Promise((resolve, reject) => {
         const transaction = db.transaction([storeName], "readonly");
         const store = transaction.objectStore(storeName);
         const request = store.getAll();
-        request.onsuccess = () => resolve(request.result);
+        request.onsuccess = () => resolve(request.result || []);
         request.onerror = () => reject(request.error);
     });
 }
 
+// Excluir registro por ID
 async function dbExcluir(storeName, id) {
     const db = await abrirDB();
     return new Promise((resolve, reject) => {
