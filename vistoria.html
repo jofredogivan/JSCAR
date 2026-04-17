@@ -26,6 +26,10 @@
             <ul>
                 <li><a href="index.html"><i class="fas fa-home"></i> Menu Principal</a></li>
                 <li><a href="vistoria.html" class="active"><i class="fas fa-clipboard-check"></i> Vistoria</a></li>
+                <li><a href="entrada_saida.html"><i class="fas fa-exchange-alt"></i> Movimentação</a></li>
+                <li><a href="vehicles.html"><i class="fas fa-car"></i> Veículos</a></li>
+                <li><a href="dashboard.html"><i class="fas fa-chart-pie"></i> Dashboard</a></li>
+                <li><a href="backup.html"><i class="fas fa-database"></i> Backup</a></li>
             </ul>
         </nav>
     </aside>
@@ -43,20 +47,20 @@
                 
                 <div class="row">
                     <div class="input-group">
-                        <label>Veículo</label>
+                        <label>Veículo (Placa)</label>
                         <input list="listaVeiculos" id="veiculo" class="modern-input" placeholder="Selecione..." onchange="puxarKmAutomatico()">
                         <datalist id="listaVeiculos"></datalist>
                     </div>
                     <div class="input-group">
                         <label>KM Atual</label>
-                        <input id="km" type="number" class="modern-input">
+                        <input id="km" type="number" class="modern-input" placeholder="00000">
                     </div>
                 </div>
 
                 <div class="row">
                     <div class="input-group">
-                        <label>Vigilante/Inspetor</label>
-                        <input id="vigilante" class="modern-input" placeholder="Nome">
+                        <label>Vigilante / Inspetor</label>
+                        <input id="vigilante" class="modern-input" placeholder="Nome completo">
                     </div>
                     <div class="input-group">
                         <label>Foto da Viatura/Avaria</label>
@@ -71,34 +75,41 @@
                     </div>
                 </div>
 
-                <div class="card-header" style="margin-top: 20px;"><i class="fas fa-tasks"></i> Itens de Segurança</div>
-                <div class="checklist-grid mt-10">
+                <div class="card-header" style="margin-top: 20px;"><i class="fas fa-tasks"></i> Checklist de Segurança e Iluminação</div>
+                <div class="checklist-grid mt-10" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px;">
                     <label class="check-item"><input type="checkbox" id="oleo"> <span>Óleo</span></label>
                     <label class="check-item"><input type="checkbox" id="agua"> <span>Água</span></label>
                     <label class="check-item"><input type="checkbox" id="pneus"> <span>Pneus</span></label>
                     <label class="check-item"><input type="checkbox" id="limpeza"> <span>Limpeza</span></label>
                     <label class="check-item"><input type="checkbox" id="macaco"> <span>Macaco</span></label>
                     <label class="check-item"><input type="checkbox" id="triangulo"> <span>Triângulo</span></label>
+                    
+                    <label class="check-item"><input type="checkbox" id="farol_esq"> <span>Farol Esq.</span></label>
+                    <label class="check-item"><input type="checkbox" id="farol_dir"> <span>Farol Dir.</span></label>
+                    <label class="check-item"><input type="checkbox" id="lanterna_esq"> <span>Lanterna Esq.</span></label>
+                    <label class="check-item"><input type="checkbox" id="lanterna_dir"> <span>Lanterna Dir.</span></label>
                 </div>
 
-                <button class="btn-primary mt-20" onclick="salvar()"><i class="fas fa-save"></i> Salvar Vistoria</button>
+                <button class="btn-primary mt-20" onclick="salvar()">
+                    <i class="fas fa-save"></i> Salvar Vistoria
+                </button>
             </div>
 
             <div class="card filter-card mt-20">
-                <div class="card-header"><i class="fas fa-filter"></i> Filtro por Período (Data e Hora)</div>
+                <div class="card-header"><i class="fas fa-filter"></i> Filtro por Período</div>
                 <div class="row">
                     <div class="input-group">
-                        <label>Início:</label>
+                        <label>Data Início:</label>
                         <input type="datetime-local" id="dataInicio" class="modern-input">
                     </div>
                     <div class="input-group">
-                        <label>Fim:</label>
+                        <label>Data Fim:</label>
                         <input type="datetime-local" id="dataFim" class="modern-input">
                     </div>
                 </div>
-                <div style="padding: 0 20px 20px; display: flex; gap: 10px;">
-                    <button class="btn-secondary" onclick="renderizarTabela()">Filtrar Lista</button>
-                    <button class="btn-accent" onclick="gerarPDF()">Gerar PDF</button>
+                <div style="padding: 15px; display: flex; gap: 10px;">
+                    <button class="btn-primary" style="background: #555;" onclick="renderizarTabela()">Filtrar</button>
+                    <button class="btn-primary" style="background: #2ecc71;" onclick="gerarPDF()">Gerar PDF</button>
                 </div>
             </div>
 
@@ -115,12 +126,14 @@
                                 <th>Ação</th>
                             </tr>
                         </thead>
-                        <tbody id="tabela"></tbody>
+                        <tbody id="tabela">
+                            </tbody>
                     </table>
                 </div>
             </div>
         </section>
     </main>
+
     <script src="js/vistoria.js"></script>
 </body>
 </html>
