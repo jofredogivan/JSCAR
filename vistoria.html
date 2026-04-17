@@ -4,45 +4,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Japan Security | Vistoria</title>
-    <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --red: #e63946; --dark: #121212; --card: #1e1e1e; --border: #333; --green: #27ae60; }
         body { background: var(--dark); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; }
-        
         .sidebar { width: 250px; background: #000; height: 100vh; border-right: 1px solid var(--border); position: fixed; }
         .sidebar-nav a { display: block; padding: 15px 20px; color: #888; text-decoration: none; border-left: 4px solid transparent; }
-        .sidebar-nav a:hover, .sidebar-nav a.active { color: white; background: rgba(230,57,70,0.1); border-left-color: var(--red); }
-        .sidebar-nav i { margin-right: 10px; width: 20px; text-align: center; }
-
+        .sidebar-nav a.active { color: white; background: rgba(230,57,70,0.1); border-left-color: var(--red); }
         .main { flex: 1; margin-left: 250px; padding: 30px; }
         .card { background: var(--card); border-radius: 8px; padding: 20px; border: 1px solid var(--border); margin-bottom: 20px; }
-        
         .grid-inputs { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 20px; }
-        label { display: block; color: #888; font-size: 11px; text-transform: uppercase; margin-bottom: 5px; }
-        .modern-input { width: 100%; background: #2a2a2a; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 4px; box-sizing: border-box; outline: none; }
-        
-        /* Checklist Estilizado */
-        .checklist-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; padding: 15px; background: #151515; border-radius: 5px; border: 1px solid var(--border); }
-        .check-item { display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; color: #ccc; }
-        .check-item input { accent-color: var(--red); width: 18px; height: 18px; }
-
-        .btn { padding: 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; color: white; transition: 0.3s; display: flex; align-items: center; gap: 8px; justify-content: center; }
+        .modern-input { width: 100%; background: #2a2a2a; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 4px; box-sizing: border-box; }
+        .checklist-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; padding: 15px; background: #151515; border-radius: 5px; }
+        .check-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #ccc; cursor: pointer; }
+        .btn { padding: 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; color: white; display: flex; align-items: center; gap: 8px; justify-content: center; }
         .btn-save { background: var(--red); width: 100%; margin-top: 20px; }
         .btn-pdf { background: var(--green); }
-
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .filter-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; align-items: flex-end; margin-bottom: 20px; padding: 15px; background: rgba(255,255,255,0.03); border-radius: 5px; }
+        table { width: 100%; border-collapse: collapse; }
         th { text-align: left; color: #888; padding: 12px; border-bottom: 2px solid var(--border); font-size: 11px; }
         td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 13px; }
-        .btn-delete { background: none; border: none; color: #555; cursor: pointer; }
-
         @media (max-width: 768px) { .sidebar { display: none; } .main { margin-left: 0; padding: 15px; } }
     </style>
 </head>
 <body>
-
     <aside class="sidebar">
-        <div style="padding: 30px 20px; text-align: center;"><h2 style="color:var(--red); margin:0;">JAPAN</h2><span style="font-size:10px; color:#888;">SECURITY</span></div>
+        <div style="padding: 30px; text-align: center;"><h2 style="color:var(--red); margin:0;">JAPAN</h2><span style="font-size:10px;">SECURITY</span></div>
         <nav class="sidebar-nav">
             <a href="entrada_saida.html"><i class="fas fa-exchange-alt"></i> Movimentação</a>
             <a href="vistoria.html" class="active"><i class="fas fa-clipboard-check"></i> Vistoria</a>
@@ -52,36 +39,35 @@
 
     <main class="main">
         <div class="card">
-            <h4 style="margin-top:0; color:var(--red);">Realizar Vistoria de Viatura</h4>
+            <h4 style="margin-top:0; color:var(--red);">Nova Vistoria</h4>
             <div class="grid-inputs">
-                <div><label>Viatura</label><input id="veiculo" class="modern-input" list="listaVeiculos" placeholder="Selecione..."><datalist id="listaVeiculos"></datalist></div>
-                <div><label>KM Atual</label><input id="km" type="number" class="modern-input"></div>
+                <div><label>Viatura</label><input id="veiculo" class="modern-input" list="listaVeiculos"><datalist id="listaVeiculos"></datalist></div>
+                <div><label>KM</label><input id="km" type="number" class="modern-input"></div>
                 <div><label>Vigilante</label><input id="vigilante" class="modern-input"></div>
             </div>
-
-            <label>Checklist de Manutenção e Iluminação</label>
             <div class="checklist-grid">
                 <label class="check-item"><input type="checkbox" id="oleo"> Óleo</label>
                 <label class="check-item"><input type="checkbox" id="agua"> Água</label>
                 <label class="check-item"><input type="checkbox" id="pneus"> Pneus</label>
-                <label class="check-item"><input type="checkbox" id="limpeza"> Limpeza</label>
                 <label class="check-item"><input type="checkbox" id="f_esq"> Farol Esq.</label>
                 <label class="check-item"><input type="checkbox" id="f_dir"> Farol Dir.</label>
                 <label class="check-item"><input type="checkbox" id="l_esq"> Lant. Esq.</label>
                 <label class="check-item"><input type="checkbox" id="l_dir"> Lant. Dir.</label>
             </div>
-            
-            <div style="margin-top:15px;"><label>Observações Técnicas</label><textarea id="obs" class="modern-input" rows="2" placeholder="Ex: Pneu traseiro careca..."></textarea></div>
-            <button class="btn btn-save" onclick="salvarVistoria()"><i class="fas fa-save"></i> FINALIZAR VISTORIA</button>
+            <button class="btn btn-save" onclick="salvarVistoria()"><i class="fas fa-save"></i> SALVAR VISTORIA</button>
         </div>
 
         <div class="card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                <h4 style="margin:0; color: #888;">Histórico Recente</h4>
-                <button class="btn btn-pdf" onclick="gerarVistoriaPDF()"><i class="fas fa-file-pdf"></i> EXPORTAR RELATÓRIO</button>
+            <h4 style="color: #888;">Filtros de Relatório</h4>
+            <div class="filter-bar">
+                <div><label>Data Início</label><input id="f_data_ini" type="date" class="modern-input"></div>
+                <div><label>Hora Início</label><input id="f_hora_ini" type="time" class="modern-input" value="00:00"></div>
+                <div><label>Data Fim</label><input id="f_data_fim" type="date" class="modern-input"></div>
+                <div><label>Hora Fim</label><input id="f_hora_fim" type="time" class="modern-input" value="23:59"></div>
+                <button class="btn btn-pdf" onclick="gerarVistoriaPDF()"><i class="fas fa-file-pdf"></i> GERAR PDF</button>
             </div>
             <table>
-                <thead><tr><th>Data</th><th>Veículo</th><th>Vigilante</th><th>KM</th><th style="text-align:right">Ação</th></tr></thead>
+                <thead><tr><th>Data</th><th>Veículo</th><th>Vigilante</th><th>KM</th><th>Ação</th></tr></thead>
                 <tbody id="tabelaVistoria"></tbody>
             </table>
         </div>
