@@ -4,18 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Japan Security | Veículos</title>
-    <link rel="icon" type="image/png" href="icons/icon-192x192.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body class="has-sidebar">
-
     <aside class="sidebar">
         <div class="sidebar-header">
-            <div class="logo-area">
-                <i class="fas fa-shield-alt logo-icon"></i>
-                <div><h2>JAPAN</h2><span>SECURITY</span></div>
-            </div>
+            <div class="logo-area"><i class="fas fa-shield-alt logo-icon"></i><div><h2>JAPAN</h2><span>SECURITY</span></div></div>
         </div>
         <nav class="sidebar-nav">
             <ul>
@@ -26,53 +21,29 @@
     </aside>
 
     <main class="main-content">
-        <a href="index.html" class="btn-voltar"><i class="fas fa-arrow-left"></i> Voltar ao Menu</a>
-        
+        <a href="index.html" class="btn-voltar"><i class="fas fa-arrow-left"></i> Voltar</a>
         <header class="top-bar"><h1>Cadastro de Viaturas</h1></header>
 
         <section class="content-body">
             <div class="card form-card">
                 <div class="card-header"><i class="fas fa-plus-circle"></i> Gerenciar Veículo</div>
-                
                 <input type="hidden" id="editIndex" value="-1">
-                
                 <div class="row">
-                    <div class="input-group">
-                        <label>Nome/Modelo</label>
-                        <input id="nome" class="modern-input" placeholder="Ex: Gol G6">
-                    </div>
-                    <div class="input-group">
-                        <label>Placa</label>
-                        <input id="placa" class="modern-input" placeholder="ABC-1234">
-                    </div>
-                    <div class="input-group">
-                        <label>Ano</label>
-                        <input id="ano" type="number" class="modern-input" placeholder="Ex: 2023">
-                    </div>
+                    <div class="input-group"><label>Modelo</label><input id="nome" class="modern-input"></div>
+                    <div class="input-group"><label>Placa</label><input id="placa" class="modern-input"></div>
+                    <div class="input-group"><label>Ano</label><input id="ano" type="number" class="modern-input"></div>
                 </div>
                 <div class="row">
-                    <div class="input-group">
-                        <label>KM Atual</label>
-                        <input id="kmAtual" type="number" class="modern-input">
-                    </div>
-                    <div class="input-group">
-                        <label>Próxima Troca de Óleo (KM)</label>
-                        <input id="kmTroca" type="number" class="modern-input">
-                    </div>
+                    <div class="input-group"><label>KM Atual</label><input id="kmAtual" type="number" class="modern-input"></div>
+                    <div class="input-group"><label>Prox. Troca Óleo</label><input id="kmTroca" type="number" class="modern-input"></div>
                 </div>
-                
                 <div style="display: flex; gap: 10px;">
-                    <button id="btnSalvar" class="btn-primary" onclick="salvarVeiculo()">
-                        <i class="fas fa-save"></i> Salvar Veículo
-                    </button>
-                    <button id="btnCancelar" class="btn-primary" style="background: #555; display: none;" onclick="cancelarEdicao()">
-                        <i class="fas fa-times"></i> Cancelar
-                    </button>
+                    <button id="btnSalvar" class="btn-primary" onclick="salvarVeiculo()"><i class="fas fa-save"></i> Salvar</button>
+                    <button id="btnCancelar" class="btn-primary" style="background: #555; display: none;" onclick="cancelarEdicao()">Cancelar</button>
                 </div>
             </div>
 
             <div class="card table-card mt-20">
-                <div class="card-header"><i class="fas fa-list"></i> Frota Cadastrada</div>
                 <div class="table-responsive">
                     <table class="modern-table">
                         <thead>
@@ -84,17 +55,12 @@
                                 <th>Ações</th>
                             </tr>
                         </thead>
-                        <tbody id="tabelaVeiculos">
-                            </tbody>
+                        <tbody id="tabelaVeiculos"></tbody>
                     </table>
                 </div>
-                <p style="color: #888; font-size: 0.75rem; margin-top: 10px; padding: 0 15px;">
-                    * Clique em um veículo na tabela para editar seus dados.
-                </p>
             </div>
         </section>
     </main>
-
     <script src="js/vehicles.js"></script>
 </body>
 </html>
