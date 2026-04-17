@@ -24,18 +24,19 @@
         </div>
         <nav class="sidebar-nav">
             <ul>
-                <li><a href="index.html"><i class="fas fa-home"></i> Menu Principal</a></li>
-                <li><a href="vistoria.html" class="active"><i class="fas fa-clipboard-check"></i> Vistoria</a></li>
+                <li><a href="index.html"><i class="fas fa-home"></i> Início</a></li>
+                <li><a href="dashboard.html"><i class="fas fa-chart-line"></i> Dashboard</a></li>
                 <li><a href="entrada_saida.html"><i class="fas fa-exchange-alt"></i> Movimentação</a></li>
+                <li><a href="vistoria.html" class="active"><i class="fas fa-clipboard-check"></i> Vistoria</a></li>
+                <li><a href="maintenance.html"><i class="fas fa-tools"></i> Manutenção</a></li>
                 <li><a href="vehicles.html"><i class="fas fa-car"></i> Veículos</a></li>
-                <li><a href="dashboard.html"><i class="fas fa-chart-pie"></i> Dashboard</a></li>
                 <li><a href="backup.html"><i class="fas fa-database"></i> Backup</a></li>
             </ul>
         </nav>
     </aside>
 
     <main class="main-content">
-        <a href="index.html" class="btn-voltar"><i class="fas fa-arrow-left"></i> Voltar ao Menu</a>
+        <a href="index.html" class="btn-voltar"><i class="fas fa-arrow-left"></i> Menu Principal</a>
 
         <header class="top-bar">
             <h1>Vistoria de Viatura</h1>
@@ -70,13 +71,13 @@
 
                 <div class="row">
                     <div class="input-group">
-                        <label>Observação ou Detalhes da Avaria</label>
+                        <label>Observação ou Detalhes</label>
                         <input id="obsAvaria" class="modern-input" placeholder="Ex: Risco na porta, pneu baixo...">
                     </div>
                 </div>
 
                 <div class="card-header" style="margin-top: 20px;"><i class="fas fa-tasks"></i> Checklist de Segurança e Iluminação</div>
-                <div class="checklist-grid mt-10" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px;">
+                <div class="checklist-grid mt-10">
                     <label class="check-item"><input type="checkbox" id="oleo"> <span>Óleo</span></label>
                     <label class="check-item"><input type="checkbox" id="agua"> <span>Água</span></label>
                     <label class="check-item"><input type="checkbox" id="pneus"> <span>Pneus</span></label>
@@ -95,35 +96,17 @@
                 </button>
             </div>
 
-            <div class="card filter-card mt-20">
-                <div class="card-header"><i class="fas fa-filter"></i> Filtro por Período</div>
-                <div class="row">
-                    <div class="input-group">
-                        <label>Data Início:</label>
-                        <input type="datetime-local" id="dataInicio" class="modern-input">
-                    </div>
-                    <div class="input-group">
-                        <label>Data Fim:</label>
-                        <input type="datetime-local" id="dataFim" class="modern-input">
-                    </div>
-                </div>
-                <div style="padding: 15px; display: flex; gap: 10px;">
-                    <button class="btn-primary" style="background: #555;" onclick="renderizarTabela()">Filtrar</button>
-                    <button class="btn-primary" style="background: #2ecc71;" onclick="gerarPDF()">Gerar PDF</button>
-                </div>
-            </div>
-
             <div class="card table-card mt-20">
+                <div class="card-header"><i class="fas fa-list"></i> Histórico de Vistorias</div>
                 <div class="table-responsive">
                     <table class="modern-table">
                         <thead>
                             <tr>
-                                <th>Data/Hora</th>
+                                <th>Data</th>
                                 <th>Veículo</th>
                                 <th>Vigilante</th>
                                 <th>KM</th>
-                                <th>Obs</th>
-                                <th>Ação</th>
+                                <th>Ações</th>
                             </tr>
                         </thead>
                         <tbody id="tabela">
@@ -134,6 +117,7 @@
         </section>
     </main>
 
+    <script src="js/db.js"></script>
     <script src="js/vistoria.js"></script>
 </body>
 </html>
