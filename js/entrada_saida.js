@@ -1,105 +1,92 @@
 /* ============================================================
-   ARQUIVO: js/entrada_saida.js - VERSÃO FINAL CORRIGIDA
+   ARQUIVO: js/entrada_saida.js
    ============================================================ */
 
-// Função para ler o histórico (tenta todos os nomes de backup)
+// 1. FUNÇÃO DE RECUPERAÇÃO: Puxa do backup (vistorias) para o novo (movimentacao)
 function lerMovimentacoes() {
     let dados = localStorage.getItem("movimentacao");
+    
+    // Se não encontrar no nome novo, busca no nome que está no seu JSON (vistorias)
     if (!dados || dados === "[]") {
-        dados = localStorage.getItem("vistorias"); // Nome que está no seu JSON de backup
+        dados = localStorage.getItem("vistorias");
         if (dados && dados !== "[]") {
+            // Se achou, salva no formato novo para padronizar
             localStorage.setItem("movimentacao", dados);
         }
     }
     return JSON.parse(dados || "[]");
 }
 
-// 1. Busca KM automático
+// 2. BUSCA KM AUTOMÁTICO
 function puxarKmAutomatico() {
-    const campoPlaca = document.getElementById('veiculo');
-    if (!campoPlaca) return;
-    const placa = campoPlaca.value.toUpperCase();
+    const campoVeiculo = document.getElementById('veiculo');
+    if (!campoVeiculo) return;
+    
+    const placa = campoVeiculo.value.toUpperCase();
     const veiculos = JSON.parse(localStorage.getItem("vehicles")) || [];
     const vEncontrado = veiculos.find(v => v.placa.toUpperCase() === placa);
+    
     if (vEncontrado) {
         document.getElementById('km').value = vEncontrado.kmAtual || 0;
     }
 }
 
-// 2. Função Salvar (CORRIGIDA)
+// 3. SALVAR NOVA MOVIMENTAÇÃO
 function salvar() {
-    // Pegando os valores dos campos exatamente como estão no seu HTML
-    const veiculoInput = document.getElementById('veiculo');
-    const kmInput = document.getElementById('km');
-    const motoristaInput = document.getElementById('motorista');
-    const tipoInput = document.getElementById('tipo');
-    const obsInput = document.getElementById('obs');
+    const vInput = document.getElementById('veiculo');
+    const kInput = document.getElementById('km');
+    const mInput = document.getElementById('motorista');
+    const tInput = document.getElementById('tipo');
+    const oInput = document.getElementById('obs');
 
-    const placaDigitada = veiculoInput.value.toUpperCase();
-    const km = kmInput.value;
-    const motorista = motoristaInput.value;
-    const tipo = tipoInput.value;
-    const obs = obsInput.value;
-
-    // Validação
-    if (!placaDigitada || !km || !motorista) {
-        alert("Atenção: Viatura, KM e Motorista são obrigatórios!");
+    if (!vInput.value || !kInput.value || !mInput.value) {
+        alert("Preencha Viatura, KM e Motorista!");
         return;
     }
 
-    // Busca o nome do veículo na base para o relatório
     const veiculosBase = JSON.parse(localStorage.getItem("vehicles")) || [];
-    const infoVeiculo = veiculosBase.find(v => v.placa.toUpperCase() === placaDigitada);
-    const nomeVeiculo = infoVeiculo ? infoVeiculo.nome : "Não Identificado";
+    const info = veiculosBase.find(v => v.placa.toUpperCase() === vInput.value.toUpperCase());
 
-    // Cria o objeto do registro
-    const registro = {
+    const novoRegistro = {
         id: Date.now(),
         data: new Date().toLocaleDateString('pt-BR'),
         hora: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-        placa: placaDigitada,
-        veiculoNome: nomeVeiculo,
-        tipo: tipo,
-        km: km,
-        motorista: motorista,
-        obs: obs
+        placa: vInput.value.toUpperCase(),
+        veiculoNome: info ? info.nome : "Viatura",
+        tipo: tInput.value,
+        km: kInput.value,
+        motorista: mInput.value,
+        obs: oInput.value
     };
 
-    try {
-        // Salva no Histórico
-        const historico = lerMovimentacoes();
-        historico.unshift(registro);
-        localStorage.setItem("movimentacao", JSON.stringify(historico));
+    const historico = lerMovimentacoes();
+    historico.unshift(novoRegistro);
+    localStorage.setItem("movimentacao", JSON.stringify(historico));
 
-        // Atualiza o KM na base de veículos (vehicles)
-        let idx = veiculosBase.findIndex(v => v.placa.toUpperCase() === placaDigitada);
-        if (idx !== -1) { 
-            veiculosBase[idx].kmAtual = km; 
-            localStorage.setItem("vehicles", JSON.stringify(veiculosBase)); 
-        }
-
-        // Limpa os campos e atualiza a tela
-        veiculoInput.value = "";
-        kmInput.value = "";
-        motoristaInput.value = "";
-        obsInput.value = "";
-        
-        renderizarTabela();
-        alert("Movimentação registrada com sucesso!");
-    } catch (e) {
-        console.error("Erro ao salvar:", e);
-        alert("Erro técnico ao salvar. Verifique o console.");
+    // Atualiza o KM no cadastro de veículos
+    let idx = veiculosBase.findIndex(v => v.placa.toUpperCase() === vInput.value.toUpperCase());
+    if (idx !== -1) { 
+        veiculosBase[idx].kmAtual = kInput.value; 
+        localStorage.setItem("vehicles", JSON.stringify(veiculosBase)); 
     }
+
+    alert("Registrado com sucesso!");
+    vInput.value = "";
+    kInput.value = "";
+    mInput.value = "";
+    oInput.value = "";
+    
+    renderizarTabela();
 }
 
-// 3. Renderiza a tabela
+// 4. DESENHAR A TABELA NA TELA
 function renderizarTabela() {
     const dados = lerMovimentacoes();
     const tbody = document.getElementById('tabela');
     if (!tbody) return;
 
     if (dados.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center">Nenhum registro encontrado</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6">Nenhum dado encontrado.</td></tr>';
         return;
     }
 
@@ -107,11 +94,11 @@ function renderizarTabela() {
         <tr>
             <td>${m.data}<br><small>${m.hora}</small></td>
             <td><strong>${m.placa}</strong><br><small>${m.veiculoNome || ''}</small></td>
-            <td><span class="${m.tipo === 'Entrada' ? 'badge-entrada' : 'badge-saida'}">${m.tipo || 'Saída'}</span></td>
+            <td>${m.tipo || 'Saída'}</td>
             <td>${m.motorista || m.vigilante || '-'}</td>
             <td>${m.km} KM</td>
             <td>
-                <button class="btn-delete" onclick="excluirRegistro(${m.id})">
+                <button onclick="excluir(${m.id})" style="color:red; background:none; border:none; cursor:pointer;">
                     <i class="fas fa-trash-alt"></i>
                 </button>
             </td>
@@ -119,9 +106,9 @@ function renderizarTabela() {
     `).join('');
 }
 
-// 4. Excluir
-function excluirRegistro(id) {
-    if (confirm("Deseja realmente excluir este registro?")) {
+// 5. EXCLUIR REGISTRO
+function excluir(id) {
+    if (confirm("Deseja excluir este registro?")) {
         let dados = lerMovimentacoes();
         const novaLista = dados.filter(item => item.id !== id);
         localStorage.setItem("movimentacao", JSON.stringify(novaLista));
@@ -129,31 +116,12 @@ function excluirRegistro(id) {
     }
 }
 
-// 5. PDF
-function gerarPDF() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    const dados = lerMovimentacoes();
-
-    if (dados.length === 0) return alert("Sem dados para exportar!");
-
-    doc.setFontSize(14);
-    doc.text("JAPAN SECURITY - RELATÓRIO DE MOVIMENTAÇÃO", 14, 15);
-    
-    doc.autoTable({
-        startY: 25,
-        head: [['Data', 'Placa', 'Tipo', 'Motorista', 'KM']],
-        body: dados.map(m => [m.data + " " + m.hora, m.placa, m.tipo || 'N/A', m.motorista || m.vigilante, m.km + " KM"]),
-        theme: 'grid',
-        headStyles: { fillColor: [230, 57, 70] }
-    });
-    doc.save('movimentacao.pdf');
-}
-
-// Inicialização
+// 6. INICIALIZAÇÃO
 window.onload = () => {
+    // Preenche o datalist de veículos
     const v = JSON.parse(localStorage.getItem("vehicles")) || [];
     const dl = document.getElementById('listaVeiculos');
-    if(dl) dl.innerHTML = v.map(i => `<option value="${i.placa}">${i.nome}</option>`).join('');
+    if (dl) dl.innerHTML = v.map(i => `<option value="${i.placa}">${i.nome}</option>`).join('');
+    
     renderizarTabela();
 };
