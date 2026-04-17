@@ -2,67 +2,51 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Japan Security | Dashboard</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
+    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
-        :root { --red: #e63946; --dark: #121212; --card: #1e1e1e; }
+        :root { --red: #e63946; --card: #1e1e1e; }
         
-        body { background: var(--dark); color: white; margin: 0; font-family: sans-serif; }
+        /* Layout Mobile-First */
+        .main-content { padding: 15px; background: #121212; min-height: 100vh; }
 
-        /* Barra de Navegação Superior Fixa */
-        .nav-header {
-            background: #1a1a1a;
-            padding: 15px 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-bottom: 1px solid #333;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
+        /* Grid de Números Rápido no Topo */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
         }
 
-        .nav-header .btn-back {
-            color: white;
-            text-decoration: none;
-            font-size: 1.2rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+        .stat-item {
+            background: var(--card);
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            border-bottom: 3px solid var(--red);
         }
 
-        .nav-header .logo-dash {
-            font-weight: bold;
-            color: var(--red);
-            font-size: 0.9rem;
-            letter-spacing: 1px;
-        }
+        .stat-item span { font-size: 0.7rem; color: #888; display: block; text-transform: uppercase; }
+        .stat-item strong { font-size: 1.5rem; color: #fff; }
 
         /* Container dos Gráficos */
-        .main-content { padding: 15px; }
-        
         .chart-box {
             background: var(--card);
-            border-radius: 12px;
+            border-radius: 15px;
             padding: 15px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             border: 1px solid #333;
-        }
-
-        .chart-container {
-            position: relative;
-            height: 180px; /* Altura controlada para mobile */
-            width: 100%;
         }
 
         .card-title {
             color: var(--red);
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             font-weight: bold;
             margin-bottom: 15px;
             display: flex;
@@ -70,68 +54,55 @@
             gap: 8px;
         }
 
-        /* Grid de Números Rápido */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-bottom: 20px;
+        /* Altura controlada para os gráficos não sumirem no mobile */
+        .chart-container {
+            position: relative;
+            height: 200px; 
+            width: 100%;
         }
 
-        .stat-item {
-            background: var(--card);
-            padding: 10px;
-            border-radius: 10px;
-            text-align: center;
-            border-bottom: 3px solid #333;
+        #areaAlertas {
+            margin-top: 10px;
         }
-
-        .stat-item span { font-size: 0.7rem; color: #888; display: block; }
-        .stat-item strong { font-size: 1.2rem; color: white; }
     </style>
 </head>
 <body>
 
-    <header class="nav-header">
-        <a href="index.html" class="btn-back">
-            <i class="fas fa-chevron-left"></i>
-            <span>Menu</span>
+    <header style="background: #1a1a1a; padding: 15px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 1000;">
+        <a href="index.html" style="color: white; text-decoration: none; font-size: 0.9rem; font-weight: bold; display: flex; align-items: center; gap: 8px;">
+            <i class="fas fa-chevron-left"></i> MENU
         </a>
-        <div class="logo-dash">JAPAN SECURITY</div>
-        <div style="width: 30px;"></div> </header>
+        <div style="color: var(--red); font-weight: 900; font-size: 0.8rem; letter-spacing: 2px;">DASHBOARD</div>
+        <div style="width: 50px;"></div> </header>
 
     <main class="main-content">
         
         <div class="stats-grid">
-            <div class="stat-item" style="border-color: var(--red);">
-                <span>FROTA</span>
+            <div class="stat-item">
+                <span>Frota Total</span>
                 <strong id="countFrotaTotal">0</strong>
             </div>
-            <div class="stat-item" style="border-color: #f1c40f;">
-                <span>ROTA</span>
-                <strong id="totalRota">0</strong>
-            </div>
-            <div class="stat-item" style="border-color: #27ae60;">
-                <span>VISTO.</span>
+            <div class="stat-item">
+                <span>Vistorias Hoje</span>
                 <strong id="countVistorias">0</strong>
             </div>
         </div>
 
-        <div class="chart-box">
-            <div class="card-title"><i class="fas fa-chart-line"></i> Movimentação Semanal</div>
-            <div class="chart-container">
-                <canvas id="graficoLinha"></canvas>
-            </div>
-        </div>
+        <div id="areaAlertas"></div>
 
         <div class="chart-box">
-            <div class="card-title"><i class="fas fa-chart-pie"></i> Status da Frota</div>
+            <div class="card-title"><i class="fas fa-chart-pie"></i> Status Operacional (Rota vs Base)</div>
             <div class="chart-container">
                 <canvas id="graficoPizza"></canvas>
             </div>
         </div>
 
-        <div id="areaAlertas"></div>
+        <div class="chart-box">
+            <div class="card-title"><i class="fas fa-chart-line"></i> Atividade Semanal</div>
+            <div class="chart-container">
+                <canvas id="graficoLinha"></canvas>
+            </div>
+        </div>
 
     </main>
 
