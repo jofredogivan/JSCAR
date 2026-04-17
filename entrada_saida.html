@@ -2,66 +2,77 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Japan Security | Movimentação</title>
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body>
-    <main class="main-content">
-        <header class="top-bar">
-            <a href="index.html" class="btn-voltar"><i class="fas fa-arrow-left"></i> Início</a>
-            <h1>Movimentação</h1>
-        </header>
 
-        <div class="card">
-            <div class="row">
+    <header style="background: #1a1a1a; padding: 15px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 1000;">
+        <a href="index.html" style="color: white; text-decoration: none; font-size: 0.9rem; font-weight: bold; display: flex; align-items: center; gap: 8px;">
+            <i class="fas fa-chevron-left"></i> INÍCIO
+        </a>
+        <div style="color: #e63946; font-weight: 900; font-size: 0.8rem; letter-spacing: 2px;">MOVIMENTAÇÃO</div>
+        <div style="width: 50px;"></div>
+    </header>
+
+    <main class="main-content" style="padding: 15px;">
+        
+        <div class="card" style="margin-bottom: 15px;">
+            <div class="input-group">
+                <label style="color: #888; font-size: 0.7rem; text-transform: uppercase;">Buscar Viatura</label>
+                <input type="text" id="filtroPlaca" class="modern-input" placeholder="Digite a placa..." onkeyup="filtrarTabela()">
+            </div>
+            <button class="btn-primary" style="background: #34495e; margin-top: 10px; padding: 12px;" onclick="gerarPDFMovimentacao()">
+                <i class="fas fa-file-pdf"></i> GERAR RELATÓRIO PDF
+            </button>
+        </div>
+
+        <div class="card" style="margin-bottom: 20px;">
+            <div style="display: flex; flex-direction: column; gap: 15px;">
                 <div class="input-group">
-                    <label><i class="fas fa-search"></i> Buscar Viatura</label>
-                    <input type="text" id="filtroPlaca" class="modern-input" placeholder="Digite a placa..." onkeyup="filtrarTabela()">
+                    <label style="color: #888; font-size: 0.7rem; text-transform: uppercase;">Selecione a Viatura</label>
+                    <input list="listaVeiculos" id="veiculoInput" class="modern-input" placeholder="Placa...">
+                    <datalist id="listaVeiculos"></datalist>
                 </div>
+                <div class="input-group">
+                    <label style="color: #888; font-size: 0.7rem; text-transform: uppercase;">KM Atual</label>
+                    <input type="number" id="kmInput" class="modern-input" placeholder="00000">
+                </div>
+                
                 <div style="display: flex; gap: 10px;">
-                    <button class="btn-primary" style="background: #34495e; flex: 1;" onclick="gerarPDFMovimentacao()">
-                        <i class="fas fa-file-pdf"></i> Gerar PDF
+                    <button class="btn-primary" style="background: #27ae60; flex: 1;" onclick="registrarMovimentacao('ENTRADA')">
+                        ENTRADA
+                    </button>
+                    <button class="btn-primary" style="background: #e63946; flex: 1;" onclick="registrarMovimentacao('SAÍDA')">
+                        SAÍDA
                     </button>
                 </div>
             </div>
         </div>
 
-        <div class="card">
-            <div class="row">
-                <div class="input-group">
-                    <label>Viatura (Placa)</label>
-                    <input list="listaVeiculos" id="veiculoInput" class="modern-input" placeholder="Selecione...">
-                    <datalist id="listaVeiculos"></datalist>
-                </div>
-                <div class="input-group">
-                    <label>KM Atual</label>
-                    <input type="number" id="kmInput" class="modern-input" placeholder="00000">
-                </div>
-            </div>
-            <div style="display: flex; gap: 10px; margin-top: 15px;">
-                <button class="btn-primary" style="background: #27ae60; flex: 1;" onclick="registrarMovimentacao('ENTRADA')">ENTRADA</button>
-                <button class="btn-primary" style="flex: 1;" onclick="registrarMovimentacao('SAÍDA')">SAÍDA</button>
-            </div>
-        </div>
-
         <div class="table-responsive">
-            <table class="modern-table" id="tabelaDados">
+            <table class="modern-table">
                 <thead>
                     <tr>
-                        <th>Data/Hora</th>
+                        <th style="width: 35%;">Data/Hora</th>
                         <th>Viatura</th>
                         <th>KM</th>
                         <th>Tipo</th>
                     </tr>
                 </thead>
-                <tbody id="corpoTabela"></tbody>
+                <tbody id="corpoTabela">
+                    </tbody>
             </table>
         </div>
+
     </main>
+
     <script src="js/db.js"></script>
     <script src="js/entrada_saida.js"></script>
 </body>
