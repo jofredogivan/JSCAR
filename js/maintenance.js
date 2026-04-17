@@ -2,123 +2,140 @@
    ARQUIVO: js/maintenance.js
    ============================================================ */
 
-async function inicializar() {
+async function carregarPlacas() {
     const veiculos = await dbListar("vehicles");
-    const dl = document.getElementById('listaVeiculos');
-    if (dl) {
-        dl.innerHTML = veiculos.map(v => `<option value="${v.placa}">${v.nome}</option>`).join('');
+    const list = document.getElementById('listaVeiculos');
+    if (list) {
+        list.innerHTML = veiculos.map(v => `<option value="${v.placa}">${v.nome}</option>`).join('');
     }
-    // Define a data de hoje no campo de data por padrão
-    const dataInput = document.getElementById('dataServico');
-    if (dataInput) dataInput.value = new Date().toISOString().split('T')[0];
-    
-    renderizarTabela();
 }
 
+// 1. Puxa KM e sugere próxima troca (+10.000km)
 async function puxarKmAutomatico() {
     const placa = document.getElementById('veiculo').value.toUpperCase();
-    const veiculos = await dbListar("vehicles");
-    const vEncontrado = veiculos.find(v => v.placa === placa);
-    if (vEncontrado) {
-        document.getElementById('km').value = vEncontrado.kmAtual || "";
+    if (!placa) return;
+
+    const [movs, vists, frota] = await Promise.all([
+        dbListar("movimentacao"),
+        dbListar("vistorias"),
+        dbListar("vehicles")
+    ]);
+
+    // Encontra o KM mais alto registrado
+    const historico = [...movs, ...vists]
+        .filter(r => r.veiculo === placa)
+        .sort((a, b) => b.timestamp - a.timestamp);
+
+    let kmAtual = 0;
+    if (historico.length > 0) {
+        kmAtual = parseInt(historico[0].km);
+    } else {
+        const carro = frota.find(v => v.placa === placa);
+        if (carro) kmAtual = parseInt(carro.kmAtual);
     }
+
+    document.getElementById('km').value = kmAtual;
+    // Sugestão padrão de +10.000 KM para troca de óleo
+    document.getElementById('proximaTroca').value = kmAtual + 10000;
+    document.getElementById('dataServico').valueAsDate = new Date();
 }
 
+// 2. Salva e atualiza o status do veículo
 async function salvar() {
-    const vInput = document.getElementById('veiculo');
-    const kInput = document.getElementById('km');
-    const pInput = document.getElementById('proximaTroca');
-    const sInput = document.getElementById('servico');
-    const dInput = document.getElementById('dataServico');
+    const vtr = document.getElementById('veiculo').value.toUpperCase();
+    const kmRealizado = parseInt(document.getElementById('km').value);
+    const proximaTroca = parseInt(document.getElementById('proximaTroca').value);
+    const servico = document.getElementById('servico').value;
+    const data = document.getElementById('dataServico').value;
 
-    if (!vInput.value || !kInput.value || !pInput.value) {
-        return alert("Preencha Placa, KM Realizado e Próxima Troca!");
+    if (!vtr || !kmRealizado || !servico || !data) {
+        return alert("Preencha todos os campos obrigatórios!");
     }
 
-    const placa = vInput.value.toUpperCase();
-
-    const manutencao = {
+    const registro = {
         id: Date.now(),
-        placa: placa,
-        kmRealizado: parseInt(kInput.value),
-        kmProximaTroca: parseInt(pInput.value),
-        servico: sInput.value,
-        data: dInput.value.split('-').reverse().join('/'), // Converte para PT-BR
-        dataOriginal: dInput.value // Para filtros
+        timestamp: new Date(data).getTime(),
+        veiculo: vtr,
+        data: data,
+        servico: servico,
+        kmRealizado: kmRealizado,
+        proximaTroca: proximaTroca
     };
 
-    await dbSalvar("maintenance", manutencao);
+    // Salva na tabela de histórico de manutenção
+    await dbSalvar("manutencoes", registro);
 
-    // CRITICAL: Atualiza o veículo com a data da próxima troca para o Dashboard avisar
-    const veiculos = await dbListar("vehicles");
-    const vIdx = veiculos.find(v => v.placa === placa);
-    if (vIdx) {
-        vIdx.kmAtual = manutencao.kmRealizado;
-        vIdx.kmProximaTroca = manutencao.kmProximaTroca;
-        await dbSalvar("vehicles", vIdx);
+    // ATUALIZAÇÃO CRÍTICA: Atualiza o cadastro do veículo para zerar o alerta no Dashboard
+    const frota = await dbListar("vehicles");
+    const veiculoIndex = frota.findIndex(v => v.placa === vtr);
+    
+    if (veiculoIndex !== -1) {
+        const veiculoAtualizado = frota[veiculoIndex];
+        veiculoAtualizado.kmUltimaTroca = kmRealizado; // Define que a troca foi feita NESTE KM
+        await dbSalvar("vehicles", veiculoAtualizado);
     }
 
-    alert("Manutenção registrada e alertas atualizados!");
-    renderizarTabela();
+    alert("Manutenção registrada! O alerta do veículo foi atualizado.");
+    location.reload();
 }
 
 async function renderizarTabela() {
-    let dados = await dbListar("maintenance");
+    const dados = await dbListar("manutencoes");
     const tbody = document.getElementById('tabela');
-    if (!tbody) return;
+    const dIni = document.getElementById('dataInicio').value;
+    const dFim = document.getElementById('dataFim').value;
 
-    // Filtro de Data (se preenchido)
-    const inicio = document.getElementById('dataInicio').value;
-    const fim = document.getElementById('dataFim').value;
-
-    if (inicio && fim) {
-        dados = dados.filter(m => m.dataOriginal >= inicio && m.dataOriginal <= fim);
+    let filtrados = dados;
+    if (dIni && dFim) {
+        filtrados = dados.filter(d => d.data >= dIni && d.data <= dFim);
     }
 
-    tbody.innerHTML = dados.map(m => `
+    tbody.innerHTML = filtrados.reverse().map(d => `
         <tr>
-            <td><strong>${m.placa}</strong></td>
-            <td>${m.data}</td>
-            <td>${m.servico}</td>
-            <td>${m.kmRealizado} KM</td>
-            <td style="color: #f1c40f;">${m.kmProximaTroca} KM</td>
-            <td>
-                <button onclick="excluirManutencao(${m.id})" style="background:none; border:none; color:#e63946; cursor:pointer;">
-                    <i class="fas fa-trash-alt"></i>
-                </button>
-            </td>
+            <td><strong>${d.veiculo}</strong></td>
+            <td>${new Date(d.data).toLocaleDateString('pt-BR')}</td>
+            <td>${d.servico}</td>
+            <td>${d.kmRealizado} KM</td>
+            <td style="color: #27ae60; font-weight:bold;">${d.proximaTroca} KM</td>
+            <td><button class="btn-delete" onclick="excluir(${d.id})"><i class="fas fa-trash"></i></button></td>
         </tr>
     `).join('');
 }
 
-async function excluirManutencao(id) {
-    if (confirm("Excluir este registro de manutenção?")) {
-        await dbExcluir("maintenance", id);
+async function excluir(id) {
+    if (confirm("Deseja excluir este registro de manutenção?")) {
+        await dbExcluir("manutencoes", id);
         renderizarTabela();
     }
 }
 
-// Função para gerar o Relatório PDF
-async function gerarPDF() {
+// 3. Geração de PDF de Manutenção
+function gerarPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
-    const dados = await dbListar("maintenance");
-
+    
     doc.setFontSize(18);
+    doc.setTextColor(230, 57, 70);
     doc.text("JAPAN SECURITY - RELATÓRIO DE MANUTENÇÃO", 14, 20);
     
-    const colunas = ["Veículo", "Data", "Serviço", "KM Realizado", "Próxima Troca"];
-    const linhas = dados.map(m => [m.placa, m.data, m.servico, m.kmRealizado, m.kmProximaTroca]);
-
     doc.autoTable({
-        head: [colunas],
-        body: linhas,
+        html: '.modern-table',
         startY: 30,
         theme: 'grid',
-        headStyles: { fillColor: [44, 62, 80] }
+        headStyles: { fillColor: [230, 57, 70] },
+        columns: [
+            { header: 'Veículo', dataKey: 'veiculo' },
+            { header: 'Data', dataKey: 'data' },
+            { header: 'Serviço', dataKey: 'servico' },
+            { header: 'KM Realizado', dataKey: 'km' },
+            { header: 'Próxima Troca', dataKey: 'proxima' }
+        ]
     });
 
-    doc.save(`manutencao_japan_security_${Date.now()}.pdf`);
+    doc.save(`manutencao_japan_${Date.now()}.pdf`);
 }
 
-window.onload = inicializar;
+window.onload = () => {
+    carregarPlacas();
+    renderizarTabela();
+};
