@@ -1,18 +1,47 @@
 /**
  * LÓGICA DE MOVIMENTAÇÃO - JAPAN SECURITY
- * Filtros por Data/Hora e Exportação Agrupada
+ * KM Automático + Filtros + PDF Agrupado
  */
+
+// 1. Monitora o campo de veículo para preencher o KM automaticamente
+document.getElementById('veiculo').addEventListener('change', async function() {
+    const placaDigitada = this.value.toUpperCase();
+    if (!placaDigitada) return;
+
+    // Busca todos os movimentos para achar o último KM desse veículo específico
+    const movimentos = await dbListar("movimentacao");
+    const vistorias = await dbListar("vistorias");
+    const frota = await dbListar("vehicles");
+
+    // Tenta achar o último registro de KM (seja na movimentação ou na vistoria)
+    const todosRegistros = [...movimentos, ...vistorias].filter(r => r.veiculo === placaDigitada);
+    
+    if (todosRegistros.length > 0) {
+        // Ordena pelo timestamp mais recente
+        todosRegistros.sort((a, b) => b.timestamp - a.timestamp);
+        document.getElementById('km').value = todosRegistros[0].km;
+    } else {
+        // Se nunca rodou, pega o KM inicial do cadastro da frota
+        const carro = frota.find(v => v.placa === placaDigitada);
+        if (carro) {
+            document.getElementById('km').value = carro.kmAtual;
+        }
+    }
+});
 
 async function carregarPlacas() {
     const veiculos = await dbListar("vehicles");
-    document.getElementById('listaVeiculos').innerHTML = veiculos.map(v => `<option value="${v.placa}">${v.nome}</option>`).join('');
+    const datalist = document.getElementById('listaVeiculos');
+    if(datalist) {
+        datalist.innerHTML = veiculos.map(v => `<option value="${v.placa}">${v.nome}</option>`).join('');
+    }
 }
 
 async function carregarTabela() {
     const dados = await dbListar("movimentacao");
     const tbody = document.getElementById('tabelaMovimentacao');
+    if(!tbody) return;
     
-    // Inverte para mostrar os mais recentes primeiro
     tbody.innerHTML = dados.reverse().map(d => `
         <tr>
             <td>${d.data}</td>
@@ -34,12 +63,13 @@ async function salvarMovimento() {
     const responsavel = document.getElementById('responsavel').value;
     const obs = document.getElementById('obs').value;
 
-    if(!veiculo || !km || !responsavel) return alert("Preencha todos os campos obrigatórios!");
+    if(!veiculo || !km || !responsavel) return alert("Preencha todos os campos!");
 
+    const agora = new Date();
     const registro = {
         id: Date.now(),
-        timestamp: new Date().getTime(), // Para ordenação e filtros técnicos
-        data: new Date().toLocaleString('pt-BR'),
+        timestamp: agora.getTime(),
+        data: agora.toLocaleString('pt-BR'),
         veiculo: veiculo,
         tipo: tipo,
         km: km,
@@ -49,7 +79,7 @@ async function salvarMovimento() {
 
     await dbSalvar("movimentacao", registro);
     
-    // Limpar campos
+    // Limpar campos após salvar
     document.getElementById('veiculo').value = '';
     document.getElementById('km').value = '';
     document.getElementById('obs').value = '';
@@ -57,48 +87,32 @@ async function salvarMovimento() {
     carregarTabela();
 }
 
-async function excluir(id) {
-    if(confirm("Excluir este registro permanentemente?")) {
-        await dbExcluir("movimentacao", id);
-        carregarTabela();
-    }
-}
-
 async function gerarRelatorioPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     let dados = await dbListar("movimentacao");
 
-    // Lógica de Filtro de Data e Hora
     const dataIni = document.getElementById('f_data_ini').value;
-    const horaIni = document.getElementById('f_hora_ini').value;
     const dataFim = document.getElementById('f_data_fim').value;
-    const horaFim = document.getElementById('f_hora_fim').value;
 
     if (dataIni && dataFim) {
-        const inicio = new Date(`${dataIni}T${horaIni}`).getTime();
-        const fim = new Date(`${dataFim}T${horaFim}`).getTime();
-        
-        dados = dados.filter(d => d.timestamp >= inicio && d.timestamp <= fim);
+        const start = new Date(dataIni + "T00:00").getTime();
+        const end = new Date(dataFim + "T23:59").getTime();
+        dados = dados.filter(d => d.timestamp >= start && d.timestamp <= end);
     }
 
-    if (dados.length === 0) return alert("Nenhum registro encontrado para este período.");
+    if (dados.length === 0) return alert("Nenhum registro no período.");
 
     doc.setFontSize(16);
     doc.setTextColor(230, 57, 70);
-    doc.text("MOVIMENTAÇÃO JAPAN SECURITY POR VEÍCULO", 14, 15);
-    doc.setFontSize(10);
-    doc.setTextColor(100);
-    doc.text(`Período: ${dataIni || 'Geral'} até ${dataFim || 'Geral'}`, 14, 22);
+    doc.text("MOVIMENTAÇÃO JAPAN SECURITY", 14, 15);
 
-    // Agrupamento por Veículo (Padrão da sua planilha)
     const veiculosUnicos = [...new Set(dados.map(d => d.veiculo))];
     let currentY = 30;
 
     veiculosUnicos.forEach(vtr => {
-        if (currentY > 260) { doc.addPage(); currentY = 20; }
-        
-        doc.setFontSize(12);
+        if (currentY > 250) { doc.addPage(); currentY = 20; }
+        doc.setFontSize(11);
         doc.setTextColor(0);
         doc.text(`VEÍCULO: ${vtr}`, 14, currentY);
 
@@ -108,16 +122,22 @@ async function gerarRelatorioPDF() {
         doc.autoTable({
             head: [['Data/Hora', 'Tipo', 'Motorista', 'KM', 'Obs']],
             body: rows,
-            startY: currentY + 5,
-            theme: 'striped',
-            headStyles: { fillColor: [50, 50, 50] },
-            styles: { fontSize: 8 }
+            startY: currentY + 4,
+            theme: 'grid',
+            styles: { fontSize: 8 },
+            headStyles: { fillColor: [40, 40, 40] }
         });
-
-        currentY = doc.lastAutoTable.finalY + 15;
+        currentY = doc.lastAutoTable.finalY + 12;
     });
 
-    doc.save("movimentacao_japan_security.pdf");
+    doc.save("movimentacao_japan.pdf");
+}
+
+async function excluir(id) {
+    if(confirm("Excluir registro?")) {
+        await dbExcluir("movimentacao", id);
+        carregarTabela();
+    }
 }
 
 window.onload = () => {
