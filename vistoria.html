@@ -5,13 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Japan Security | Vistoria</title>
     <link rel="icon" type="image/png" href="icons/icon-192x192.png">
-    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
-    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body class="has-sidebar">
 
@@ -24,8 +21,7 @@
         </div>
         <nav class="sidebar-nav">
             <ul>
-                <li><a href="index.html"><i class="fas fa-home"></i> Início</a></li>
-                <li><a href="dashboard.html"><i class="fas fa-chart-line"></i> Dashboard</a></li>
+                <li><a href="index.html"><i class="fas fa-chart-line"></i> Dashboard</a></li>
                 <li><a href="entrada_saida.html"><i class="fas fa-exchange-alt"></i> Movimentação</a></li>
                 <li><a href="vistoria.html" class="active"><i class="fas fa-clipboard-check"></i> Vistoria</a></li>
                 <li><a href="maintenance.html"><i class="fas fa-tools"></i> Manutenção</a></li>
@@ -36,81 +32,77 @@
     </aside>
 
     <main class="main-content">
-        <a href="index.html" class="btn-voltar"><i class="fas fa-arrow-left"></i> Menu Principal</a>
-
         <header class="top-bar">
-            <h1>Vistoria de Viatura</h1>
+            <h1>Checklist de Vistoria</h1>
         </header>
 
         <section class="content-body">
-            <div class="card form-card">
-                <div class="card-header"><i class="fas fa-camera"></i> Nova Vistoria</div>
-                
+            <div class="card">
                 <div class="row">
                     <div class="input-group">
-                        <label>Veículo (Placa)</label>
-                        <input list="listaVeiculos" id="veiculo" class="modern-input" placeholder="Selecione..." onchange="puxarKmAutomatico()">
+                        <label>Viatura</label>
+                        <input id="veiculo" class="modern-input" list="listaVeiculos" onchange="puxarKmAutomatico()" placeholder="Placa...">
                         <datalist id="listaVeiculos"></datalist>
                     </div>
                     <div class="input-group">
                         <label>KM Atual</label>
-                        <input id="km" type="number" class="modern-input" placeholder="00000">
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="input-group">
-                        <label>Vigilante / Inspetor</label>
-                        <input id="vigilante" class="modern-input" placeholder="Nome completo">
+                        <input id="km" type="number" class="modern-input">
                     </div>
                     <div class="input-group">
-                        <label>Foto da Viatura/Avaria</label>
-                        <input type="file" id="fotoVeiculo" class="modern-input" accept="image/*" capture="camera">
+                        <label>Vigilante Responsável</label>
+                        <input id="vigilante" class="modern-input">
                     </div>
                 </div>
 
-                <div class="row">
-                    <div class="input-group">
-                        <label>Observação ou Detalhes</label>
-                        <input id="obsAvaria" class="modern-input" placeholder="Ex: Risco na porta, pneu baixo...">
-                    </div>
+                <h3 style="margin: 20px 0 10px; color: var(--primary-color);">Itens de Verificação</h3>
+                <div class="checklist-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px;">
+                    <label class="check-item"><input type="checkbox" id="oleo"> Óleo de Motor</label>
+                    <label class="check-item"><input type="checkbox" id="agua"> Nível de Água</label>
+                    <label class="check-item"><input type="checkbox" id="pneus"> Calibragem Pneus</label>
+                    <label class="check-item"><input type="checkbox" id="limpeza"> Limpeza Interna</label>
+                    <label class="check-item"><input type="checkbox" id="farol_esq"> Farol Esquerdo</label>
+                    <label class="check-item"><input type="checkbox" id="farol_dir"> Farol Direito</label>
+                    <label class="check-item"><input type="checkbox" id="lanterna_esq"> Lanterna Esq.</label>
+                    <label class="check-item"><input type="checkbox" id="lanterna_dir"> Lanterna Dir.</label>
                 </div>
 
-                <div class="card-header" style="margin-top: 20px;"><i class="fas fa-tasks"></i> Checklist de Segurança e Iluminação</div>
-                <div class="checklist-grid mt-10">
-                    <label class="check-item"><input type="checkbox" id="oleo"> <span>Óleo</span></label>
-                    <label class="check-item"><input type="checkbox" id="agua"> <span>Água</span></label>
-                    <label class="check-item"><input type="checkbox" id="pneus"> <span>Pneus</span></label>
-                    <label class="check-item"><input type="checkbox" id="limpeza"> <span>Limpeza</span></label>
-                    <label class="check-item"><input type="checkbox" id="macaco"> <span>Macaco</span></label>
-                    <label class="check-item"><input type="checkbox" id="triangulo"> <span>Triângulo</span></label>
-                    
-                    <label class="check-item"><input type="checkbox" id="farol_esq"> <span>Farol Esq.</span></label>
-                    <label class="check-item"><input type="checkbox" id="farol_dir"> <span>Farol Dir.</span></label>
-                    <label class="check-item"><input type="checkbox" id="lanterna_esq"> <span>Lanterna Esq.</span></label>
-                    <label class="check-item"><input type="checkbox" id="lanterna_dir"> <span>Lanterna Dir.</span></label>
+                <div class="input-group mt-20">
+                    <label>Foto da Viatura / Avarias</label>
+                    <input type="file" id="fotoVeiculo" accept="image/*" class="modern-input">
                 </div>
 
-                <button class="btn-primary mt-20" onclick="salvar()">
-                    <i class="fas fa-save"></i> Salvar Vistoria
-                </button>
+                <div class="input-group mt-20">
+                    <label>Observações Adicionais</label>
+                    <textarea id="obsAvaria" class="modern-input" rows="3"></textarea>
+                </div>
+
+                <button class="btn-primary mt-20" onclick="salvar()">Finalizar Vistoria</button>
             </div>
 
-            <div class="card table-card mt-20">
-                <div class="card-header"><i class="fas fa-list"></i> Histórico de Vistorias</div>
+            <div class="card mt-20" style="background: #1a1a1a;">
+                <div class="row" style="display: flex; gap: 10px; align-items: flex-end;">
+                    <div class="input-group">
+                        <label>Filtrar por Placa</label>
+                        <input type="text" id="veiculoFiltro" class="modern-input" placeholder="ABC-1234">
+                    </div>
+                    <button class="btn-primary" onclick="renderizarTabela()" style="background: #333;">Filtrar</button>
+                    <button class="btn-primary" onclick="gerarRelatorioVistoriaPDF()" style="background: #27ae60;"><i class="fas fa-file-pdf"></i> Exportar PDF</button>
+                </div>
+            </div>
+
+            <div class="card mt-20 table-card">
                 <div class="table-responsive">
                     <table class="modern-table">
                         <thead>
                             <tr>
-                                <th>Data</th>
-                                <th>Veículo</th>
+                                <th>Data/Hora</th>
+                                <th>Viatura</th>
                                 <th>Vigilante</th>
                                 <th>KM</th>
-                                <th>Ações</th>
+                                <th>Ação</th>
                             </tr>
                         </thead>
-                        <tbody id="tabela">
-                            </tbody>
+                        <tbody id="tabelaVistoria"></tbody>
                     </table>
                 </div>
             </div>
