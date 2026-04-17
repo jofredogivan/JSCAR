@@ -1,106 +1,88 @@
 /* ============================================================
-   ARQUIVO: js/entrada_saida.js (ATUALIZADO POR JOFRE)
+   ARQUIVO: js/entrada_saida.js
    ============================================================ */
 
-function lerMovimentacoes() {
-    let dados = localStorage.getItem("movimentacao");
-    if (!dados || dados === "[]") {
-        dados = localStorage.getItem("vistorias");
-        if (dados && dados !== "[]") {
-            localStorage.setItem("movimentacao", dados);
-        }
+// Preenche o datalist de veículos e carrega a tabela ao iniciar
+async function inicializar() {
+    const veiculos = await dbListar("vehicles");
+    const dl = document.getElementById('listaVeiculos');
+    if (dl) {
+        dl.innerHTML = veiculos.map(v => `<option value="${v.placa}">${v.nome}</option>`).join('');
     }
-    return JSON.parse(dados || "[]");
-}
-
-function puxarKmAutomatico() {
-    const campoVeiculo = document.getElementById('veiculo');
-    if (!campoVeiculo) return;
-    const placa = campoVeiculo.value.toUpperCase();
-    const veiculos = JSON.parse(localStorage.getItem("vehicles")) || [];
-    const vEncontrado = veiculos.find(v => v.placa.toUpperCase() === placa);
-    if (vEncontrado) {
-        document.getElementById('km').value = vEncontrado.kmAtual || 0;
-    }
-}
-
-function salvar() {
-    const vInput = document.getElementById('veiculo');
-    const kInput = document.getElementById('km');
-    const mInput = document.getElementById('motorista');
-    const tInput = document.getElementById('tipo');
-    const oInput = document.getElementById('obs');
-
-    if (!vInput.value || !kInput.value || !mInput.value) {
-        alert("Preencha Viatura, KM e Motorista!");
-        return;
-    }
-
-    const veiculosBase = JSON.parse(localStorage.getItem("vehicles")) || [];
-    const info = veiculosBase.find(v => v.placa.toUpperCase() === vInput.value.toUpperCase());
-
-    const novoRegistro = {
-        id: Date.now(),
-        // Usamos ISO para facilitar a filtragem por data depois
-        dataIso: new Date().toISOString(), 
-        data: new Date().toLocaleDateString('pt-BR'),
-        hora: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-        placa: vInput.value.toUpperCase(),
-        veiculoNome: info ? info.nome : "Viatura",
-        tipo: tInput.value,
-        km: kInput.value,
-        motorista: mInput.value,
-        obs: oInput.value
-    };
-
-    const historico = lerMovimentacoes();
-    historico.unshift(novoRegistro);
-    localStorage.setItem("movimentacao", JSON.stringify(historico));
-
-    let idx = veiculosBase.findIndex(v => v.placa.toUpperCase() === vInput.value.toUpperCase());
-    if (idx !== -1) { 
-        veiculosBase[idx].kmAtual = kInput.value; 
-        localStorage.setItem("vehicles", JSON.stringify(veiculosBase)); 
-    }
-
-    alert("Registrado com sucesso!");
-    vInput.value = ""; kInput.value = ""; mInput.value = ""; oInput.value = "";
     renderizarTabela();
 }
 
-// NOVA FUNÇÃO: Renderiza com suporte a Filtros
-function renderizarTabela() {
-    let dados = lerMovimentacoes();
+// Puxa o último KM registrado para facilitar o preenchimento
+async function puxarKmAutomatico() {
+    const placa = document.getElementById('veiculo').value.toUpperCase();
+    const veiculos = await dbListar("vehicles");
+    const vEncontrado = veiculos.find(v => v.placa === placa);
+    if (vEncontrado) {
+        document.getElementById('km').value = vEncontrado.kmAtual || "";
+    }
+}
+
+async function salvar() {
+    const vInput = document.getElementById('veiculo');
+    const tInput = document.getElementById('tipo');
+    const kInput = document.getElementById('km');
+    const rInput = document.getElementById('responsavel');
+
+    if (!vInput.value || !kInput.value || !rInput.value) {
+        return alert("Por favor, preencha todos os campos obrigatórios!");
+    }
+
+    const placa = vInput.value.toUpperCase();
+
+    const novoRegistro = {
+        id: Date.now(),
+        placa: placa,
+        tipo: tInput.value,
+        km: parseInt(kInput.value),
+        responsavel: rInput.value,
+        data: new Date().toLocaleDateString('pt-BR'),
+        hora: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+        timestamp: new Date().getTime()
+    };
+
+    // 1. Salva a movimentação
+    await dbSalvar("movimentacao", novoRegistro);
+
+    // 2. Atualiza o KM na tabela de veículos para manter o Dashboard em dia
+    const veiculos = await dbListar("vehicles");
+    const vIdx = veiculos.find(v => v.placa === placa);
+    if (vIdx) {
+        vIdx.kmAtual = novoRegistro.km;
+        await dbSalvar("vehicles", vIdx);
+    }
+
+    alert("Movimentação registrada com sucesso!");
+    
+    // Limpa apenas o campo de veículo para facilitar o próximo
+    vInput.value = "";
+    kInput.value = "";
+    renderizarTabela();
+}
+
+async function renderizarTabela() {
+    const dados = await dbListar("movimentacao");
     const tbody = document.getElementById('tabela');
     if (!tbody) return;
 
-    // Lógica de Filtro por Data
-    const inicio = document.getElementById('dataInicio').value;
-    const fim = document.getElementById('dataFim').value;
-
-    if (inicio && fim) {
-        const dInicio = new Date(inicio);
-        const dFim = new Date(fim);
-        dados = dados.filter(item => {
-            const dItem = item.dataIso ? new Date(item.dataIso) : new Date(item.data.split('/').reverse().join('-'));
-            return dItem >= dInicio && dItem <= dFim;
-        });
-    }
-
     if (dados.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6">Nenhum registro encontrado no período.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Nenhum registro encontrado.</td></tr>';
         return;
     }
 
-    tbody.innerHTML = dados.map((m) => `
+    tbody.innerHTML = dados.map(m => `
         <tr>
             <td>${m.data}<br><small>${m.hora}</small></td>
-            <td><strong>${m.placa}</strong><br><small>${m.veiculoNome || ''}</small></td>
-            <td>${m.tipo || 'Saída'}</td>
-            <td>${m.motorista || m.vigilante || '-'}</td>
+            <td><strong>${m.placa}</strong></td>
+            <td><span class="badge ${m.tipo === 'SAÍDA' ? 'badge-saida' : 'badge-entrada'}">${m.tipo}</span></td>
             <td>${m.km} KM</td>
+            <td>${m.responsavel}</td>
             <td>
-                <button onclick="excluir(${m.id})" style="color:red; background:none; border:none; cursor:pointer;">
+                <button onclick="excluirMov(${m.id})" class="btn-delete" style="background:none; border:none; color:#e63946; cursor:pointer;">
                     <i class="fas fa-trash-alt"></i>
                 </button>
             </td>
@@ -108,46 +90,12 @@ function renderizarTabela() {
     `).join('');
 }
 
-// NOVA FUNÇÃO: Gerar PDF (Conecta com os botões do HTML)
-function gerarPDF() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    const dados = lerMovimentacoes(); // Aqui você também pode aplicar o filtro se quiser
-
-    doc.setFontSize(16);
-    doc.text("JAPAN SECURITY - RELATÓRIO DE MOVIMENTAÇÃO", 14, 15);
-    doc.setFontSize(10);
-    doc.text(`Gerado em: ${new Date().toLocaleString()}`, 14, 22);
-
-    const rows = dados.map(m => [
-        `${m.data} ${m.hora}`,
-        m.placa,
-        m.tipo,
-        m.motorista || m.vigilante,
-        `${m.km} KM`
-    ]);
-
-    doc.autoTable({
-        startY: 30,
-        head: [['Data/Hora', 'Viatura', 'Operação', 'Motorista', 'KM']],
-        body: rows,
-        theme: 'striped'
-    });
-
-    doc.save(`movimentacao_${Date.now()}.pdf`);
-}
-
-function excluir(id) {
-    if (confirm("Deseja excluir este registro?")) {
-        let dados = lerMovimentacoes();
-        localStorage.setItem("movimentacao", JSON.stringify(dados.filter(item => item.id !== id)));
+async function excluirMov(id) {
+    if (confirm("Deseja realmente excluir este registro de movimentação?")) {
+        await dbExcluir("movimentacao", id);
         renderizarTabela();
     }
 }
 
-window.onload = () => {
-    const v = JSON.parse(localStorage.getItem("vehicles")) || [];
-    const dl = document.getElementById('listaVeiculos');
-    if (dl) dl.innerHTML = v.map(i => `<option value="${i.placa}">${i.nome}</option>`).join('');
-    renderizarTabela();
-};
+// Inicialização
+window.onload = inicializar;
