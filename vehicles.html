@@ -3,26 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Japan Security | Veículos</title>
+    <title>Japan Security | Frota</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --red: #e63946; --dark: #121212; --card: #1e1e1e; --border: #333; }
-        body { background: var(--dark); color: white; font-family: sans-serif; margin: 0; display: flex; }
+        body { background: var(--dark); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; }
         .sidebar { width: 250px; background: #000; height: 100vh; border-right: 1px solid var(--border); position: fixed; }
-        .sidebar-nav a { display: block; padding: 15px 20px; color: #888; text-decoration: none; }
-        .sidebar-nav a:hover, .sidebar-nav a.active { color: white; background: rgba(230,57,70,0.1); border-left: 4px solid var(--red); }
+        .sidebar-nav a { display: block; padding: 15px 20px; color: #888; text-decoration: none; border-left: 4px solid transparent; }
+        .sidebar-nav a:hover, .sidebar-nav a.active { color: white; background: rgba(230,57,70,0.1); border-left-color: var(--red); }
         .main { flex: 1; margin-left: 250px; padding: 30px; }
         .card { background: var(--card); border-radius: 8px; padding: 20px; border: 1px solid var(--border); margin-bottom: 20px; }
-        .modern-input { width: 100%; background: #2a2a2a; border: 1px solid var(--border); color: white; padding: 10px; border-radius: 4px; margin-top: 5px; }
-        .btn { padding: 12px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; background: var(--red); color: white; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th { text-align: left; color: #888; padding: 12px; border-bottom: 2px solid var(--border); }
-        td { padding: 12px; border-bottom: 1px solid var(--border); }
+        .grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 15px; }
+        label { display: block; color: #888; font-size: 11px; margin-bottom: 5px; text-transform: uppercase; }
+        .modern-input { width: 100%; background: #2a2a2a; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 4px; box-sizing: border-box; outline: none; }
+        .modern-input:focus { border-color: var(--red); }
+        .btn { padding: 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; background: var(--red); color: white; width: 100%; margin-top: 20px; }
+        .btn-cancel { background: #444; margin-top: 10px; display: none; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { text-align: left; color: #888; padding: 12px; border-bottom: 2px solid var(--border); font-size: 12px; }
+        td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 14px; }
+        tr.clickable:hover { background: rgba(255,255,255,0.05); cursor: pointer; }
+        .btn-del { background: none; border: none; color: #555; cursor: pointer; padding: 5px; }
+        .btn-del:hover { color: var(--red); }
+        @media (max-width: 768px) { .sidebar { display: none; } .main { margin-left: 0; } .grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
+
     <aside class="sidebar">
-        <div style="padding: 20px; text-align: center;"><h2 style="color:var(--red); margin:0;">JAPAN</h2><span style="font-size:10px; letter-spacing:2px;">SECURITY</span></div>
+        <div style="padding: 30px 20px; text-align: center;">
+            <h2 style="color:var(--red); margin:0;">JAPAN</h2><span style="font-size:10px; color:#888;">SECURITY</span>
+        </div>
         <nav class="sidebar-nav">
             <a href="index.html"><i class="fas fa-chart-line"></i> Dashboard</a>
             <a href="entrada_saida.html"><i class="fas fa-exchange-alt"></i> Movimentação</a>
@@ -30,23 +41,131 @@
             <a href="vehicles.html" class="active"><i class="fas fa-car"></i> Veículos</a>
         </nav>
     </aside>
+
     <main class="main">
-        <h1>Cadastro de Frota</h1>
+        <h1 style="font-weight: 300; margin-bottom: 30px;">Gerenciamento de Frota</h1>
+
         <div class="card">
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
-                <div><label>Nome/Modelo</label><input id="nome" class="modern-input"></div>
-                <div><label>Placa</label><input id="placa" class="modern-input"></div>
+            <h4 id="formTitle" style="margin-top:0; color:var(--red); margin-bottom:20px;">Cadastrar Novo Veículo</h4>
+            <input type="hidden" id="veiculoId">
+            <div class="grid">
+                <div>
+                    <label>Modelo / Nome</label>
+                    <input id="nome" class="modern-input" placeholder="Ex: Gol 01">
+                </div>
+                <div>
+                    <label>Placa</label>
+                    <input id="placa" class="modern-input" placeholder="ABC-1234">
+                </div>
+                <div>
+                    <label>Ano</label>
+                    <input id="ano" type="number" class="modern-input" placeholder="2024">
+                </div>
+                <div>
+                    <label>KM Inicial/Atual</label>
+                    <input id="kmAtual" type="number" class="modern-input" placeholder="0">
+                </div>
             </div>
-            <button class="btn" style="margin-top:15px; width:100%" onclick="salvar()">CADASTRAR VEÍCULO</button>
+            <button id="btnSalvar" class="btn" onclick="salvarVeiculo()"><i class="fas fa-plus"></i> ADICIONAR À FROTA</button>
+            <button id="btnCancelar" class="btn btn-cancel" onclick="limparForm()"><i class="fas fa-times"></i> CANCELAR EDIÇÃO</button>
         </div>
+
         <div class="card">
+            <h4 style="margin-top:0; color: #888; font-size: 13px;">DICA: CLIQUE NO NOME DO VEÍCULO PARA EDITAR</h4>
             <table>
-                <thead><tr><th>Modelo</th><th>Placa</th><th>KM Atual</th><th>Ação</th></tr></thead>
+                <thead>
+                    <tr>
+                        <th>Modelo</th>
+                        <th>Placa</th>
+                        <th>Ano</th>
+                        <th>KM Atual</th>
+                        <th style="text-align: right;">Ação</th>
+                    </tr>
+                </thead>
                 <tbody id="tabelaVeiculos"></tbody>
             </table>
         </div>
     </main>
+
     <script src="js/db.js"></script>
-    <script src="js/vehicles.js"></script>
+    <script>
+        async function carregar() {
+            const lista = await dbListar("vehicles");
+            const tbody = document.getElementById('tabelaVeiculos');
+            tbody.innerHTML = lista.map(v => `
+                <tr class="clickable">
+                    <td onclick="prepararEdicao(${v.id})"><strong>${v.nome}</strong></td>
+                    <td onclick="prepararEdicao(${v.id})">${v.placa}</td>
+                    <td onclick="prepararEdicao(${v.id})">${v.ano || '---'}</td>
+                    <td onclick="prepararEdicao(${v.id})">${v.kmAtual || 0} KM</td>
+                    <td style="text-align: right;">
+                        <button class="btn-del" onclick="excluirVeiculo(${v.id})"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function salvarVeiculo() {
+            const id = document.getElementById('veiculoId').value;
+            const nome = document.getElementById('nome').value;
+            const placa = document.getElementById('placa').value.toUpperCase();
+            const ano = document.getElementById('ano').value;
+            const km = document.getElementById('kmAtual').value;
+
+            if(!nome || !placa) return alert("Nome e Placa são obrigatórios!");
+
+            const veiculoObj = {
+                id: id ? parseInt(id) : Date.now(),
+                nome: nome,
+                placa: placa,
+                ano: ano,
+                kmAtual: parseInt(km) || 0
+            };
+
+            await dbSalvar("vehicles", veiculoObj);
+            alert(id ? "Veículo atualizado!" : "Veículo cadastrado!");
+            limparForm();
+            carregar();
+        }
+
+        async function prepararEdicao(id) {
+            const lista = await dbListar("vehicles");
+            const v = lista.find(item => item.id === id);
+            
+            if(v) {
+                document.getElementById('veiculoId').value = v.id;
+                document.getElementById('nome').value = v.nome;
+                document.getElementById('placa').value = v.placa;
+                document.getElementById('ano').value = v.ano || '';
+                document.getElementById('kmAtual').value = v.kmAtual || 0;
+
+                document.getElementById('formTitle').innerText = "Editar Veículo";
+                document.getElementById('btnSalvar').innerHTML = '<i class="fas fa-sync"></i> ATUALIZAR VEÍCULO';
+                document.getElementById('btnCancelar').style.display = "block";
+                window.scrollTo(0,0);
+            }
+        }
+
+        function limparForm() {
+            document.getElementById('veiculoId').value = '';
+            document.getElementById('nome').value = '';
+            document.getElementById('placa').value = '';
+            document.getElementById('ano').value = '';
+            document.getElementById('kmAtual').value = '';
+
+            document.getElementById('formTitle').innerText = "Cadastrar Novo Veículo";
+            document.getElementById('btnSalvar').innerHTML = '<i class="fas fa-plus"></i> ADICIONAR À FROTA';
+            document.getElementById('btnCancelar').style.display = "none";
+        }
+
+        async function excluirVeiculo(id) {
+            if(confirm("Deseja remover este veículo?")) {
+                await dbExcluir("vehicles", id);
+                carregar();
+            }
+        }
+
+        window.onload = carregar;
+    </script>
 </body>
 </html>
