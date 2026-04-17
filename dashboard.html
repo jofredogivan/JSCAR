@@ -3,12 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Japan Security | Dashboard</title>
+    <title>Japan Security | Dashboard (Frota)</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="css/style.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="css/style.css"> <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* CSS Adicional para o Indicador Piscando e Ajustes Visual */
+        #sistema-status {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 15px;
+            background: rgba(0,0,0,0.8);
+            border-radius: 8px;
+            z-index: 1000;
+        }
+        #sistema-status i {
+            font-size: 1.2rem;
+            color: #27ae60;
+            text-shadow: 0 0 10px #27ae60;
+            animation: pisca 1.5s infinite;
+        }
+        #sistema-status span {
+            color: #fff;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        @keyframes pisca {
+            0% { opacity: 0.1; }
+            50% { opacity: 1; }
+            100% { opacity: 0.1; }
+        }
+        /* Ajuste para o Chart */
+        .chart-wrapper {
+            max-width: 400px;
+            margin: 20px auto;
+        }
+        /* Oculta os alertas se não houver nenhum */
+        #areaAlertas:empty {
+            display: none;
+        }
+    </style>
 </head>
 <body class="has-sidebar">
+
+    <div id="sistema-status">
+        <i class="fas fa-signal"></i>
+        <span>SISTEMA ATIVO</span>
+    </div>
 
     <aside class="sidebar">
         <div class="sidebar-header">
@@ -19,7 +63,6 @@
         </div>
         <nav class="sidebar-nav">
             <ul>
-                <li><a href="index.html"><i class="fas fa-home"></i> Início</a></li>
                 <li><a href="dashboard.html" class="active"><i class="fas fa-chart-line"></i> Dashboard</a></li>
                 <li><a href="entrada_saida.html"><i class="fas fa-exchange-alt"></i> Movimentação</a></li>
                 <li><a href="vistoria.html"><i class="fas fa-clipboard-check"></i> Vistoria</a></li>
@@ -32,53 +75,28 @@
 
     <main class="main-content">
         <header class="top-bar">
-            <h1>Painel de Controle</h1>
+            <h1>Controle de Frota - Dashboard</h1>
         </header>
 
         <section class="content-body">
             <div id="areaAlertas"></div>
 
-            <div class="dashboard-grid">
-                <div class="card dash-card">
-                    <i class="fas fa-car-side" style="color: #e63946;"></i>
-                    <div class="info">
-                        <h3>Em Rota</h3>
-                        <p id="countRota">0</p>
-                    </div>
-                </div>
-                <div class="card dash-card">
-                    <i class="fas fa-check-double" style="color: #27ae60;"></i>
-                    <div class="info">
-                        <h3>Vistorias (Hoje)</h3>
-                        <p id="countVistorias">0</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="row mt-20">
-                <div class="card chart-container" style="flex: 1; min-width: 300px;">
-                    <div class="card-header">Status da Frota</div>
+            <div class="card chart-card">
+                <div class="card-header">Status da Frota em Tempo Real</div>
+                <div class="chart-wrapper">
                     <canvas id="graficoStatus"></canvas>
                 </div>
-
-                <div class="card" style="flex: 1; min-width: 300px;">
-                    <div class="card-header">Manutenções do Mês</div>
-                    <div class="maintenance-summary">
-                        <h2 id="countManutencao" style="font-size: 3rem; text-align: center; margin: 20px 0;">0</h2>
-                        <p style="text-align: center; color: #888;">Serviços realizados no período atual</p>
-                    </div>
-                </div>
             </div>
 
-            <div class="card mt-20">
-                <div class="card-header">Últimas Movimentações</div>
+            <div class="card table-card mt-20">
+                <div class="card-header">Últimas Movimentações Registradas</div>
                 <div class="table-responsive">
                     <table class="modern-table">
                         <thead>
                             <tr>
-                                <th>Hora</th>
+                                <th>Horário</th>
                                 <th>Veículo</th>
-                                <th>Status</th>
+                                <th>Status Atual</th>
                             </tr>
                         </thead>
                         <tbody id="tabelaResumo"></tbody>
