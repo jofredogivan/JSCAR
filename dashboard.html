@@ -4,150 +4,138 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Japan Security | Dashboard</title>
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
     <style>
-        /* Ajustes para Mobile */
-        @media (max-width: 768px) {
-            .sidebar { display: none; }
-            .main-content { margin-left: 0 !important; width: 100%; padding: 10px; }
-            .row { flex-direction: column; }
-            .top-bar h1 { font-size: 16px; }
+        :root { --red: #e63946; --dark: #121212; --card: #1e1e1e; }
+        
+        body { background: var(--dark); color: white; margin: 0; font-family: sans-serif; }
+
+        /* Barra de Navegação Superior Fixa */
+        .nav-header {
+            background: #1a1a1a;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #333;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
         }
 
-        /* Container fixo para os gráficos não crescerem infinito */
+        .nav-header .btn-back {
+            color: white;
+            text-decoration: none;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-header .logo-dash {
+            font-weight: bold;
+            color: var(--red);
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+        }
+
+        /* Container dos Gráficos */
+        .main-content { padding: 15px; }
+        
+        .chart-box {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid #333;
+        }
+
         .chart-container {
             position: relative;
-            height: 200px; /* Altura reduzida para mobile */
+            height: 180px; /* Altura controlada para mobile */
             width: 100%;
         }
 
-        .status-badge {
+        .card-title {
+            color: var(--red);
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-bottom: 15px;
             display: flex;
             align-items: center;
             gap: 8px;
-            font-size: 12px;
-            color: #fff;
-            font-weight: bold;
         }
-        .dot {
-            height: 10px; width: 10px;
-            background-color: #27ae60;
-            border-radius: 50%;
-            display: inline-block;
-            animation: pulse 1.5s infinite;
+
+        /* Grid de Números Rápido */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
         }
-        @keyframes pulse {
-            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(39, 174, 96, 0.7); }
-            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(39, 174, 96, 0); }
-            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(39, 174, 96, 0); }
+
+        .stat-item {
+            background: var(--card);
+            padding: 10px;
+            border-radius: 10px;
+            text-align: center;
+            border-bottom: 3px solid #333;
         }
+
+        .stat-item span { font-size: 0.7rem; color: #888; display: block; }
+        .stat-item strong { font-size: 1.2rem; color: white; }
     </style>
 </head>
-<body class="has-sidebar">
+<body>
+
+    <header class="nav-header">
+        <a href="index.html" class="btn-back">
+            <i class="fas fa-chevron-left"></i>
+            <span>Menu</span>
+        </a>
+        <div class="logo-dash">JAPAN SECURITY</div>
+        <div style="width: 30px;"></div> </header>
 
     <main class="main-content">
-        <header class="top-bar" style="display: flex; justify-content: space-between; align-items: center; padding: 15px;">
-            <a href="index.html" style="color:white; text-decoration:none;"><i class="fas fa-arrow-left"></i></a>
-            <h1 style="margin:0; font-size: 1.2rem;">Painel Operacional</h1>
-            <div class="status-badge">
-                <span class="dot"></span> ATIVO
+        
+        <div class="stats-grid">
+            <div class="stat-item" style="border-color: var(--red);">
+                <span>FROTA</span>
+                <strong id="countFrotaTotal">0</strong>
             </div>
-        </header>
+            <div class="stat-item" style="border-color: #f1c40f;">
+                <span>ROTA</span>
+                <strong id="totalRota">0</strong>
+            </div>
+            <div class="stat-item" style="border-color: #27ae60;">
+                <span>VISTO.</span>
+                <strong id="countVistorias">0</strong>
+            </div>
+        </div>
 
-        <section class="content-body">
-            <div class="dashboard-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; padding: 10px;">
-                <div class="card dash-card" style="padding: 15px; text-align: center;">
-                    <i class="fas fa-car" style="color: #e63946; font-size: 1.5rem;"></i>
-                    <div class="info">
-                        <h3 style="font-size: 10px; margin: 5px 0;">FROTA</h3>
-                        <p id="countFrotaTotal" style="font-size: 18px; font-weight: bold; margin:0;">0</p>
-                    </div>
-                </div>
-                <div class="card dash-card" style="padding: 15px; text-align: center; border-bottom: 3px solid #f1c40f;">
-                    <i class="fas fa-tools" style="color: #f1c40f; font-size: 1.5rem;"></i>
-                    <div class="info">
-                        <h3 style="font-size: 10px; margin: 5px 0;">OFICINA</h3>
-                        <p id="countOficina" style="font-size: 18px; font-weight: bold; margin:0;">0</p>
-                    </div>
-                </div>
-                <div class="card dash-card" style="padding: 15px; text-align: center; border-bottom: 3px solid #27ae60;">
-                    <i class="fas fa-clipboard-list" style="color: #27ae60; font-size: 1.5rem;"></i>
-                    <div class="info">
-                        <h3 style="font-size: 10px; margin: 5px 0;">VISTORIAS</h3>
-                        <p id="countVistorias" style="font-size: 18px; font-weight: bold; margin:0;">0</p>
-                    </div>
-                </div>
+        <div class="chart-box">
+            <div class="card-title"><i class="fas fa-chart-line"></i> Movimentação Semanal</div>
+            <div class="chart-container">
+                <canvas id="graficoLinha"></canvas>
             </div>
+        </div>
 
-            <div class="row" style="display: flex; flex-direction: column; gap: 15px; padding: 10px;">
-                <div class="card">
-                    <div class="card-header" style="color: #e63946; font-size: 14px; padding: 10px;"><i class="fas fa-chart-area"></i> Movimentação</div>
-                    <div class="chart-container">
-                        <canvas id="graficoLinha"></canvas>
-                    </div>
-                </div>
-                
-                <div class="card">
-                    <div class="card-header" style="color: #e63946; font-size: 14px; padding: 10px;"><i class="fas fa-chart-pie"></i> Status Frota</div>
-                    <div class="chart-container">
-                        <canvas id="graficoPizza"></canvas>
-                    </div>
-                </div>
+        <div class="chart-box">
+            <div class="card-title"><i class="fas fa-chart-pie"></i> Status da Frota</div>
+            <div class="chart-container">
+                <canvas id="graficoPizza"></canvas>
             </div>
-        </section>
+        </div>
+
+        <div id="areaAlertas"></div>
+
     </main>
 
     <script src="js/db.js"></script>
-    <script>
-        // Configurações padrão para gráficos pequenos
-        const chartOptions = {
-            responsive: true,
-            maintainAspectRatio: false, // Permite que a div controle a altura
-            plugins: {
-                legend: {
-                    display: true,
-                    position: 'bottom',
-                    labels: { boxWidth: 12, font: { size: 10 }, color: '#ccc' }
-                }
-            }
-        };
-
-        // Exemplo de inicialização (isso deve ser integrado com seu js/dashboard.js)
-        window.onload = function() {
-            // Grafico de Linha
-            new Chart(document.getElementById('graficoLinha'), {
-                type: 'line',
-                data: {
-                    labels: ['S', 'T', 'Q', 'Q', 'S', 'S', 'D'],
-                    datasets: [{
-                        label: 'Movimentos',
-                        data: [12, 19, 8, 15, 22, 10, 5],
-                        borderColor: '#e63946',
-                        tension: 0.3,
-                        fill: true,
-                        backgroundColor: 'rgba(230, 57, 70, 0.1)'
-                    }]
-                },
-                options: chartOptions
-            });
-
-            // Grafico de Pizza
-            new Chart(document.getElementById('graficoPizza'), {
-                type: 'doughnut', // Use doughnut que fica mais bonito no mobile
-                data: {
-                    labels: ['Ativos', 'Oficina'],
-                    datasets: [{
-                        data: [10, 2],
-                        backgroundColor: ['#27ae60', '#f1c40f'],
-                        borderWidth: 0
-                    }]
-                },
-                options: chartOptions
-            });
-        };
-    </script>
     <script src="js/dashboard.js"></script>
 </body>
 </html>
