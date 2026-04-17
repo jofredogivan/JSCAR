@@ -5,23 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Japan Security | Movimentação</title>
     <link rel="icon" type="image/png" href="icons/icon-192x192.png">
-    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body class="has-sidebar">
 
     <aside class="sidebar">
         <div class="sidebar-header">
-            <div class="logo-area">
-                <i class="fas fa-shield-alt logo-icon"></i>
-                <div><h2>JAPAN</h2><span>SECURITY</span></div>
-            </div>
+            <div class="logo-area"><i class="fas fa-shield-alt logo-icon"></i><div><h2>JAPAN</h2><span>SECURITY</span></div></div>
         </div>
         <nav class="sidebar-nav">
             <ul>
-                <li><a href="index.html"><i class="fas fa-home"></i> Início</a></li>
-                <li><a href="dashboard.html"><i class="fas fa-chart-line"></i> Dashboard</a></li>
+                <li><a href="index.html"><i class="fas fa-chart-line"></i> Dashboard</a></li>
                 <li><a href="entrada_saida.html" class="active"><i class="fas fa-exchange-alt"></i> Movimentação</a></li>
                 <li><a href="vistoria.html"><i class="fas fa-clipboard-check"></i> Vistoria</a></li>
                 <li><a href="maintenance.html"><i class="fas fa-tools"></i> Manutenção</a></li>
@@ -32,63 +29,62 @@
     </aside>
 
     <main class="main-content">
-        <a href="index.html" class="btn-voltar"><i class="fas fa-arrow-left"></i> Menu Principal</a>
-        
-        <header class="top-bar">
-            <h1>Entrada e Saída</h1>
-        </header>
+        <header class="top-bar"><h1>Registro de Entrada e Saída</h1></header>
 
         <section class="content-body">
-            <div class="card form-card">
-                <div class="card-header"><i class="fas fa-plus-circle"></i> Novo Registro</div>
-                
+            <div class="card">
                 <div class="row">
                     <div class="input-group">
                         <label>Viatura (Placa)</label>
-                        <input list="listaVeiculos" id="veiculo" class="modern-input" placeholder="Selecione ou digite..." onchange="puxarKmAutomatico()">
+                        <input id="veiculo" class="modern-input" list="listaVeiculos" onchange="puxarKmAutomatico()" placeholder="Selecione ou digite...">
                         <datalist id="listaVeiculos"></datalist>
                     </div>
                     <div class="input-group">
-                        <label>Tipo de Evento</label>
+                        <label>Operação</label>
                         <select id="tipo" class="modern-input">
                             <option value="SAÍDA">SAÍDA</option>
                             <option value="ENTRADA">ENTRADA</option>
                         </select>
                     </div>
-                </div>
-
-                <div class="row">
                     <div class="input-group">
                         <label>KM Atual</label>
-                        <input id="km" type="number" class="modern-input" placeholder="Ex: 45200">
+                        <input id="km" type="number" class="modern-input">
                     </div>
                     <div class="input-group">
                         <label>Responsável</label>
-                        <input id="responsavel" class="modern-input" placeholder="Nome do Vigilante">
+                        <input id="responsavel" class="modern-input">
                     </div>
                 </div>
-
-                <button class="btn-primary mt-20" onclick="salvar()">
-                    <i class="fas fa-save"></i> Registrar Movimentação
-                </button>
+                <button class="btn-primary mt-20" onclick="salvar()">Registrar Movimentação</button>
             </div>
 
-            <div class="card table-card mt-20">
-                <div class="card-header"><i class="fas fa-history"></i> Histórico Recente</div>
+            <div class="card mt-20" style="background: #1a1a1a; border: 1px solid #333;">
+                <div class="card-header"><i class="fas fa-filter"></i> Filtros e Relatórios</div>
+                <div class="row" style="display: flex; gap: 10px; align-items: flex-end;">
+                    <div class="input-group">
+                        <label>Início</label>
+                        <input type="date" id="dataInicio" class="modern-input">
+                    </div>
+                    <div class="input-group">
+                        <label>Fim</label>
+                        <input type="date" id="dataFim" class="modern-input">
+                    </div>
+                    <div class="input-group">
+                        <label>Placa Específica</label>
+                        <input type="text" id="veiculoFiltro" class="modern-input" placeholder="Ex: ABC1234">
+                    </div>
+                    <button class="btn-primary" onclick="renderizarTabela()" style="background: #333;">Filtrar</button>
+                    <button class="btn-primary" onclick="gerarRelatorioPDF()" style="background: #27ae60;"><i class="fas fa-file-pdf"></i> PDF</button>
+                </div>
+            </div>
+
+            <div class="card mt-20 table-card">
                 <div class="table-responsive">
                     <table class="modern-table">
                         <thead>
-                            <tr>
-                                <th>Data/Hora</th>
-                                <th>Veículo</th>
-                                <th>Tipo</th>
-                                <th>KM</th>
-                                <th>Responsável</th>
-                                <th>Ação</th>
-                            </tr>
+                            <tr><th>Data/Hora</th><th>Viatura</th><th>Status</th><th>KM</th><th>Responsável</th><th>Ação</th></tr>
                         </thead>
-                        <tbody id="tabela">
-                            </tbody>
+                        <tbody id="tabela"></tbody>
                     </table>
                 </div>
             </div>
