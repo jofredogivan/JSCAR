@@ -4,92 +4,48 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Japan Security | Veículos</title>
-    <link rel="icon" type="image/png" href="icons/icon-192x192.png">
-    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="css/style.css">
+    <style>
+        :root { --red: #e63946; --dark: #121212; --card: #1e1e1e; --border: #333; }
+        body { background: var(--dark); color: white; font-family: sans-serif; margin: 0; display: flex; }
+        .sidebar { width: 250px; background: #000; height: 100vh; border-right: 1px solid var(--border); position: fixed; }
+        .sidebar-nav a { display: block; padding: 15px 20px; color: #888; text-decoration: none; }
+        .sidebar-nav a:hover, .sidebar-nav a.active { color: white; background: rgba(230,57,70,0.1); border-left: 4px solid var(--red); }
+        .main { flex: 1; margin-left: 250px; padding: 30px; }
+        .card { background: var(--card); border-radius: 8px; padding: 20px; border: 1px solid var(--border); margin-bottom: 20px; }
+        .modern-input { width: 100%; background: #2a2a2a; border: 1px solid var(--border); color: white; padding: 10px; border-radius: 4px; margin-top: 5px; }
+        .btn { padding: 12px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; background: var(--red); color: white; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th { text-align: left; color: #888; padding: 12px; border-bottom: 2px solid var(--border); }
+        td { padding: 12px; border-bottom: 1px solid var(--border); }
+    </style>
 </head>
-<body class="has-sidebar">
-
+<body>
     <aside class="sidebar">
-        <div class="sidebar-header">
-            <div class="logo-area">
-                <i class="fas fa-shield-alt logo-icon"></i>
-                <div><h2>JAPAN</h2><span>SECURITY</span></div>
-            </div>
-        </div>
+        <div style="padding: 20px; text-align: center;"><h2 style="color:var(--red); margin:0;">JAPAN</h2><span style="font-size:10px; letter-spacing:2px;">SECURITY</span></div>
         <nav class="sidebar-nav">
-            <ul>
-                <li><a href="index.html"><i class="fas fa-home"></i> Início</a></li>
-                <li><a href="dashboard.html"><i class="fas fa-chart-line"></i> Dashboard</a></li>
-                <li><a href="entrada_saida.html"><i class="fas fa-exchange-alt"></i> Movimentação</a></li>
-                <li><a href="vistoria.html"><i class="fas fa-clipboard-check"></i> Vistoria</a></li>
-                <li><a href="maintenance.html"><i class="fas fa-tools"></i> Manutenção</a></li>
-                <li><a href="vehicles.html" class="active"><i class="fas fa-car"></i> Veículos</a></li>
-                <li><a href="backup.html"><i class="fas fa-database"></i> Backup</a></li>
-            </ul>
+            <a href="index.html"><i class="fas fa-chart-line"></i> Dashboard</a>
+            <a href="entrada_saida.html"><i class="fas fa-exchange-alt"></i> Movimentação</a>
+            <a href="vistoria.html"><i class="fas fa-clipboard-check"></i> Vistoria</a>
+            <a href="vehicles.html" class="active"><i class="fas fa-car"></i> Veículos</a>
         </nav>
     </aside>
-
-    <main class="main-content">
-        <a href="index.html" class="btn-voltar"><i class="fas fa-arrow-left"></i> Voltar ao Menu</a>
-        
-        <header class="top-bar">
-            <h1>Gestão da Frota</h1>
-        </header>
-
-        <section class="content-body">
-            <div class="card form-card">
-                <div class="card-header"><i class="fas fa-plus-circle"></i> Cadastrar Nova Viatura</div>
-                
-                <div class="row">
-                    <div class="input-group">
-                        <label>Placa</label>
-                        <input id="placa" class="modern-input" placeholder="ABC-1234" style="text-transform: uppercase;">
-                    </div>
-                    <div class="input-group">
-                        <label>Nome / Identificação</label>
-                        <input id="nome" class="modern-input" placeholder="Ex: VTR 01 - Gol">
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="input-group">
-                        <label>KM Inicial</label>
-                        <input id="kmAtual" type="number" class="modern-input" placeholder="Ex: 10000">
-                    </div>
-                    <div class="input-group">
-                        <label>Modelo / Ano</label>
-                        <input id="modelo" class="modern-input" placeholder="Ex: VW Gol 2023">
-                    </div>
-                </div>
-
-                <button class="btn-primary mt-20" onclick="salvarVeiculo()">
-                    <i class="fas fa-save"></i> Salvar Veículo
-                </button>
+    <main class="main">
+        <h1>Cadastro de Frota</h1>
+        <div class="card">
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+                <div><label>Nome/Modelo</label><input id="nome" class="modern-input"></div>
+                <div><label>Placa</label><input id="placa" class="modern-input"></div>
             </div>
-
-            <div class="card table-card mt-20">
-                <div class="card-header"><i class="fas fa-list"></i> Viaturas Cadastradas</div>
-                <div class="table-responsive">
-                    <table class="modern-table">
-                        <thead>
-                            <tr>
-                                <th>Placa</th>
-                                <th>Identificação</th>
-                                <th>KM Atual</th>
-                                <th>Próxima Troca</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabelaVeiculos">
-                            </tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
+            <button class="btn" style="margin-top:15px; width:100%" onclick="salvar()">CADASTRAR VEÍCULO</button>
+        </div>
+        <div class="card">
+            <table>
+                <thead><tr><th>Modelo</th><th>Placa</th><th>KM Atual</th><th>Ação</th></tr></thead>
+                <tbody id="tabelaVeiculos"></tbody>
+            </table>
+        </div>
     </main>
-
     <script src="js/db.js"></script>
     <script src="js/vehicles.js"></script>
 </body>
