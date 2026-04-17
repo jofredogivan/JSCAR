@@ -21,6 +21,8 @@
             <ul>
                 <li><a href="index.html"><i class="fas fa-home"></i> Menu Principal</a></li>
                 <li><a href="maintenance.html" class="active"><i class="fas fa-tools"></i> Manutenção</a></li>
+                <li><a href="vistoria.html"><i class="fas fa-clipboard-check"></i> Vistoria</a></li>
+                <li><a href="entrada_saida.html"><i class="fas fa-exchange-alt"></i> Movimentação</a></li>
             </ul>
         </nav>
     </aside>
@@ -35,18 +37,18 @@
                 <div class="card-header"><i class="fas fa-wrench"></i> Novo Serviço</div>
                 <div class="row">
                     <div class="input-group">
-                        <label>Veículo</label>
-                        <input list="listaVeiculos" id="veiculo" class="modern-input" onchange="puxarKmAutomatico()">
+                        <label>Veículo (Placa)</label>
+                        <input list="listaVeiculos" id="veiculo" class="modern-input" placeholder="Selecione..." onchange="puxarKmAutomatico()">
                         <datalist id="listaVeiculos"></datalist>
                     </div>
-                    <div class="input-group"><label>KM Realizado</label><input id="km" type="number" class="modern-input"></div>
-                    <div class="input-group"><label>Próxima Troca (KM)</label><input id="proximaTroca" type="number" class="modern-input"></div>
+                    <div class="input-group"><label>KM Realizado</label><input id="km" type="number" class="modern-input" placeholder="00000"></div>
+                    <div class="input-group"><label>Próxima Troca (KM)</label><input id="proximaTroca" type="number" class="modern-input" placeholder="00000"></div>
                 </div>
                 <div class="row">
-                    <div class="input-group"><label>Tipo de Serviço</label><input id="servico" class="modern-input"></div>
+                    <div class="input-group"><label>Tipo de Serviço</label><input id="servico" class="modern-input" placeholder="Ex: Troca de Óleo, Pastilhas..."></div>
                     <div class="input-group"><label>Data do Serviço</label><input type="date" id="dataServico" class="modern-input"></div>
                 </div>
-                <button class="btn-primary" onclick="salvar()"><i class="fas fa-save"></i> Salvar</button>
+                <button class="btn-primary" onclick="salvar()"><i class="fas fa-save"></i> Salvar Registro</button>
             </div>
 
             <div class="card filter-card mt-20">
@@ -56,8 +58,8 @@
                     <div class="input-group"><label>Até:</label><input type="date" id="dataFim" class="modern-input"></div>
                 </div>
                 <div style="padding: 0 20px 20px; display: flex; gap: 10px;">
-                    <button class="btn-secondary" onclick="renderizarTabela()">Filtrar</button>
-                    <button class="btn-accent" onclick="gerarPDF()">PDF Organizado</button>
+                    <button class="btn-primary" style="background: #555;" onclick="renderizarTabela()">Filtrar</button>
+                    <button class="btn-primary" style="background: #2ecc71;" onclick="gerarPDF()">PDF Organizado</button>
                 </div>
             </div>
 
@@ -65,7 +67,14 @@
                 <div class="table-responsive">
                     <table class="modern-table">
                         <thead>
-                            <tr><th>Veículo</th><th>Data</th><th>Serviço</th><th>Próxima Troca</th><th>Ação</th></tr>
+                            <tr>
+                                <th>Veículo</th>
+                                <th>Data</th>
+                                <th>Serviço</th>
+                                <th>KM Realizado</th>
+                                <th>Próxima Troca</th>
+                                <th>Ação</th>
+                            </tr>
                         </thead>
                         <tbody id="tabela"></tbody>
                     </table>
