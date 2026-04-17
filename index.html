@@ -4,174 +4,43 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Japan Security | Home</title>
-    
     <link rel="icon" type="image/png" href="icons/icon-192x192.png">
-    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <style>
-        :root {
-            --red: #e63946;
-            --dark: #121212;
-            --card: #1e1e1e;
-            --border: #333;
-        }
-
-        body {
-            background-color: var(--dark);
-            color: white;
-            font-family: 'Segoe UI', sans-serif;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-        }
-
-        /* Topo da Japan Security */
-        .header-home {
-            text-align: center;
-            padding: 40px 20px 10px;
-        }
-
-        .header-home i {
-            font-size: 3.5rem;
-            color: var(--red);
-            margin-bottom: 10px;
-        }
-
-        .header-home h1 {
-            margin: 0;
-            font-size: 2.5rem;
-            letter-spacing: 5px;
-            font-weight: 900;
-        }
-
-        .header-home p {
-            color: #888;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-top: 5px;
-        }
-
-        /* Grade de Botões Principais */
-        .menu-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            padding: 20px;
-            width: 100%;
-            max-width: 400px;
-            box-sizing: border-box;
-        }
-
-        .menu-item {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 25px 10px;
-            text-decoration: none;
-            color: white;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            transition: 0.2s;
-        }
-
-        .menu-item:active {
-            transform: scale(0.95);
-            background: #222;
-            border-color: var(--red);
-        }
-
-        .menu-item i {
-            font-size: 2rem;
-            margin-bottom: 10px;
-            color: var(--red);
-        }
-
-        .menu-item span {
-            font-weight: 600;
-            font-size: 0.85rem;
-        }
-
-        /* Atalhos Secundários */
-        .footer-nav {
-            margin-top: auto;
-            width: 100%;
-            max-width: 400px;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-
-        .btn-full {
-            background: rgba(230, 57, 70, 0.1);
-            border: 1px solid var(--red);
-            color: white;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            padding: 15px;
-            border-radius: 12px;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-
-        .btn-backup {
-            background: #333;
-            color: #bbb;
-            text-decoration: none;
-            display: block;
-            text-align: center;
-            padding: 10px;
-            border-radius: 8px;
-            font-size: 0.8rem;
-        }
-    </style>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-
-    <header class="header-home">
-        <i class="fas fa-shield-alt"></i>
-        <h1>JAPAN</h1>
-        <p>Security Car Management</p>
+    <header style="text-align: center; padding: 40px 20px 10px;">
+        <i class="fas fa-shield-alt" style="font-size: 3.5rem; color: #e63946;"></i>
+        <h1 style="margin: 0; font-size: 2.5rem; letter-spacing: 5px;">JAPAN</h1>
+        <p style="color: #888; font-size: 0.75rem; text-transform: uppercase;">Security Car Management</p>
     </header>
 
-    <nav class="menu-grid">
-        <a href="entrada_saida.html" class="menu-item">
-            <i class="fas fa-exchange-alt"></i>
-            <span>Movimentação</span>
+    <nav style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding: 20px; width: 100%; max-width: 400px; margin: 0 auto;">
+        <a href="entrada_saida.html" class="card" style="text-decoration: none; display: flex; flex-direction: column; align-items: center; padding: 25px 10px;">
+            <i class="fas fa-exchange-alt" style="font-size: 2rem; color: #e63946; margin-bottom: 10px;"></i>
+            <span style="color: white; font-weight: bold; font-size: 0.85rem;">Movimentação</span>
         </a>
-
-        <a href="vistoria.html" class="menu-item">
-            <i class="fas fa-clipboard-check"></i>
-            <span>Vistoria</span>
+        <a href="vistoria.html" class="card" style="text-decoration: none; display: flex; flex-direction: column; align-items: center; padding: 25px 10px;">
+            <i class="fas fa-clipboard-check" style="font-size: 2rem; color: #e63946; margin-bottom: 10px;"></i>
+            <span style="color: white; font-weight: bold; font-size: 0.85rem;">Vistoria</span>
         </a>
-
-        <a href="maintenance.html" class="menu-item">
-            <i class="fas fa-tools"></i>
-            <span>Manutenção</span>
+        <a href="maintenance.html" class="card" style="text-decoration: none; display: flex; flex-direction: column; align-items: center; padding: 25px 10px;">
+            <i class="fas fa-tools" style="font-size: 2rem; color: #e63946; margin-bottom: 10px;"></i>
+            <span style="color: white; font-weight: bold; font-size: 0.85rem;">Manutenção</span>
         </a>
-
-        <a href="vehicles.html" class="menu-item">
-            <i class="fas fa-car"></i>
-            <span>Frota</span>
+        <a href="vehicles.html" class="card" style="text-decoration: none; display: flex; flex-direction: column; align-items: center; padding: 25px 10px;">
+            <i class="fas fa-car" style="font-size: 2rem; color: #e63946; margin-bottom: 10px;"></i>
+            <span style="color: white; font-weight: bold; font-size: 0.85rem;">Frota</span>
         </a>
     </nav>
 
-    <div class="footer-nav">
-        <a href="dashboard.html" class="btn-full">
+    <div style="padding: 20px; width: 100%; max-width: 400px; margin: 0 auto;">
+        <a href="dashboard.html" class="btn-primary" style="text-decoration: none; background: rgba(230, 57, 70, 0.1); border: 1px solid #e63946;">
             <i class="fas fa-chart-line"></i> DASHBOARD
         </a>
-        <a href="backup.html" class="btn-backup">
+        <a href="backup.html" style="display: block; text-align: center; color: #888; text-decoration: none; margin-top: 20px; font-size: 0.8rem;">
             <i class="fas fa-database"></i> Backup de Dados
         </a>
     </div>
-
-    <script src="js/db.js"></script>
 </body>
 </html>
