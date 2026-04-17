@@ -17,13 +17,15 @@
         .modern-input { width: 100%; background: #2a2a2a; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 4px; box-sizing: border-box; }
         .checklist-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; padding: 15px; background: #151515; border-radius: 5px; }
         .check-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #ccc; cursor: pointer; }
-        .btn { padding: 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; color: white; display: flex; align-items: center; gap: 8px; justify-content: center; }
+        .btn { padding: 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; color: white; display: flex; align-items: center; gap: 8px; justify-content: center; transition: 0.3s; }
         .btn-save { background: var(--red); width: 100%; margin-top: 20px; }
+        .btn-camera { background: #444; margin-top: 10px; width: 100%; border: 1px dashed #666; }
         .btn-pdf { background: var(--green); }
-        .filter-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; align-items: flex-end; margin-bottom: 20px; padding: 15px; background: rgba(255,255,255,0.03); border-radius: 5px; }
+        .filter-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; align-items: flex-end; margin-bottom: 20px; }
         table { width: 100%; border-collapse: collapse; }
         th { text-align: left; color: #888; padding: 12px; border-bottom: 2px solid var(--border); font-size: 11px; }
         td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 13px; }
+        #preview { width: 100%; max-height: 150px; object-fit: contain; margin-top: 10px; display: none; border-radius: 5px; }
         @media (max-width: 768px) { .sidebar { display: none; } .main { margin-left: 0; padding: 15px; } }
     </style>
 </head>
@@ -39,35 +41,39 @@
 
     <main class="main">
         <div class="card">
-            <h4 style="margin-top:0; color:var(--red);">Nova Vistoria</h4>
+            <h4 style="margin-top:0; color:var(--red);">Nova Vistoria com Foto</h4>
             <div class="grid-inputs">
                 <div><label>Viatura</label><input id="veiculo" class="modern-input" list="listaVeiculos"><datalist id="listaVeiculos"></datalist></div>
                 <div><label>KM</label><input id="km" type="number" class="modern-input"></div>
                 <div><label>Vigilante</label><input id="vigilante" class="modern-input"></div>
             </div>
+            
             <div class="checklist-grid">
                 <label class="check-item"><input type="checkbox" id="oleo"> Óleo</label>
                 <label class="check-item"><input type="checkbox" id="agua"> Água</label>
-                <label class="check-item"><input type="checkbox" id="pneus"> Pneus</label>
                 <label class="check-item"><input type="checkbox" id="f_esq"> Farol Esq.</label>
                 <label class="check-item"><input type="checkbox" id="f_dir"> Farol Dir.</label>
                 <label class="check-item"><input type="checkbox" id="l_esq"> Lant. Esq.</label>
                 <label class="check-item"><input type="checkbox" id="l_dir"> Lant. Dir.</label>
             </div>
-            <button class="btn btn-save" onclick="salvarVistoria()"><i class="fas fa-save"></i> SALVAR VISTORIA</button>
+
+            <label class="btn btn-camera">
+                <i class="fas fa-camera"></i> TIRAR FOTO / ANEXAR
+                <input type="file" id="fotoInput" accept="image/*" capture="environment" style="display:none" onchange="previewImagem(this)">
+            </label>
+            <img id="preview" alt="Preview da Foto">
+
+            <button class="btn btn-save" onclick="salvarVistoria()"><i class="fas fa-save"></i> FINALIZAR VISTORIA</button>
         </div>
 
         <div class="card">
-            <h4 style="color: #888;">Filtros de Relatório</h4>
             <div class="filter-bar">
                 <div><label>Data Início</label><input id="f_data_ini" type="date" class="modern-input"></div>
-                <div><label>Hora Início</label><input id="f_hora_ini" type="time" class="modern-input" value="00:00"></div>
                 <div><label>Data Fim</label><input id="f_data_fim" type="date" class="modern-input"></div>
-                <div><label>Hora Fim</label><input id="f_hora_fim" type="time" class="modern-input" value="23:59"></div>
-                <button class="btn btn-pdf" onclick="gerarVistoriaPDF()"><i class="fas fa-file-pdf"></i> GERAR PDF</button>
+                <button class="btn btn-pdf" onclick="gerarVistoriaPDF()"><i class="fas fa-file-pdf"></i> PDF</button>
             </div>
             <table>
-                <thead><tr><th>Data</th><th>Veículo</th><th>Vigilante</th><th>KM</th><th>Ação</th></tr></thead>
+                <thead><tr><th>Data</th><th>Veículo</th><th>KM</th><th>Foto</th><th>Ação</th></tr></thead>
                 <tbody id="tabelaVistoria"></tbody>
             </table>
         </div>
