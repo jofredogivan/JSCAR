@@ -1,5 +1,5 @@
 /* ============================================================
-   ARQUIVO: js/entrada_saida.js - Movimentação Inteligente
+   ARQUIVO: js/entrada_saida.js - Movimentação Japan Security
    ============================================================ */
 
 // 1. Carrega a lista de veículos nos inputs de autocompletar
@@ -16,14 +16,13 @@ document.getElementById('veiculoInput').addEventListener('change', async functio
     const placaDigitada = this.value.toUpperCase();
     if (!placaDigitada) return;
 
-    // Busca em todas as tabelas o último registro desse carro
     const [movs, vists, frota] = await Promise.all([
         dbListar("movimentacao"),
         dbListar("vistorias"),
         dbListar("vehicles")
     ]);
 
-    // Junta movimentações e vistorias para achar o KM mais recente
+    // Busca o KM mais recente em movimentações ou vistorias
     const historico = [...movs, ...vists]
         .filter(r => (r.veiculo === placaDigitada || r.viatura === placaDigitada))
         .sort((a, b) => b.timestamp - a.timestamp);
@@ -31,19 +30,19 @@ document.getElementById('veiculoInput').addEventListener('change', async functio
     if (historico.length > 0) {
         document.getElementById('kmInput').value = historico[0].km;
     } else {
-        // Se não tem histórico, pega o KM inicial do cadastro da frota
         const carro = frota.find(v => v.placa === placaDigitada);
         if (carro) document.getElementById('kmInput').value = carro.kmAtual;
     }
 });
 
-// 3. Registro de Entrada/Saída
+// 3. Registro de Entrada/Saída com Motorista
 async function registrarMovimentacao(tipo) {
     const vtr = document.getElementById('veiculoInput').value.toUpperCase();
     const km = document.getElementById('kmInput').value;
+    const motorista = document.getElementById('motoristaInput').value;
 
-    if (!vtr || !km) {
-        alert("Por favor, preencha a Viatura e o KM!");
+    if (!vtr || !km || !motorista) {
+        alert("Atenção: Viatura, KM e Motorista são obrigatórios!");
         return;
     }
 
@@ -53,41 +52,44 @@ async function registrarMovimentacao(tipo) {
         data: new Date().toLocaleString('pt-BR'),
         viatura: vtr,
         km: parseInt(km),
-        tipo: tipo // ENTRADA ou SAÍDA
+        motorista: motorista,
+        tipo: tipo 
     };
 
     await dbSalvar("movimentacao", registro);
     
-    // Limpa campos e recarrega
+    // Limpa campos e recarrega a tela
     document.getElementById('veiculoInput').value = "";
     document.getElementById('kmInput').value = "";
+    document.getElementById('motoristaInput').value = "";
     carregarTabelaMovimentacao();
 }
 
-// 4. Carregar Tabela com Filtro de Data e Hora
+// 4. Carregar Tabela com Nome do Motorista
 async function carregarTabelaMovimentacao() {
     const registros = await dbListar("movimentacao");
     const tbody = document.getElementById('corpoTabela');
     if (!tbody) return;
 
-    // Ordenar por mais recente
     registros.sort((a, b) => b.timestamp - a.timestamp);
 
     tbody.innerHTML = registros.map(reg => `
         <tr>
-            <td>${reg.data}</td>
-            <td><strong>${reg.viatura}</strong></td>
+            <td><small>${reg.data}</small></td>
+            <td><strong>${reg.viatura}</strong><br><span style="font-size: 0.7rem; color: #888;">${reg.motorista}</span></td>
             <td>${reg.km}</td>
             <td style="color: ${reg.tipo === 'ENTRADA' ? '#27ae60' : '#e63946'}; font-weight: bold;">${reg.tipo}</td>
         </tr>
     `).join('');
 }
 
-// 5. Gerar PDF Separado por Veículo e Data
+// 5. Gerar PDF Separado por Veículo e Ordenado por Data
 async function gerarPDFMovimentacao() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     const registros = await dbListar("movimentacao");
+
+    if (registros.length === 0) return alert("Não há dados para gerar o PDF.");
 
     // Agrupar registros por Viatura
     const agrupadoPorVtr = registros.reduce((acc, reg) => {
@@ -98,36 +100,35 @@ async function gerarPDFMovimentacao() {
 
     doc.setFontSize(16);
     doc.setTextColor(230, 57, 70);
-    doc.text("JAPAN SECURITY - RELATÓRIO POR VIATURA", 14, 20);
+    doc.text("JAPAN SECURITY - RELATÓRIO DE MOVIMENTAÇÃO", 14, 20);
     
     let yPos = 30;
 
-    // Para cada viatura, cria uma seção
     for (const vtr in agrupadoPorVtr) {
-        // Ordena os registros daquela viatura por data
+        // Ordena do mais antigo para o mais novo dentro do grupo do veículo
         const logs = agrupadoPorVtr[vtr].sort((a, b) => a.timestamp - b.timestamp);
         
-        const rows = logs.map(l => [l.data, l.km, l.tipo]);
+        const rows = logs.map(l => [l.data, l.motorista, l.km, l.tipo]);
 
         doc.autoTable({
-            head: [[`VIATURA: ${vtr}`, 'KM', 'TIPO']],
+            head: [[`VIATURA: ${vtr}`, 'MOTORISTA', 'KM', 'TIPO']],
             body: rows,
             startY: yPos,
             theme: 'grid',
             headStyles: { fillColor: [40, 40, 40] },
+            styles: { fontSize: 8 },
             margin: { top: 30 }
         });
 
         yPos = doc.lastAutoTable.finalY + 15;
 
-        // Se o próximo grupo for estourar a página, cria uma nova
         if (yPos > 250) {
             doc.addPage();
             yPos = 20;
         }
     }
 
-    doc.save(`relatorio_movimentacao_japan.pdf`);
+    doc.save(`movimentacao_japan_security.pdf`);
 }
 
 // Inicialização
