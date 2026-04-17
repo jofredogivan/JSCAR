@@ -2,55 +2,174 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Japan Security | Home</title>
+    
+    <link rel="icon" type="image/png" href="icons/icon-192x192.png">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        :root { --red: #e63946; --dark: #121212; --card: #1e1e1e; --border: #333; }
-        body { background: var(--dark); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
-        
-        .header-home { text-align: center; padding: 50px 20px; }
-        .header-home h1 { color: var(--red); margin: 0; font-size: 2.5rem; letter-spacing: 3px; }
-        .header-home p { color: #888; font-size: 0.9rem; margin-top: 5px; }
+        :root {
+            --red: #e63946;
+            --dark: #121212;
+            --card: #1e1e1e;
+            --border: #333;
+        }
 
-        .menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; padding: 20px; width: 100%; max-width: 500px; box-sizing: border-box; }
-        
-        .menu-item { background: var(--card); border: 1px solid var(--border); border-radius: 15px; padding: 35px 10px; text-decoration: none; color: white; display: flex; flex-direction: column; align-items: center; transition: 0.2s; }
-        .menu-item:active { transform: scale(0.95); background: #252525; }
-        .menu-item i { font-size: 2.5rem; color: var(--red); margin-bottom: 15px; }
-        .menu-item span { font-weight: bold; font-size: 1rem; }
-        
-        /* Botão de destaque para o Dashboard */
-        .btn-dash-link { margin-top: 20px; color: var(--red); text-decoration: none; font-size: 0.9rem; border-bottom: 1px solid var(--red); padding-bottom: 2px; }
+        body {
+            background-color: var(--dark);
+            color: white;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Topo */
+        .header-home {
+            text-align: center;
+            padding: 40px 20px 20px;
+            width: 100%;
+        }
+
+        .header-home i {
+            font-size: 3rem;
+            color: var(--red);
+            margin-bottom: 10px;
+        }
+
+        .header-home h1 {
+            margin: 0;
+            font-size: 2.2rem;
+            letter-spacing: 4px;
+            font-weight: 800;
+        }
+
+        .header-home p {
+            color: #888;
+            font-size: 0.8rem;
+            margin-top: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Grade de Menu */
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            padding: 20px;
+            width: 100%;
+            max-width: 450px;
+            box-sizing: border-box;
+        }
+
+        .menu-item {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 30px 10px;
+            text-decoration: none;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .menu-item:active {
+            transform: scale(0.92);
+            background: #252525;
+            border-color: var(--red);
+        }
+
+        .menu-item i {
+            font-size: 2.2rem;
+            margin-bottom: 12px;
+            color: var(--red);
+        }
+
+        .menu-item span {
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        /* Rodapé de Status */
+        .footer-status {
+            margin-top: auto;
+            padding: 20px;
+            width: 100%;
+            max-width: 450px;
+            box-sizing: border-box;
+        }
+
+        .btn-dash {
+            background: rgba(230, 57, 70, 0.1);
+            border: 1px solid var(--red);
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 15px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body>
 
     <header class="header-home">
+        <i class="fas fa-shield-alt"></i>
         <h1>JAPAN</h1>
-        <p>OPERACIONAL MOBILE</p>
+        <p>Monitoramento e Segurança</p>
     </header>
 
-    <div class="menu-grid">
+    <nav class="menu-grid">
         <a href="entrada_saida.html" class="menu-item">
             <i class="fas fa-exchange-alt"></i>
             <span>Movimentação</span>
         </a>
+
         <a href="vistoria.html" class="menu-item">
             <i class="fas fa-clipboard-check"></i>
             <span>Vistoria</span>
         </a>
+
+        <a href="maintenance.html" class="menu-item">
+            <i class="fas fa-tools"></i>
+            <span>Manutenção</span>
+        </a>
+
         <a href="vehicles.html" class="menu-item">
             <i class="fas fa-car"></i>
             <span>Frota</span>
         </a>
-        <a href="dashboard.html" class="menu-item">
-            <i class="fas fa-chart-pie"></i>
-            <span>Dashboard</span>
+    </nav>
+
+    <div class="footer-status">
+        <a href="dashboard.html" class="btn-dash">
+            <i class="fas fa-chart-line"></i>
+            DASHBOARD OPERACIONAL
         </a>
     </div>
 
-    <a href="dashboard.html" class="btn-dash-link">Ver Alertas de Manutenção</a>
-
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+                .then(() => console.log("Service Worker Ativo"))
+                .catch(err => console.log("Erro SW:", err));
+        }
+    </script>
 </body>
 </html>
