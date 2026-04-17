@@ -25,8 +25,8 @@
         
         <div class="card" style="margin-bottom: 15px;">
             <div class="input-group">
-                <label style="color: #888; font-size: 0.7rem; text-transform: uppercase;">Buscar Viatura</label>
-                <input type="text" id="filtroPlaca" class="modern-input" placeholder="Digite a placa..." onkeyup="filtrarTabela()">
+                <label style="color: #888; font-size: 0.7rem; text-transform: uppercase;">Buscar na Tabela</label>
+                <input type="text" id="filtroPlaca" class="modern-input" placeholder="Digite placa ou motorista..." onkeyup="filtrarTabela()">
             </div>
             <button class="btn-primary" style="background: #34495e; margin-top: 10px; padding: 12px;" onclick="gerarPDFMovimentacao()">
                 <i class="fas fa-file-pdf"></i> GERAR RELATÓRIO PDF
@@ -35,11 +35,18 @@
 
         <div class="card" style="margin-bottom: 20px;">
             <div style="display: flex; flex-direction: column; gap: 15px;">
+                
                 <div class="input-group">
                     <label style="color: #888; font-size: 0.7rem; text-transform: uppercase;">Selecione a Viatura</label>
-                    <input list="listaVeiculos" id="veiculoInput" class="modern-input" placeholder="Placa...">
+                    <input list="listaVeiculos" id="veiculoInput" class="modern-input" placeholder="Selecione a placa...">
                     <datalist id="listaVeiculos"></datalist>
                 </div>
+
+                <div class="input-group">
+                    <label style="color: #888; font-size: 0.7rem; text-transform: uppercase;">Motorista</label>
+                    <input type="text" id="motoristaInput" class="modern-input" placeholder="Nome do condutor">
+                </div>
+
                 <div class="input-group">
                     <label style="color: #888; font-size: 0.7rem; text-transform: uppercase;">KM Atual</label>
                     <input type="number" id="kmInput" class="modern-input" placeholder="00000">
@@ -47,10 +54,10 @@
                 
                 <div style="display: flex; gap: 10px;">
                     <button class="btn-primary" style="background: #27ae60; flex: 1;" onclick="registrarMovimentacao('ENTRADA')">
-                        ENTRADA
+                        <i class="fas fa-sign-in-alt"></i> ENTRADA
                     </button>
                     <button class="btn-primary" style="background: #e63946; flex: 1;" onclick="registrarMovimentacao('SAÍDA')">
-                        SAÍDA
+                        <i class="fas fa-sign-out-alt"></i> SAÍDA
                     </button>
                 </div>
             </div>
@@ -60,8 +67,8 @@
             <table class="modern-table">
                 <thead>
                     <tr>
-                        <th style="width: 35%;">Data/Hora</th>
-                        <th>Viatura</th>
+                        <th style="width: 30%;">Data/Hora</th>
+                        <th>Viatura / Motorista</th>
                         <th>KM</th>
                         <th>Tipo</th>
                     </tr>
@@ -72,6 +79,20 @@
         </div>
 
     </main>
+
+    <script>
+        // Função de busca rápida na tabela
+        function filtrarTabela() {
+            const input = document.getElementById('filtroPlaca');
+            const filter = input.value.toUpperCase();
+            const tr = document.querySelectorAll("#corpoTabela tr");
+
+            tr.forEach(row => {
+                const text = row.textContent || row.innerText;
+                row.style.display = text.toUpperCase().includes(filter) ? "" : "none";
+            });
+        }
+    </script>
 
     <script src="js/db.js"></script>
     <script src="js/entrada_saida.js"></script>
