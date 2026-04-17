@@ -1,97 +1,115 @@
 /* ============================================================
-   ARQUIVO: js/dashboard.js (Restaurado para o visual original)
+   ARQUIVO: js/dashboard.js
    ============================================================ */
 
-let meuGrafico = null; // Variável global para gerenciar o gráfico
+let chartLinha = null;
+let chartPizza = null;
 
 async function carregarDashboard() {
-    // 1. Busca os dados dos 3 novos bancos
+    // 1. Busca dados das tabelas do IndexedDB
     const veiculos = await dbListar("vehicles");
+    const vistorias = await dbListar("vistorias");
     const movs = await dbListar("movimentacao");
 
-    // 2. ALERTAS DE TROCA DE ÓLEO E REVISÃO
-    const areaAlerta = document.getElementById('areaAlertas');
-    if (areaAlerta) {
-        areaAlerta.innerHTML = ""; // Limpa antes de gerar
-
-        const alertas = veiculos.filter(v => {
-            if (!v.kmProximaTroca || !v.kmAtual) return false;
-            // Filtra se faltar 500km ou menos
-            return (parseInt(v.kmProximaTroca) - parseInt(v.kmAtual)) <= 500;
-        });
-
-        if (alertas.length > 0) {
-            areaAlerta.innerHTML = alertas.map(v => `
-                <div class="card-alerta pulse" style="background: rgba(230, 57, 70, 0.15); border-left: 5px solid #e63946; padding: 15px; margin-bottom: 15px; border-radius: 8px;">
-                    <i class="fas fa-exclamation-triangle" style="color: #e63946; margin-right: 10px;"></i>
-                    <span style="color: #fff;">Viatura <strong>${v.placa}</strong> precisa de revisão (Faltam ${v.kmProximaTroca - v.kmAtual} KM).</span>
-                </div>
-            `).join('');
-        }
+    // 2. Atualiza os cards numéricos
+    if (document.getElementById('totalVeiculos')) {
+        document.getElementById('totalVeiculos').innerText = veiculos.length;
+    }
+    if (document.getElementById('totalVistorias')) {
+        document.getElementById('totalVistorias').innerText = vistorias.length;
     }
 
-    // 3. LÓGICA DO GRÁFICO (EM ROTA vs DISPONÍVEL)
-    const ultimoStatusPorVeiculo = {};
+    // 3. Lógica para identificar quem está "Em Rota"
+    // Pegamos o último status de cada placa cadastrada
+    const statusAtual = {};
+    veiculos.forEach(v => statusAtual[v.placa] = "ENTRADA"); // Padrão: na base
     
-    // Inicializa todos os cadastrados como Disponíveis (ENTRADA)
-    veiculos.forEach(v => ultimoStatusPorVeiculo[v.placa] = "ENTRADA");
-    
-    // Processa movimentações (como dbListar traz do mais novo, pegamos o primeiro status)
-    // Para garantir a ordem cronológica, precisamos sortear pelo timestamp
+    // Ordena por timestamp para garantir que o último registro seja o status real
     const movsOrdenadas = [...movs].sort((a, b) => a.timestamp - b.timestamp);
     movsOrdenadas.forEach(m => {
-        ultimoStatusPorVeiculo[m.placa] = m.tipo;
+        statusAtual[m.placa] = m.tipo;
     });
 
-    const emRota = Object.values(ultimoStatusPorVeiculo).filter(s => s === "SAÍDA").length;
-    const disponiveis = veiculos.length - emRota;
+    const emRota = Object.values(statusAtual).filter(s => s === "SAÍDA").length;
+    const naBase = veiculos.length - emRota;
 
-    // 4. ATUALIZAR/CRIAR O GRÁFICO (Visual Colorido)
-    const ctx = document.getElementById('graficoStatus');
-    if (ctx) {
-        if (meuGrafico) meuGrafico.destroy(); // Limpa se já existir
-        
-        meuGrafico = new Chart(ctx, {
+    if (document.getElementById('totalRota')) {
+        document.getElementById('totalRota').innerText = emRota;
+    }
+
+    // 4. Configuração do Gráfico de Pizza (Disponibilidade)
+    const ctxPizza = document.getElementById('graficoPizza');
+    if (ctxPizza) {
+        if (chartPizza) chartPizza.destroy();
+        chartPizza = new Chart(ctxPizza, {
             type: 'doughnut',
             data: {
-                labels: ['Em Rota', 'Disponíveis'],
+                labels: ['Em Rota', 'Na Base'],
                 datasets: [{
-                    data: [emRota, disponiveis],
-                    backgroundColor: ['#e63946', '#27ae60'], // Vermelho e Verde (Padrão Original)
-                    hoverOffset: 4,
+                    data: [emRota, naBase > 0 ? naBase : (veiculos.length === 0 ? 1 : 0)],
+                    backgroundColor: ['#e63946', '#27ae60'],
                     borderWidth: 0
                 }]
             },
             options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                cutout: '70%', // Estilo Doughnut
+                cutout: '75%',
                 plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: {
-                            color: '#fff',
-                            font: { size: 14 }
-                        }
-                    }
+                    legend: { position: 'bottom', labels: { color: '#fff', font: { size: 12 } } }
                 }
             }
         });
     }
 
-    // 5. TABELA DE RESUMO (Últimas 5) com as mesmas classes do original
-    const tabela = document.getElementById('tabelaResumo');
-    if (tabela) {
-        const ultimasMovs = movs.slice(0, 5); // Pega as 5 mais recentes
-        tabela.innerHTML = ultimasMovs.map(m => `
-            <tr>
-                <td>${m.hora}</td>
-                <td><strong>${m.placa}</strong></td>
-                <td><span class="badge ${m.tipo === 'SAÍDA' ? 'badge-saida' : 'badge-entrada'}">${m.tipo}</span></td>
-            </tr>
-        `).join('');
+    // 5. Configuração do Gráfico de Linha (Movimentação Semanal)
+    const ctxLinha = document.getElementById('graficoLinha');
+    if (ctxLinha) {
+        if (chartLinha) chartLinha.destroy();
+        
+        // Simulação de dados para o gráfico de linha (histórico de movimentações)
+        chartLinha = new Chart(ctxLinha, {
+            type: 'line',
+            data: {
+                labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
+                datasets: [{
+                    label: 'Registros',
+                    data: [2, 5, 3, 8, 4, 10, 2], // Aqui você pode implementar contagem real por dia depois
+                    borderColor: '#e63946',
+                    backgroundColor: 'rgba(230, 57, 70, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#e63946'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true, grid: { color: '#333' }, ticks: { color: '#888' } },
+                    x: { grid: { display: false }, ticks: { color: '#888' } }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    }
+
+    // 6. Alerta de Manutenção (Óleo/Revisão)
+    // Se quiser exibir um aviso caso algum veículo esteja chegando no KM
+    const areaAlertas = document.getElementById('areaAlertas');
+    if (areaAlertas) {
+        const criticos = veiculos.filter(v => v.kmProximaTroca && (v.kmProximaTroca - v.kmAtual <= 500));
+        if (criticos.length > 0) {
+            areaAlertas.innerHTML = criticos.map(v => `
+                <div class="alert-item" style="background: rgba(230,57,70,0.2); padding: 10px; border-radius: 5px; margin-bottom: 10px; border-left: 4px solid #e63946;">
+                    <small style="color: #e63946; font-weight: bold;">ALERTA DE MANUTENÇÃO</small><br>
+                    <span style="color: #fff;">${v.placa} - Faltam ${v.kmProximaTroca - v.kmAtual} KM</span>
+                </div>
+            `).join('');
+        }
     }
 }
 
-// Inicializa
+// Inicializa o Dashboard assim que a página carregar
 window.onload = carregarDashboard;
