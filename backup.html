@@ -10,21 +10,55 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body class="has-sidebar">
+
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-area">
+                <i class="fas fa-shield-alt logo-icon"></i>
+                <div><h2>JAPAN</h2><span>SECURITY</span></div>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <ul>
+                <li><a href="index.html"><i class="fas fa-home"></i> Início</a></li>
+                <li><a href="dashboard.html"><i class="fas fa-chart-line"></i> Dashboard</a></li>
+                <li><a href="entrada_saida.html"><i class="fas fa-exchange-alt"></i> Movimentação</a></li>
+                <li><a href="vistoria.html"><i class="fas fa-clipboard-check"></i> Vistoria</a></li>
+                <li><a href="maintenance.html"><i class="fas fa-tools"></i> Manutenção</a></li>
+                <li><a href="vehicles.html"><i class="fas fa-car"></i> Veículos</a></li>
+                <li><a href="backup.html" class="active"><i class="fas fa-database"></i> Backup</a></li>
+            </ul>
+        </nav>
+    </aside>
+
     <main class="main-content">
         <a href="index.html" class="btn-voltar"><i class="fas fa-arrow-left"></i> Voltar ao Menu</a>
-        <header class="top-bar"><h1>Cópia de Segurança</h1></header>
-        <div class="card">
-            <div class="card-header"><i class="fas fa-download"></i> Exportar Dados</div>
-            <p style="color: #888; margin-bottom: 15px;">Baixe o arquivo com todos os registros do sistema.</p>
-            <button class="btn-accent" onclick="exportarBackup()">Baixar Backup</button>
-        </div>
-        <div class="card">
-            <div class="card-header"><i class="fas fa-upload"></i> Importar Dados</div>
-            <p style="color: #888; margin-bottom: 15px;">Restaurar registros de um arquivo anterior.</p>
-            <input type="file" id="fileBackup" class="modern-input">
-            <button class="btn-primary" onclick="importarBackup()" style="margin-top: 10px;">Restaurar Agora</button>
-        </div>
+        
+        <header class="top-bar">
+            <h1>Cópia de Segurança (IndexedDB)</h1>
+        </header>
+
+        <section class="content-body">
+            <div class="card">
+                <div class="card-header"><i class="fas fa-file-export"></i> Exportar Dados</div>
+                <p style="color: #bbb; margin-bottom: 15px;">Gera um arquivo com todos os veículos, vistorias (incluindo fotos) e manutenções.</p>
+                <button class="btn-primary" style="background: #27ae60;" onclick="exportarBackup()">
+                    <i class="fas fa-download"></i> Baixar Arquivo de Backup
+                </button>
+            </div>
+
+            <div class="card mt-20">
+                <div class="card-header"><i class="fas fa-file-import"></i> Importar Dados</div>
+                <p style="color: #bbb; margin-bottom: 15px;">Atenção: A importação substituirá os dados atuais do banco de dados.</p>
+                <input type="file" id="fileBackup" class="modern-input" accept=".json">
+                <button class="btn-primary" style="margin-top: 15px; background: #e67e22;" onclick="importarBackup()">
+                    <i class="fas fa-upload"></i> Restaurar Agora
+                </button>
+            </div>
+        </section>
     </main>
+
+    <script src="js/db.js"></script>
     <script src="js/backup.js"></script>
 </body>
 </html>
