@@ -4,91 +4,144 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Japan Security | Movimentação</title>
-    <link rel="icon" type="image/png" href="icons/icon-192x192.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="css/style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    
+    <style>
+        :root { --red: #e63946; --dark: #121212; --card: #1e1e1e; --border: #333; --green: #27ae60; }
+        body { background: var(--dark); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; }
+        
+        /* Sidebar */
+        .sidebar { width: 250px; background: #000; height: 100vh; border-right: 1px solid var(--border); position: fixed; }
+        .sidebar-nav a { display: block; padding: 15px 20px; color: #888; text-decoration: none; transition: 0.3s; }
+        .sidebar-nav a:hover, .sidebar-nav a.active { color: white; background: rgba(230,57,70,0.1); border-left: 4px solid var(--red); }
+        
+        /* Main Content */
+        .main { flex: 1; margin-left: 250px; padding: 30px; }
+        .card { background: var(--card); border-radius: 8px; padding: 20px; border: 1px solid var(--border); margin-bottom: 20px; }
+        
+        /* Grid de Inputs */
+        .grid-inputs { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 15px; }
+        .input-group label { display: block; color: #888; font-size: 12px; margin-bottom: 5px; text-transform: uppercase; }
+        .modern-input { width: 100%; background: #2a2a2a; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 4px; outline: none; }
+        .modern-input:focus { border-color: var(--red); }
+
+        /* Botões */
+        .btn { padding: 12px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; display: inline-flex; align-items: center; gap: 8px; transition: 0.3s; }
+        .btn-save { background: var(--red); color: white; width: 100%; justify-content: center; }
+        .btn-filter { background: #333; color: white; }
+        .btn-pdf { background: var(--green); color: white; }
+        .btn:hover { opacity: 0.8; transform: translateY(-2px); }
+
+        /* Tabela */
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th { text-align: left; color: #888; padding: 12px; border-bottom: 2px solid var(--border); font-size: 13px; }
+        td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 14px; }
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
+        .badge-saida { background: rgba(230,57,70,0.2); color: var(--red); }
+        .badge-entrada { background: rgba(39, 174, 96, 0.2); color: var(--green); }
+        
+        .btn-delete { background: none; border: none; color: #555; cursor: pointer; transition: 0.3s; }
+        .btn-delete:hover { color: var(--red); transform: scale(1.2); }
+
+        /* Indicador Ativo */
+        .status-badge { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: bold; }
+        .dot { height: 8px; width: 8px; background: var(--green); border-radius: 50%; box-shadow: 0 0 8px var(--green); animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
+        
+        @media (max-width: 768px) { .sidebar { display: none; } .main { margin-left: 0; } }
+    </style>
 </head>
-<body class="has-sidebar">
+<body>
 
     <aside class="sidebar">
-        <div class="sidebar-header">
-            <div class="logo-area"><i class="fas fa-shield-alt logo-icon"></i><div><h2>JAPAN</h2><span>SECURITY</span></div></div>
+        <div style="padding: 30px 20px; text-align: center; border-bottom: 1px solid var(--border);">
+            <i class="fas fa-shield-alt" style="font-size: 2rem; color: var(--red);"></i>
+            <h2 style="margin: 10px 0 0; letter-spacing: 2px;">JAPAN</h2>
+            <span style="font-size: 10px; color: #888; letter-spacing: 4px;">SECURITY</span>
         </div>
         <nav class="sidebar-nav">
-            <ul>
-                <li><a href="index.html"><i class="fas fa-chart-line"></i> Dashboard</a></li>
-                <li><a href="entrada_saida.html" class="active"><i class="fas fa-exchange-alt"></i> Movimentação</a></li>
-                <li><a href="vistoria.html"><i class="fas fa-clipboard-check"></i> Vistoria</a></li>
-                <li><a href="maintenance.html"><i class="fas fa-tools"></i> Manutenção</a></li>
-                <li><a href="vehicles.html"><i class="fas fa-car"></i> Veículos</a></li>
-                <li><a href="backup.html"><i class="fas fa-database"></i> Backup</a></li>
-            </ul>
+            <a href="index.html"><i class="fas fa-chart-line"></i> Dashboard</a>
+            <a href="entrada_saida.html" class="active"><i class="fas fa-exchange-alt"></i> Movimentação</a>
+            <a href="vistoria.html"><i class="fas fa-clipboard-check"></i> Vistoria</a>
+            <a href="maintenance.html"><i class="fas fa-tools"></i> Manutenção</a>
+            <a href="vehicles.html"><i class="fas fa-car"></i> Veículos</a>
         </nav>
     </aside>
 
-    <main class="main-content">
-        <header class="top-bar"><h1>Registro de Entrada e Saída</h1></header>
+    <main class="main">
+        <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+            <h1 style="margin: 0; font-weight: 300;">Movimentação de Frota</h1>
+            <div class="status-badge"><span class="dot"></span> SISTEMA ATIVO</div>
+        </header>
 
-        <section class="content-body">
-            <div class="card">
-                <div class="row">
-                    <div class="input-group">
-                        <label>Viatura (Placa)</label>
-                        <input id="veiculo" class="modern-input" list="listaVeiculos" onchange="puxarKmAutomatico()" placeholder="Selecione ou digite...">
-                        <datalist id="listaVeiculos"></datalist>
-                    </div>
-                    <div class="input-group">
-                        <label>Operação</label>
-                        <select id="tipo" class="modern-input">
-                            <option value="SAÍDA">SAÍDA</option>
-                            <option value="ENTRADA">ENTRADA</option>
-                        </select>
-                    </div>
-                    <div class="input-group">
-                        <label>KM Atual</label>
-                        <input id="km" type="number" class="modern-input">
-                    </div>
-                    <div class="input-group">
-                        <label>Responsável</label>
-                        <input id="responsavel" class="modern-input">
-                    </div>
+        <div class="card">
+            <h4 style="margin-top: 0; margin-bottom: 20px; color: var(--red);">Novo Registro</h4>
+            <div class="grid-inputs">
+                <div class="input-group">
+                    <label>Viatura (Placa)</label>
+                    <input id="veiculo" class="modern-input" list="listaVeiculos" onchange="puxarKmAutomatico()" placeholder="Placa...">
+                    <datalist id="listaVeiculos"></datalist>
                 </div>
-                <button class="btn-primary mt-20" onclick="salvar()">Registrar Movimentação</button>
-            </div>
-
-            <div class="card mt-20" style="background: #1a1a1a; border: 1px solid #333;">
-                <div class="card-header"><i class="fas fa-filter"></i> Filtros e Relatórios</div>
-                <div class="row" style="display: flex; gap: 10px; align-items: flex-end;">
-                    <div class="input-group">
-                        <label>Início</label>
-                        <input type="date" id="dataInicio" class="modern-input">
-                    </div>
-                    <div class="input-group">
-                        <label>Fim</label>
-                        <input type="date" id="dataFim" class="modern-input">
-                    </div>
-                    <div class="input-group">
-                        <label>Placa Específica</label>
-                        <input type="text" id="veiculoFiltro" class="modern-input" placeholder="Ex: ABC1234">
-                    </div>
-                    <button class="btn-primary" onclick="renderizarTabela()" style="background: #333;">Filtrar</button>
-                    <button class="btn-primary" onclick="gerarRelatorioPDF()" style="background: #27ae60;"><i class="fas fa-file-pdf"></i> PDF</button>
+                <div class="input-group">
+                    <label>Operação</label>
+                    <select id="tipo" class="modern-input">
+                        <option value="SAÍDA">SAÍDA</option>
+                        <option value="ENTRADA">ENTRADA</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>KM Atual</label>
+                    <input id="km" type="number" class="modern-input" placeholder="Ex: 45200">
+                </div>
+                <div class="input-group">
+                    <label>Responsável</label>
+                    <input id="responsavel" class="modern-input" placeholder="Nome do condutor">
                 </div>
             </div>
+            <button class="btn btn-save" onclick="salvar()"><i class="fas fa-check-circle"></i> SALVAR MOVIMENTAÇÃO</button>
+        </div>
 
-            <div class="card mt-20 table-card">
-                <div class="table-responsive">
-                    <table class="modern-table">
-                        <thead>
-                            <tr><th>Data/Hora</th><th>Viatura</th><th>Status</th><th>KM</th><th>Responsável</th><th>Ação</th></tr>
-                        </thead>
-                        <tbody id="tabela"></tbody>
-                    </table>
+        <div class="card" style="background: rgba(255,255,255,0.02);">
+            <h4 style="margin-top: 0; font-size: 14px; color: #888;"><i class="fas fa-filter"></i> FILTRAR E EXPORTAR</h4>
+            <div class="grid-inputs" style="align-items: flex-end;">
+                <div class="input-group">
+                    <label>Data Início</label>
+                    <input type="date" id="dataInicio" class="modern-input">
+                </div>
+                <div class="input-group">
+                    <label>Data Fim</label>
+                    <input type="date" id="dataFim" class="modern-input">
+                </div>
+                <div class="input-group">
+                    <label>Filtrar Placa</label>
+                    <input type="text" id="veiculoFiltro" class="modern-input" placeholder="Ex: ABC1234">
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-filter" onclick="renderizarTabela()"><i class="fas fa-search"></i></button>
+                    <button class="btn btn-pdf" onclick="gerarRelatorioPDF()"><i class="fas fa-file-pdf"></i> PDF</button>
                 </div>
             </div>
-        </section>
+        </div>
+
+        <div class="card">
+            <h4 style="margin-top: 0; margin-bottom: 15px;">Últimos Lançamentos</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Data/Hora</th>
+                        <th>Viatura</th>
+                        <th>Operação</th>
+                        <th>KM</th>
+                        <th>Responsável</th>
+                        <th>Ação</th>
+                    </tr>
+                </thead>
+                <tbody id="tabela">
+                    </tbody>
+            </table>
+        </div>
     </main>
 
     <script src="js/db.js"></script>
