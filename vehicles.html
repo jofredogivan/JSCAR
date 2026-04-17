@@ -4,54 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Japan Security | Frota</title>
-    
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#e63946">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --red: #e63946; --dark: #121212; --card: #1e1e1e; --border: #333; }
         body { background: var(--dark); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; }
-        
         .sidebar { width: 250px; background: #000; height: 100vh; border-right: 1px solid var(--border); position: fixed; }
-        .sidebar-nav a { display: block; padding: 15px 20px; color: #888; text-decoration: none; border-left: 4px solid transparent; transition: 0.3s; }
-        .sidebar-nav a:hover, .sidebar-nav a.active { color: white; background: rgba(230,57,70,0.1); border-left-color: var(--red); }
-        .sidebar-nav i { margin-right: 10px; width: 20px; text-align: center; }
-
+        .sidebar-nav a { display: block; padding: 15px 20px; color: #888; text-decoration: none; border-left: 4px solid transparent; }
+        .sidebar-nav a.active { color: white; background: rgba(230,57,70,0.1); border-left-color: var(--red); }
         .main { flex: 1; margin-left: 250px; padding: 30px; }
         .card { background: var(--card); border-radius: 8px; padding: 20px; border: 1px solid var(--border); margin-bottom: 20px; }
-        
         .grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 15px; }
-        label { display: block; color: #888; font-size: 11px; text-transform: uppercase; margin-bottom: 5px; }
-        .modern-input { width: 100%; background: #2a2a2a; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 4px; box-sizing: border-box; outline: none; }
-        .modern-input:focus { border-color: var(--red); }
-        
-        .btn { padding: 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; background: var(--red); color: white; width: 100%; margin-top: 20px; transition: 0.3s; }
-        .btn:hover { background: #b91c1c; }
-        
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .modern-input { width: 100%; background: #2a2a2a; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 4px; box-sizing: border-box; }
+        .btn { padding: 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; color: white; transition: 0.3s; }
+        .btn-save { background: var(--red); width: 100%; margin-top: 20px; }
+        .btn-pdf { background: #27ae60; margin-bottom: 15px; }
+        table { width: 100%; border-collapse: collapse; }
         th { text-align: left; color: #888; padding: 12px; border-bottom: 2px solid var(--border); font-size: 12px; }
-        td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 14px; }
-        tr.clickable:hover { background: rgba(255,255,255,0.05); cursor: pointer; }
-        
-        .btn-del { background: none; border: none; color: #555; cursor: pointer; }
-        .btn-del:hover { color: var(--red); }
-
-        @media (max-width: 768px) {
-            .sidebar { display: none; }
-            .main { margin-left: 0; padding: 15px; }
-            .grid { grid-template-columns: 1fr; }
-        }
+        td { padding: 12px; border-bottom: 1px solid var(--border); }
+        .filter-group { display: flex; gap: 10px; margin-bottom: 20px; align-items: flex-end; }
     </style>
 </head>
 <body>
-
     <aside class="sidebar">
-        <div style="padding: 30px 20px; text-align: center;">
-            <h2 style="color:var(--red); margin:0; letter-spacing: 2px;">JAPAN</h2>
-            <span style="font-size:10px; color:#888;">SECURITY - FROTA</span>
-        </div>
+        <div style="padding: 30px; text-align: center;"><h2 style="color:var(--red); margin:0;">JAPAN</h2><span style="font-size:10px;">SECURITY</span></div>
         <nav class="sidebar-nav">
             <a href="entrada_saida.html"><i class="fas fa-exchange-alt"></i> Movimentação</a>
             <a href="vistoria.html"><i class="fas fa-clipboard-check"></i> Vistoria</a>
@@ -61,53 +37,32 @@
 
     <main class="main">
         <div class="card">
-            <h4 id="formTitle" style="margin-top:0; color:var(--red);">Cadastrar Novo Veículo</h4>
+            <h4 id="formTitle"><i class="fas fa-plus-circle"></i> Cadastrar Veículo</h4>
             <input type="hidden" id="veiculoId">
             <div class="grid">
-                <div>
-                    <label>Modelo / Nome</label>
-                    <input id="nome" class="modern-input" placeholder="Ex: Gol 01">
-                </div>
-                <div>
-                    <label>Placa</label>
-                    <input id="placa" class="modern-input" placeholder="ABC-1234">
-                </div>
-                <div>
-                    <label>Ano</label>
-                    <input id="ano" type="number" class="modern-input" placeholder="2024">
-                </div>
-                <div>
-                    <label>KM Inicial</label>
-                    <input id="kmAtual" type="number" class="modern-input" placeholder="0">
-                </div>
+                <div><label>Modelo/VTR</label><input id="nome" class="modern-input" placeholder="Ex: Kwid VTR 62"></div>
+                <div><label>Placa</label><input id="placa" class="modern-input" placeholder="PBP1962"></div>
+                <div><label>Ano</label><input id="ano" type="number" class="modern-input"></div>
+                <div><label>KM Inicial</label><input id="kmAtual" type="number" class="modern-input"></div>
             </div>
-            <button class="btn" onclick="salvarVeiculo()"><i class="fas fa-save"></i> SALVAR VEÍCULO</button>
+            <button class="btn btn-save" onclick="salvarVeiculo()"><i class="fas fa-save"></i> SALVAR NO SISTEMA</button>
         </div>
 
         <div class="card">
-            <h4 style="margin-top:0; color: #888;">Veículos na Frota</h4>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h4><i class="fas fa-list"></i> Frota Cadastrada</h4>
+                <button class="btn btn-pdf" onclick="gerarRelatorioFrotaPDF()"><i class="fas fa-file-pdf"></i> PDF DA FROTA</button>
+            </div>
             <table>
-                <thead>
-                    <tr>
-                        <th>Modelo</th>
-                        <th>Placa</th>
-                        <th>Ano</th>
-                        <th>KM</th>
-                        <th style="text-align: right;">Ação</th>
-                    </tr>
-                </thead>
+                <thead><tr><th>Modelo</th><th>Placa</th><th>Ano</th><th>KM</th><th style="text-align:right">Ação</th></tr></thead>
                 <tbody id="tabelaVeiculos"></tbody>
             </table>
         </div>
     </main>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <script src="js/db.js"></script>
     <script src="js/vehicles.js"></script>
-    <script>
-        // Registro do Service Worker para o PWA funcionar
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js').catch(err => console.log("Erro SW:", err));
-        }
-    </script>
 </body>
 </html>
