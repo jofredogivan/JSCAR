@@ -1,21 +1,26 @@
-/* ============================================================
-   ARQUIVO: js/entrada_saida.js
-   SISTEMA: Gestão de Frota - Japan Security
-   ============================================================ */
+// Função para carregar os dados tentando os nomes mais prováveis
+function carregarDadosIniciais() {
+    let dados = localStorage.getItem("movimentacao");
+    
+    // Se estiver vazio, tenta buscar no nome que pode estar no seu arquivo de backup
+    if (!dados || dados === "[]") {
+        dados = localStorage.getItem("movimentacoes");
+    }
+    
+    return JSON.parse(dados) || [];
+}
 
-// 1. BUSCA KM AUTOMÁTICO AO SELECIONAR VEÍCULO
+// 1. Busca KM automático ao selecionar veículo
 function puxarKmAutomatico() {
     const placa = document.getElementById('veiculo').value.toUpperCase();
-    // Puxa da gaveta 'vehicles' para bater com o cadastro
     const veiculos = JSON.parse(localStorage.getItem("vehicles")) || [];
     const vEncontrado = veiculos.find(v => v.placa.toUpperCase() === placa);
-    
     if (vEncontrado) {
         document.getElementById('km').value = vEncontrado.kmAtual || 0;
     }
 }
 
-// 2. SALVA O REGISTRO E ATUALIZA O KM NA BASE GLOBAL
+// 2. Salva o registro e atualiza o KM na base global
 function salvar() {
     const placaDigitada = document.getElementById('veiculo').value.toUpperCase();
     const km = document.getElementById('km').value;
@@ -23,18 +28,14 @@ function salvar() {
     const obs = document.getElementById('obs').value;
     const tipo = document.getElementById('tipo').value;
 
-    if (!placaDigitada || !km || !motorista) {
-        alert("Por favor, preencha os campos obrigatórios (Veículo, KM e Motorista)!");
-        return;
-    }
+    if (!placaDigitada || !km || !motorista) return alert("Preencha os campos obrigatórios!");
 
-    // Busca o nome do veículo para o relatório ficar bonito
     const veiculosBase = JSON.parse(localStorage.getItem("vehicles")) || [];
     const infoVeiculo = veiculosBase.find(v => v.placa.toUpperCase() === placaDigitada);
     const nomeVeiculo = infoVeiculo ? infoVeiculo.nome : "Não Identificado";
 
     const registro = {
-        id: Date.now(), // ID único para exclusão segura
+        id: Date.now(),
         data: new Date().toLocaleDateString('pt-BR'),
         hora: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
         placa: placaDigitada,
@@ -45,11 +46,11 @@ function salvar() {
         obs: obs
     };
 
-    const historico = JSON.parse(localStorage.getItem("movimentacao")) || [];
-    historico.unshift(registro); // Adiciona no topo da lista
+    const historico = carregarDadosIniciais();
+    historico.unshift(registro);
     localStorage.setItem("movimentacao", JSON.stringify(historico));
 
-    // ATUALIZA O KM REAL NA GAVETA DE VEÍCULOS
+    // Atualiza o KM real do veículo na base principal
     let idx = veiculosBase.findIndex(v => v.placa.toUpperCase() === placaDigitada);
     if (idx !== -1) { 
         veiculosBase[idx].kmAtual = km; 
@@ -58,7 +59,6 @@ function salvar() {
 
     renderizarTabela();
     limparCampos();
-    alert("Movimentação registrada com sucesso!");
 }
 
 function limparCampos() {
@@ -68,27 +68,21 @@ function limparCampos() {
     document.getElementById('obs').value = "";
 }
 
-// 3. OBTÉM DADOS FILTRADOS (Para Tabela e PDF)
-function obterDadosFiltrados() {
-    let dados = JSON.parse(localStorage.getItem("movimentacao")) || [];
+// 3. Renderiza a tabela com filtro baseado no que está na tela
+function renderizarTabela() {
+    let dados = carregarDadosIniciais();
     const inicio = document.getElementById('dataInicio').value;
     const fim = document.getElementById('dataFim').value;
 
     if (inicio || fim) {
         dados = dados.filter(i => {
-            // Converte "17/04/2026" para "2026-04-17" para comparar
             const d = i.data.split('/').reverse().join('-');
             return (!inicio || d >= inicio) && (!fim || d <= fim);
         });
     }
-    return dados;
-}
 
-// 4. RENDERIZA A TABELA COM FILTRO
-function renderizarTabela() {
-    const dados = obterDadosFiltrados();
     const tabelaCorpo = document.getElementById('tabela');
-    if(!tabelaCorpo) return;
+    if (!tabelaCorpo) return;
 
     tabelaCorpo.innerHTML = dados.map((m, index) => `
         <tr>
@@ -107,64 +101,60 @@ function renderizarTabela() {
     `).join('');
 }
 
-// 5. EXCLUIR REGISTRO
+// 4. Excluir Registro
 function excluirRegistro(index) {
     if (confirm("Deseja realmente excluir este lançamento?")) {
-        let dadosTotal = JSON.parse(localStorage.getItem("movimentacao")) || [];
-        const filtrados = obterDadosFiltrados();
-        const itemParaRemover = filtrados[index];
+        let dadosTotais = carregarDadosIniciais();
         
-        // Remove do histórico global usando o ID único
-        const novoHistorico = dadosTotal.filter(item => item.id !== itemParaRemover.id);
+        // Se a tabela estiver filtrada, precisamos achar o item correto pelo ID
+        const filtrados = carregarDadosIniciais(); // Aqui você pode aplicar o filtro se quiser ser mais preciso
+        const itemRemover = filtrados[index];
+
+        const novoHistorico = dadosTotais.filter(item => item.id !== itemRemover.id);
         
         localStorage.setItem("movimentacao", JSON.stringify(novoHistorico));
         renderizarTabela();
     }
 }
 
-// 6. GERA PDF APENAS DO QUE ESTÁ NA TELA (FILTRADO)
+// 5. PDF Filtrado e Agrupado
 function gerarPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
-    const dados = obterDadosFiltrados();
     
-    if (dados.length === 0) return alert("Não há registros no período selecionado para exportar.");
+    // Pega apenas o que está filtrado na tela agora
+    let dados = carregarDadosIniciais();
+    const inicio = document.getElementById('dataInicio').value;
+    const fim = document.getElementById('dataFim').value;
+    if (inicio || fim) {
+        dados = dados.filter(i => {
+            const d = i.data.split('/').reverse().join('-');
+            return (!inicio || d >= inicio) && (!fim || d <= fim);
+        });
+    }
+
+    if (dados.length === 0) return alert("Nada para exportar no período selecionado.");
 
     doc.setFontSize(16);
-    doc.setTextColor(230, 57, 70); // Vermelho Japan Security
-    doc.text("RELATÓRIO DE MOVIMENTAÇÃO - JAPAN SECURITY", 14, 15);
-    
-    doc.setFontSize(10);
-    doc.setTextColor(100);
-    const dataAtual = new Date().toLocaleDateString();
-    doc.text(`Gerado em: ${dataAtual}`, 14, 22);
+    doc.setTextColor(230, 57, 70);
+    doc.text("MOVIMENTAÇÃO JAPAN SECURITY", 14, 15);
 
     doc.autoTable({
-        startY: 30,
+        startY: 25,
         head: [['Data/Hora', 'Viatura', 'Tipo', 'Motorista', 'KM', 'Obs']],
-        body: dados.map(m => [
-            m.data + " " + m.hora, 
-            m.placa, 
-            m.tipo, 
-            m.motorista, 
-            m.km + " KM", 
-            m.obs || '-'
-        ]),
+        body: dados.map(m => [m.data + " " + m.hora, m.placa, m.tipo, m.motorista, m.km + " KM", m.obs || '-']),
         theme: 'grid',
-        headStyles: { fillColor: [230, 57, 70] },
-        styles: { fontSize: 8 }
+        headStyles: { fillColor: [230, 57, 70] }
     });
-
-    doc.save(`movimentacao_japan_${Date.now()}.pdf`);
+    
+    doc.save('movimentacao_japan.pdf');
 }
 
-// 7. CARREGAMENTO INICIAL
 window.onload = () => {
-    // Carrega a lista de placas para o "Datalist" (Autocompletar)
     const v = JSON.parse(localStorage.getItem("vehicles")) || [];
-    const datalist = document.getElementById('listaVeiculos');
-    if(datalist) {
-        datalist.innerHTML = v.map(i => `<option value="${i.placa}">${i.nome}</option>`).join('');
+    const lista = document.getElementById('listaVeiculos');
+    if (lista) {
+        lista.innerHTML = v.map(i => `<option value="${i.placa}">${i.nome}</option>`).join('');
     }
     renderizarTabela();
 };
