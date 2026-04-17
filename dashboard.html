@@ -8,7 +8,21 @@
     <link rel="stylesheet" href="css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* Estilo do indicador Sistema Ativo */
+        /* Ajustes para Mobile */
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .main-content { margin-left: 0 !important; width: 100%; padding: 10px; }
+            .row { flex-direction: column; }
+            .top-bar h1 { font-size: 16px; }
+        }
+
+        /* Container fixo para os gráficos não crescerem infinito */
+        .chart-container {
+            position: relative;
+            height: 200px; /* Altura reduzida para mobile */
+            width: 100%;
+        }
+
         .status-badge {
             display: flex;
             align-items: center;
@@ -18,8 +32,7 @@
             font-weight: bold;
         }
         .dot {
-            height: 10px;
-            width: 10px;
+            height: 10px; width: 10px;
             background-color: #27ae60;
             border-radius: 50%;
             display: inline-block;
@@ -34,72 +47,107 @@
 </head>
 <body class="has-sidebar">
 
-    <aside class="sidebar">
-        <div class="sidebar-header">
-            <div class="logo-area">
-                <i class="fas fa-shield-alt logo-icon" style="color: #e63946;"></i>
-                <div><h2>JAPAN</h2><span>SECURITY</span></div>
-            </div>
-        </div>
-        <nav class="sidebar-nav">
-            <ul>
-                <li><a href="dashboard.html" class="active"><i class="fas fa-chart-line"></i> Dashboard</a></li>
-                <li><a href="vistoria.html"><i class="fas fa-clipboard-check"></i> Vistoria</a></li>
-                <li><a href="entrada_saida.html"><i class="fas fa-exchange-alt"></i> Entrada/Saída</a></li>
-                <li><a href="maintenance.html"><i class="fas fa-tools"></i> Manutenção</a></li>
-                <li><a href="vehicles.html"><i class="fas fa-car"></i> Veículos</a></li>
-                <li><a href="backup.html"><i class="fas fa-database"></i> Backup</a></li>
-            </ul>
-        </nav>
-    </aside>
-
     <main class="main-content">
-        <header class="top-bar" style="display: flex; justify-content: space-between; align-items: center;">
-            <h1>Painel de Controle Operacional</h1>
+        <header class="top-bar" style="display: flex; justify-content: space-between; align-items: center; padding: 15px;">
+            <a href="index.html" style="color:white; text-decoration:none;"><i class="fas fa-arrow-left"></i></a>
+            <h1 style="margin:0; font-size: 1.2rem;">Painel Operacional</h1>
             <div class="status-badge">
-                <span class="dot"></span> SISTEMA ATIVO
+                <span class="dot"></span> ATIVO
             </div>
         </header>
 
         <section class="content-body">
-            <div class="dashboard-grid">
-                <div class="card dash-card">
-                    <i class="fas fa-car" style="color: #e63946; font-size: 2rem;"></i>
+            <div class="dashboard-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; padding: 10px;">
+                <div class="card dash-card" style="padding: 15px; text-align: center;">
+                    <i class="fas fa-car" style="color: #e63946; font-size: 1.5rem;"></i>
                     <div class="info">
-                        <h3>FROTA</h3>
-                        <p id="countFrotaTotal">0</p>
+                        <h3 style="font-size: 10px; margin: 5px 0;">FROTA</h3>
+                        <p id="countFrotaTotal" style="font-size: 18px; font-weight: bold; margin:0;">0</p>
                     </div>
                 </div>
-                <div class="card dash-card" style="border-bottom: 3px solid #f1c40f;">
-                    <i class="fas fa-tools" style="color: #f1c40f; font-size: 2rem;"></i>
+                <div class="card dash-card" style="padding: 15px; text-align: center; border-bottom: 3px solid #f1c40f;">
+                    <i class="fas fa-tools" style="color: #f1c40f; font-size: 1.5rem;"></i>
                     <div class="info">
-                        <h3>NA OFICINA</h3>
-                        <p id="countOficina">0</p>
+                        <h3 style="font-size: 10px; margin: 5px 0;">OFICINA</h3>
+                        <p id="countOficina" style="font-size: 18px; font-weight: bold; margin:0;">0</p>
                     </div>
                 </div>
-                <div class="card dash-card" style="border-bottom: 3px solid #27ae60;">
-                    <i class="fas fa-clipboard-list" style="color: #27ae60; font-size: 2rem;"></i>
+                <div class="card dash-card" style="padding: 15px; text-align: center; border-bottom: 3px solid #27ae60;">
+                    <i class="fas fa-clipboard-list" style="color: #27ae60; font-size: 1.5rem;"></i>
                     <div class="info">
-                        <h3>VISTORIAS</h3>
-                        <p id="countVistorias">0</p>
+                        <h3 style="font-size: 10px; margin: 5px 0;">VISTORIAS</h3>
+                        <p id="countVistorias" style="font-size: 18px; font-weight: bold; margin:0;">0</p>
                     </div>
                 </div>
             </div>
 
-            <div class="row mt-20" style="display: flex; gap: 20px; flex-wrap: wrap;">
-                <div class="card" style="flex: 2; min-width: 300px;">
-                    <div class="card-header" style="color: #e63946;"><i class="fas fa-chart-area"></i> Movimentação Semanal</div>
-                    <canvas id="graficoLinha" style="max-height: 250px;"></canvas>
+            <div class="row" style="display: flex; flex-direction: column; gap: 15px; padding: 10px;">
+                <div class="card">
+                    <div class="card-header" style="color: #e63946; font-size: 14px; padding: 10px;"><i class="fas fa-chart-area"></i> Movimentação</div>
+                    <div class="chart-container">
+                        <canvas id="graficoLinha"></canvas>
+                    </div>
                 </div>
-                <div class="card" style="flex: 1; min-width: 250px;">
-                    <div class="card-header" style="color: #e63946;"><i class="fas fa-chart-pie"></i> Status da Frota</div>
-                    <canvas id="graficoPizza" style="max-height: 250px;"></canvas>
+                
+                <div class="card">
+                    <div class="card-header" style="color: #e63946; font-size: 14px; padding: 10px;"><i class="fas fa-chart-pie"></i> Status Frota</div>
+                    <div class="chart-container">
+                        <canvas id="graficoPizza"></canvas>
+                    </div>
                 </div>
             </div>
         </section>
     </main>
 
     <script src="js/db.js"></script>
+    <script>
+        // Configurações padrão para gráficos pequenos
+        const chartOptions = {
+            responsive: true,
+            maintainAspectRatio: false, // Permite que a div controle a altura
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'bottom',
+                    labels: { boxWidth: 12, font: { size: 10 }, color: '#ccc' }
+                }
+            }
+        };
+
+        // Exemplo de inicialização (isso deve ser integrado com seu js/dashboard.js)
+        window.onload = function() {
+            // Grafico de Linha
+            new Chart(document.getElementById('graficoLinha'), {
+                type: 'line',
+                data: {
+                    labels: ['S', 'T', 'Q', 'Q', 'S', 'S', 'D'],
+                    datasets: [{
+                        label: 'Movimentos',
+                        data: [12, 19, 8, 15, 22, 10, 5],
+                        borderColor: '#e63946',
+                        tension: 0.3,
+                        fill: true,
+                        backgroundColor: 'rgba(230, 57, 70, 0.1)'
+                    }]
+                },
+                options: chartOptions
+            });
+
+            // Grafico de Pizza
+            new Chart(document.getElementById('graficoPizza'), {
+                type: 'doughnut', // Use doughnut que fica mais bonito no mobile
+                data: {
+                    labels: ['Ativos', 'Oficina'],
+                    datasets: [{
+                        data: [10, 2],
+                        backgroundColor: ['#27ae60', '#f1c40f'],
+                        borderWidth: 0
+                    }]
+                },
+                options: chartOptions
+            });
+        };
+    </script>
     <script src="js/dashboard.js"></script>
 </body>
 </html>
