@@ -1,87 +1,79 @@
-function atualizarDashboard() {
-    // Busca os veículos cadastrados no LocalStorage
-    const veiculos = JSON.parse(localStorage.getItem("vehicles")) || [];
-    const listaNotificacoes = document.getElementById('listaNotificacoes');
-    
-    let ok = 0;
-    let alerta = 0;
-    listaNotificacoes.innerHTML = "";
+/* ============================================================
+   ARQUIVO: js/dashboard.js
+   ============================================================ */
 
-    veiculos.forEach(v => {
-        // Lógica de Manutenção: Verifica se o KM atual está próximo da Próxima Troca
-        // Consideramos alerta se faltar 500km ou se já tiver passado
-        const kmAtual = parseFloat(v.kmAtual) || 0;
-        const kmTroca = parseFloat(v.kmTroca) || 0;
-        const kmRestante = kmTroca - kmAtual;
+async function carregarDashboard() {
+    // Busca dados das 3 stores principais
+    const veiculos = await dbListar("vehicles");
+    const vistorias = await dbListar("vistorias");
+    const movimentacoes = await dbListar("movimentacao");
+    const manutencoes = await dbListar("maintenance");
 
-        if (kmTroca > 0 && kmRestante <= 500) {
-            alerta++;
-            const item = document.createElement('div');
-            item.className = 'check-item';
-            item.style.marginBottom = '10px';
-            item.style.borderLeft = '4px solid #e63946';
-            item.style.display = 'flex';
-            item.style.justifyContent = 'flex-start';
-            
-            let msg = kmRestante <= 0 
-                ? `Vencido há ${Math.abs(kmRestante)} KM` 
-                : `Trocar em ${kmRestante} KM`;
+    // --- 1. LÓGICA DE ALERTAS DE MANUTENÇÃO ---
+    const areaAlerta = document.getElementById('areaAlertas');
+    if (areaAlerta) {
+        // Filtra veículos que estão a menos de 500km da próxima troca
+        const alertas = veiculos.filter(v => {
+            if (!v.kmProximaTroca || !v.kmAtual) return false;
+            const restante = parseInt(v.kmProximaTroca) - parseInt(v.kmAtual);
+            return restante <= 500;
+        });
 
-            item.innerHTML = `
-                <i class="fas fa-exclamation-triangle" style="color: #e63946; margin-right: 10px;"></i>
-                <span><strong>${v.placa} (${v.nome})</strong>: <span style="color: #e63946">${msg}</span></span>
-            `;
-            listaNotificacoes.appendChild(item);
+        if (alertas.length > 0) {
+            areaAlerta.innerHTML = alertas.map(v => `
+                <div class="card-alerta" style="background: rgba(230, 57, 70, 0.2); border-left: 5px solid #e63946; padding: 15px; margin-bottom: 10px; border-radius: 8px; display: flex; align-items: center; gap: 15px;">
+                    <i class="fas fa-exclamation-triangle" style="color: #e63946; font-size: 1.5rem;"></i>
+                    <div>
+                        <strong style="color: #fff;">Alerta de Revisão: ${v.placa}</strong><br>
+                        <span style="color: #ccc; font-size: 0.9rem;">Faltam apenas ${parseInt(v.kmProximaTroca) - parseInt(v.kmAtual)} KM para a troca programada.</span>
+                    </div>
+                </div>
+            `).join('');
         } else {
-            ok++;
+            areaAlerta.innerHTML = '';
         }
-    });
-
-    // Atualiza os números nos cards superiores
-    document.getElementById('totalVeiculos').innerText = veiculos.length;
-    document.getElementById('totalAlertas').innerText = alerta;
-
-    if (veiculos.length === 0) {
-        listaNotificacoes.innerHTML = "<p style='color: #888; padding: 10px;'>Nenhum veículo cadastrado no sistema.</p>";
-    } else if (alerta === 0) {
-        listaNotificacoes.innerHTML = "<p style='color: #2ecc71; padding: 10px;'><i class='fas fa-check-circle'></i> Toda a frota está com a manutenção em dia!</p>";
     }
 
-    // --- CONFIGURAÇÃO DO GRÁFICO EM CÍRCULO ---
-    const ctx = document.getElementById('chartStatus').getContext('2d');
+    // --- 2. CONTADORES DOS CARDS ---
     
-    // Destrói gráfico existente para evitar bugs de sobreposição ao atualizar
-    if (window.chartInstancia) {
-        window.chartInstancia.destroy();
-    }
+    // Vistorias de Hoje
+    const hoje = new Date().toLocaleDateString('pt-BR');
+    const totalVistoriasHoje = vistorias.filter(v => v.data === hoje).length;
+    document.getElementById('countVistorias').innerText = totalVistoriasHoje;
 
-    window.chartInstancia = new Chart(ctx, {
-        type: 'pie',
-        data: {
-            labels: ['Em Dia', 'Revisão Necessária'],
-            datasets: [{
-                data: [ok, alerta],
-                backgroundColor: ['#2ecc71', '#e63946'],
-                borderColor: '#2a2a2a',
-                borderWidth: 3
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: true,
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                    labels: {
-                        color: '#b0b0b0',
-                        font: { size: 12, family: 'Segoe UI' },
-                        padding: 20
-                    }
-                }
-            }
+    // Veículos em Rota (Último evento foi SAÍDA)
+    // Agrupamos por placa para saber o último status de cada um
+    const statusVeiculos = {};
+    movimentacoes.forEach(m => {
+        if (!statusVeiculos[m.placa]) {
+            statusVeiculos[m.placa] = m.tipo; // Como dbListar já traz do mais novo, o primeiro que achar é o atual
         }
     });
+    const emRota = Object.values(statusVeiculos).filter(status => status === "SAÍDA").length;
+    document.getElementById('countRota').innerText = emRota;
+
+    // Manutenções do Mês
+    const mesAtual = new Date().getMonth();
+    const anoAtual = new Date().getFullYear();
+    const totalManutencaoMes = manutencoes.filter(m => {
+        const dataM = new Date(m.dataOriginal);
+        return dataM.getMonth() === mesAtual && dataM.getFullYear() === anoAtual;
+    }).length;
+    document.getElementById('countManutencao').innerText = totalManutencaoMes;
+
+    // --- 3. RESUMO DE ATIVIDADES (Últimas 5) ---
+    const tabelaResumo = document.getElementById('tabelaResumo');
+    if (tabelaResumo) {
+        const ultimas = movimentacoes.slice(0, 5);
+        tabelaResumo.innerHTML = ultimas.map(m => `
+            <tr>
+                <td>${m.data} <small>${m.hora}</small></td>
+                <td><strong>${m.placa}</strong></td>
+                <td><span class="badge ${m.tipo === 'SAÍDA' ? 'badge-saida' : 'badge-entrada'}">${m.tipo}</span></td>
+            </tr>
+        `).join('');
+    }
 }
 
-// Executa a função assim que a página termina de carregar
-window.onload = atualizarDashboard;
+// Inicializa ao carregar a página
+window.onload = carregarDashboard;
