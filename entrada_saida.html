@@ -6,6 +6,8 @@
     <title>Japan Security | Movimentação</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body>
     <main class="main-content">
@@ -17,8 +19,13 @@
         <div class="card">
             <div class="row">
                 <div class="input-group">
-                    <label>Filtrar por Placa ou Viatura</label>
-                    <input type="text" id="filtroPlaca" class="modern-input" placeholder="Digite para buscar..." onkeyup="filtrarTabela()">
+                    <label><i class="fas fa-search"></i> Buscar Viatura</label>
+                    <input type="text" id="filtroPlaca" class="modern-input" placeholder="Digite a placa..." onkeyup="filtrarTabela()">
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-primary" style="background: #34495e; flex: 1;" onclick="gerarPDFMovimentacao()">
+                        <i class="fas fa-file-pdf"></i> Gerar PDF
+                    </button>
                 </div>
             </div>
         </div>
@@ -36,13 +43,13 @@
                 </div>
             </div>
             <div style="display: flex; gap: 10px; margin-top: 15px;">
-                <button class="btn-primary" style="background: #27ae60;" onclick="registrarMovimentacao('ENTRADA')">ENTRADA</button>
-                <button class="btn-primary" onclick="registrarMovimentacao('SAÍDA')">SAÍDA</button>
+                <button class="btn-primary" style="background: #27ae60; flex: 1;" onclick="registrarMovimentacao('ENTRADA')">ENTRADA</button>
+                <button class="btn-primary" style="flex: 1;" onclick="registrarMovimentacao('SAÍDA')">SAÍDA</button>
             </div>
         </div>
 
         <div class="table-responsive">
-            <table class="modern-table">
+            <table class="modern-table" id="tabelaDados">
                 <thead>
                     <tr>
                         <th>Data/Hora</th>
