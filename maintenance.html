@@ -4,90 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Japan Security | Manutenção</title>
-    <link rel="icon" type="image/png" href="icons/icon-192x192.png">
-    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 </head>
-<body class="has-sidebar">
-
-    <aside class="sidebar">
-        <div class="sidebar-header">
-            <div class="logo-area"><i class="fas fa-shield-alt logo-icon"></i><div><h2>JAPAN</h2><span>SECURITY</span></div></div>
-        </div>
-        <nav class="sidebar-nav">
-            <ul>
-                <li><a href="index.html"><i class="fas fa-home"></i> Início</a></li>
-                <li><a href="dashboard.html"><i class="fas fa-chart-line"></i> Dashboard</a></li>
-                <li><a href="entrada_saida.html"><i class="fas fa-exchange-alt"></i> Movimentação</a></li>
-                <li><a href="vistoria.html"><i class="fas fa-clipboard-check"></i> Vistoria</a></li>
-                <li><a href="maintenance.html" class="active"><i class="fas fa-tools"></i> Manutenção</a></li>
-                <li><a href="vehicles.html"><i class="fas fa-car"></i> Veículos</a></li>
-                <li><a href="backup.html"><i class="fas fa-database"></i> Backup</a></li>
-            </ul>
-        </nav>
-    </aside>
-
+<body>
     <main class="main-content">
-        <a href="index.html" class="btn-voltar"><i class="fas fa-arrow-left"></i> Menu Principal</a>
+        <header class="top-bar">
+            <a href="index.html" class="btn-voltar"><i class="fas fa-arrow-left"></i> Início</a>
+            <h1>Manutenção</h1>
+        </header>
 
-        <header class="top-bar"><h1>Manutenção Preventiva</h1></header>
-
-        <section class="content-body">
-            <div class="card form-card">
-                <div class="card-header"><i class="fas fa-wrench"></i> Novo Serviço</div>
-                <div class="row">
-                    <div class="input-group">
-                        <label>Viatura (Placa)</label>
-                        <input list="listaVeiculos" id="veiculo" class="modern-input" placeholder="Selecione..." onchange="puxarKmAutomatico()">
-                        <datalist id="listaVeiculos"></datalist>
-                    </div>
-                    <div class="input-group"><label>KM Realizado</label><input id="km" type="number" class="modern-input" placeholder="00000"></div>
-                    <div class="input-group"><label>Próxima Troca (KM)</label><input id="proximaTroca" type="number" class="modern-input" placeholder="00000"></div>
-                </div>
-                <div class="row">
-                    <div class="input-group"><label>Tipo de Serviço</label><input id="servico" class="modern-input" placeholder="Ex: Troca de Óleo, Pastilhas..."></div>
-                    <div class="input-group"><label>Data do Serviço</label><input type="date" id="dataServico" class="modern-input"></div>
-                </div>
-                <button class="btn-primary" onclick="salvar()"><i class="fas fa-save"></i> Salvar Registro</button>
+        <div class="card">
+            <div class="row">
+                <div class="input-group"><label>Veículo</label><input list="listaVeiculos" id="veiculo" class="modern-input" onchange="puxarKmAutomatico()"><datalist id="listaVeiculos"></datalist></div>
+                <div class="input-group"><label>KM do Serviço</label><input id="km" type="number" class="modern-input"></div>
+                <div class="input-group"><label>Tipo de Serviço</label><input id="servico" class="modern-input" placeholder="Ex: Troca de Óleo"></div>
             </div>
-
-            <div class="card filter-card mt-20">
-                <div class="card-header"><i class="fas fa-filter"></i> Relatórios</div>
-                <div class="row">
-                    <div class="input-group"><label>De:</label><input type="date" id="dataInicio" class="modern-input"></div>
-                    <div class="input-group"><label>Até:</label><input type="date" id="dataFim" class="modern-input"></div>
-                </div>
-                <div style="padding: 0 20px 20px; display: flex; gap: 10px;">
-                    <button class="btn-secondary" onclick="renderizarTabela()">Filtrar</button>
-                    <button class="btn-accent" onclick="gerarPDF()">Gerar PDF Organizado</button>
-                </div>
-            </div>
-
-            <div class="card table-card mt-20">
-                <div class="table-responsive">
-                    <table class="modern-table">
-                        <thead>
-                            <tr>
-                                <th>Veículo</th>
-                                <th>Data</th>
-                                <th>Serviço</th>
-                                <th>KM Realizado</th>
-                                <th>Próxima Troca</th>
-                                <th>Ação</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabela">
-                            </tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
+            <button class="btn-primary" onclick="salvar()"><i class="fas fa-check-circle"></i> Salvar Manutenção</button>
+        </div>
     </main>
-
     <script src="js/db.js"></script>
     <script src="js/maintenance.js"></script>
 </body>
