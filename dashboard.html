@@ -4,10 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Japan Security | Dashboard</title>
-    <link rel="icon" type="image/png" href="icons/icon-192x192.png">
-    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="has-sidebar">
 
@@ -32,47 +31,57 @@
     </aside>
 
     <main class="main-content">
-        <a href="index.html" class="btn-voltar"><i class="fas fa-arrow-left"></i> Menu Principal</a>
-        
         <header class="top-bar">
             <h1>Painel de Controle</h1>
         </header>
 
         <section class="content-body">
-            <div id="areaAlertas" class="alert-container">
-                </div>
+            <div id="areaAlertas"></div>
 
             <div class="dashboard-grid">
                 <div class="card dash-card">
-                    <i class="fas fa-car-side"></i>
-                    <h3>Veículos em Rota</h3>
-                    <p id="countRota">0</p>
+                    <i class="fas fa-car-side" style="color: #e63946;"></i>
+                    <div class="info">
+                        <h3>Em Rota</h3>
+                        <p id="countRota">0</p>
+                    </div>
                 </div>
                 <div class="card dash-card">
-                    <i class="fas fa-check-circle"></i>
-                    <h3>Vistorias (Hoje)</h3>
-                    <p id="countVistorias">0</p>
+                    <i class="fas fa-check-double" style="color: #27ae60;"></i>
+                    <div class="info">
+                        <h3>Vistorias (Hoje)</h3>
+                        <p id="countVistorias">0</p>
+                    </div>
                 </div>
-                <div class="card dash-card">
-                    <i class="fas fa-wrench"></i>
-                    <h3>Manutenções (Mês)</h3>
-                    <p id="countManutencao">0</p>
+            </div>
+
+            <div class="row mt-20">
+                <div class="card chart-container" style="flex: 1; min-width: 300px;">
+                    <div class="card-header">Status da Frota</div>
+                    <canvas id="graficoStatus"></canvas>
+                </div>
+
+                <div class="card" style="flex: 1; min-width: 300px;">
+                    <div class="card-header">Manutenções do Mês</div>
+                    <div class="maintenance-summary">
+                        <h2 id="countManutencao" style="font-size: 3rem; text-align: center; margin: 20px 0;">0</h2>
+                        <p style="text-align: center; color: #888;">Serviços realizados no período atual</p>
+                    </div>
                 </div>
             </div>
 
             <div class="card mt-20">
-                <div class="card-header">Últimas Atividades</div>
+                <div class="card-header">Últimas Movimentações</div>
                 <div class="table-responsive">
                     <table class="modern-table">
                         <thead>
                             <tr>
-                                <th>Data/Hora</th>
+                                <th>Hora</th>
                                 <th>Veículo</th>
-                                <th>Evento</th>
+                                <th>Status</th>
                             </tr>
                         </thead>
-                        <tbody id="tabelaResumo">
-                            </tbody>
+                        <tbody id="tabelaResumo"></tbody>
                     </table>
                 </div>
             </div>
