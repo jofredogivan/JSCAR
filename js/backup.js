@@ -1,73 +1,56 @@
-// === FUNÇÃO PARA EXPORTAR BACKUP ===
+/* ============================================================
+   ARQUIVO: js/backup.js
+   ============================================================ */
+
+// 1. EXPORTAR: Pega tudo do LocalStorage e gera um arquivo .json
 function exportarBackup() {
-    const dados = {
+    const backup = {
         vehicles: JSON.parse(localStorage.getItem("vehicles")) || [],
         vistorias: JSON.parse(localStorage.getItem("vistorias")) || [],
-        movimentacoes: JSON.parse(localStorage.getItem("movimentacoes")) || [],
-        manutencoes: JSON.parse(localStorage.getItem("manutencoes")) || []
+        movimentacao: JSON.parse(localStorage.getItem("movimentacao")) || [],
+        maintenance: JSON.parse(localStorage.getItem("maintenance")) || []
     };
 
-    const dataString = JSON.stringify(dados, null, 2);
-    const blob = new Blob([dataString], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backup));
+    const downloadAnchorNode = document.createElement('a');
+    const dataHora = new Date().toLocaleDateString('pt-BR').replace(/\//g, '-');
     
-    const link = document.createElement("a");
-    const dataAtual = new Date().toLocaleDateString('pt-BR').replace(/\//g, '-');
-    
-    link.href = url;
-    link.download = `backup_japan_security_${dataAtual}.json`;
-    link.click();
-    
-    URL.revokeObjectURL(url);
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", `backup_japan_security_${dataHora}.json`);
+    document.body.appendChild(downloadAnchorNode);
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
 }
 
-// === FUNÇÃO PARA IMPORTAR/RESTAURAR BACKUP ===
+// 2. IMPORTAR: Lê o arquivo enviado e salva de volta no LocalStorage
 function importarBackup() {
     const fileInput = document.getElementById('fileBackup');
-    const arquivo = fileInput.files[0];
+    const file = fileInput.files[0];
 
-    if (!arquivo) {
-        alert("Por favor, selecione o arquivo de backup (.json) primeiro.");
+    if (!file) {
+        alert("Por favor, selecione um arquivo de backup primeiro!");
         return;
     }
 
     const reader = new FileReader();
-
     reader.onload = function(e) {
         try {
-            const dadosRestaurados = JSON.parse(e.target.result);
+            const dados = JSON.parse(e.target.result);
 
-            // Validação básica para ver se o arquivo é do sistema
-            if (!dadosRestaurados.vehicles && !dadosRestaurados.vistorias) {
-                throw new Error("Arquivo de backup inválido ou vazio.");
+            if (confirm("Isso irá substituir os dados atuais pelos dados do backup. Confirmar?")) {
+                // Salva cada chave individualmente
+                if (dados.vehicles) localStorage.setItem("vehicles", JSON.stringify(dados.vehicles));
+                if (dados.vistorias) localStorage.setItem("vistorias", JSON.stringify(dados.vistorias));
+                if (dados.movimentacao) localStorage.setItem("movimentacao", JSON.stringify(dados.movimentacao));
+                if (dados.maintenance) localStorage.setItem("maintenance", JSON.stringify(dados.maintenance));
+
+                alert("Backup restaurado com sucesso! O sistema será reiniciado.");
+                window.location.href = "index.html";
             }
-
-            if (confirm("Isso irá apagar os dados atuais e restaurar os do arquivo. Deseja continuar?")) {
-                
-                // Limpa o banco de dados atual
-                localStorage.clear();
-
-                // Grava os novos dados chave por chave
-                if (dadosRestaurados.vehicles) 
-                    localStorage.setItem("vehicles", JSON.stringify(dadosRestaurados.vehicles));
-                
-                if (dadosRestaurados.vistorias) 
-                    localStorage.setItem("vistorias", JSON.stringify(dadosRestaurados.vistorias));
-                
-                if (dadosRestaurados.movimentacoes) 
-                    localStorage.setItem("movimentacoes", JSON.stringify(dadosRestaurados.movimentacoes));
-                
-                if (dadosRestaurados.manutencoes) 
-                    localStorage.setItem("manutencoes", JSON.stringify(dadosRestaurados.manutencoes));
-
-                alert("Dados restaurados com sucesso! O sistema será reiniciado.");
-                window.location.href = "index.html"; // Volta para a home
-            }
-        } catch (erro) {
-            console.error(erro);
-            alert("Erro ao restaurar: Verifique se o arquivo está correto.");
+        } catch (err) {
+            alert("Erro ao ler o arquivo. Verifique se é um backup válido.");
+            console.error(err);
         }
     };
-
-    reader.readAsText(arquivo);
+    reader.readAsText(file);
 }
