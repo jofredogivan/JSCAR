@@ -1,14 +1,21 @@
-// 1. Busca KM automático ao selecionar veículo
+/* ============================================================
+   ARQUIVO: js/entrada_saida.js
+   SISTEMA: Gestão de Frota - Japan Security
+   ============================================================ */
+
+// 1. BUSCA KM AUTOMÁTICO AO SELECIONAR VEÍCULO
 function puxarKmAutomatico() {
     const placa = document.getElementById('veiculo').value.toUpperCase();
-    const veiculos = JSON.parse(localStorage.getItem("veiculos")) || []; // Ajustado para 'veiculos' (plural) conforme seu JS de veículos
+    // Puxa da gaveta 'vehicles' para bater com o cadastro
+    const veiculos = JSON.parse(localStorage.getItem("vehicles")) || [];
     const vEncontrado = veiculos.find(v => v.placa.toUpperCase() === placa);
+    
     if (vEncontrado) {
         document.getElementById('km').value = vEncontrado.kmAtual || 0;
     }
 }
 
-// 2. Salva o registro e atualiza o KM na base global
+// 2. SALVA O REGISTRO E ATUALIZA O KM NA BASE GLOBAL
 function salvar() {
     const placaDigitada = document.getElementById('veiculo').value.toUpperCase();
     const km = document.getElementById('km').value;
@@ -16,14 +23,18 @@ function salvar() {
     const obs = document.getElementById('obs').value;
     const tipo = document.getElementById('tipo').value;
 
-    if (!placaDigitada || !km || !motorista) return alert("Preencha os campos obrigatórios!");
+    if (!placaDigitada || !km || !motorista) {
+        alert("Por favor, preencha os campos obrigatórios (Veículo, KM e Motorista)!");
+        return;
+    }
 
-    const veiculosBase = JSON.parse(localStorage.getItem("veiculos")) || [];
+    // Busca o nome do veículo para o relatório ficar bonito
+    const veiculosBase = JSON.parse(localStorage.getItem("vehicles")) || [];
     const infoVeiculo = veiculosBase.find(v => v.placa.toUpperCase() === placaDigitada);
     const nomeVeiculo = infoVeiculo ? infoVeiculo.nome : "Não Identificado";
 
     const registro = {
-        id: Date.now(),
+        id: Date.now(), // ID único para exclusão segura
         data: new Date().toLocaleDateString('pt-BR'),
         hora: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
         placa: placaDigitada,
@@ -35,18 +46,19 @@ function salvar() {
     };
 
     const historico = JSON.parse(localStorage.getItem("movimentacao")) || [];
-    historico.unshift(registro);
+    historico.unshift(registro); // Adiciona no topo da lista
     localStorage.setItem("movimentacao", JSON.stringify(historico));
 
-    // Atualiza o KM real do veículo na base principal (veiculos)
+    // ATUALIZA O KM REAL NA GAVETA DE VEÍCULOS
     let idx = veiculosBase.findIndex(v => v.placa.toUpperCase() === placaDigitada);
     if (idx !== -1) { 
         veiculosBase[idx].kmAtual = km; 
-        localStorage.setItem("veiculos", JSON.stringify(veiculosBase)); 
+        localStorage.setItem("vehicles", JSON.stringify(veiculosBase)); 
     }
 
     renderizarTabela();
     limparCampos();
+    alert("Movimentação registrada com sucesso!");
 }
 
 function limparCampos() {
@@ -56,7 +68,7 @@ function limparCampos() {
     document.getElementById('obs').value = "";
 }
 
-// 3. Função auxiliar para filtrar os dados (usada pela tabela e pelo PDF)
+// 3. OBTÉM DADOS FILTRADOS (Para Tabela e PDF)
 function obterDadosFiltrados() {
     let dados = JSON.parse(localStorage.getItem("movimentacao")) || [];
     const inicio = document.getElementById('dataInicio').value;
@@ -64,7 +76,7 @@ function obterDadosFiltrados() {
 
     if (inicio || fim) {
         dados = dados.filter(i => {
-            // Converte "17/04/2026" para "2026-04-17" para comparar com o input date
+            // Converte "17/04/2026" para "2026-04-17" para comparar
             const d = i.data.split('/').reverse().join('-');
             return (!inicio || d >= inicio) && (!fim || d <= fim);
         });
@@ -72,7 +84,7 @@ function obterDadosFiltrados() {
     return dados;
 }
 
-// 4. Renderiza a tabela
+// 4. RENDERIZA A TABELA COM FILTRO
 function renderizarTabela() {
     const dados = obterDadosFiltrados();
     const tabelaCorpo = document.getElementById('tabela');
@@ -95,37 +107,28 @@ function renderizarTabela() {
     `).join('');
 }
 
-// 5. Excluir Registro
+// 5. EXCLUIR REGISTRO
 function excluirRegistro(index) {
     if (confirm("Deseja realmente excluir este lançamento?")) {
-        let dados = JSON.parse(localStorage.getItem("movimentacao")) || [];
-        // Se a tabela estiver filtrada, precisamos achar o ID real para excluir corretamente
+        let dadosTotal = JSON.parse(localStorage.getItem("movimentacao")) || [];
         const filtrados = obterDadosFiltrados();
         const itemParaRemover = filtrados[index];
         
         // Remove do histórico global usando o ID único
-        const novoHistorico = dados.filter(item => item.id !== itemParaRemover.id);
+        const novoHistorico = dadosTotal.filter(item => item.id !== itemParaRemover.id);
         
         localStorage.setItem("movimentacao", JSON.stringify(novoHistorico));
         renderizarTabela();
     }
 }
 
-// 6. PDF Gerado com base no que está na tela (Filtro aplicado)
+// 6. GERA PDF APENAS DO QUE ESTÁ NA TELA (FILTRADO)
 function gerarPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
-    const dados = obterDadosFiltrados(); // Pega apenas os dados que aparecem na busca
+    const dados = obterDadosFiltrados();
     
     if (dados.length === 0) return alert("Não há registros no período selecionado para exportar.");
-
-    // Agrupa por veículo
-    const agrupado = dados.reduce((acc, item) => {
-        const chave = `${item.placa} - ${item.veiculoNome}`;
-        if (!acc[chave]) acc[chave] = [];
-        acc[chave].push(item);
-        return acc;
-    }, {});
 
     doc.setFontSize(16);
     doc.setTextColor(230, 57, 70); // Vermelho Japan Security
@@ -133,38 +136,32 @@ function gerarPDF() {
     
     doc.setFontSize(10);
     doc.setTextColor(100);
-    const filtroInfo = document.getElementById('dataInicio').value ? `Período: ${document.getElementById('dataInicio').value} até ${document.getElementById('dataFim').value}` : "Relatório Geral";
-    doc.text(filtroInfo, 14, 22);
+    const dataAtual = new Date().toLocaleDateString();
+    doc.text(`Gerado em: ${dataAtual}`, 14, 22);
 
-    let yPos = 30;
-    Object.keys(agrupado).forEach(veiculo => {
-        if (yPos > 240) { doc.addPage(); yPos = 20; }
-
-        doc.setFillColor(60, 60, 60);
-        doc.rect(14, yPos, 182, 8, 'F');
-        doc.setTextColor(255);
-        doc.setFontSize(10);
-        doc.text(`VEÍCULO: ${veiculo}`, 18, yPos + 5.5);
-        doc.setTextColor(0);
-        yPos += 10;
-
-        doc.autoTable({
-            startY: yPos,
-            head: [['Data/Hora', 'Tipo', 'Motorista', 'KM', 'Obs']],
-            body: agrupado[veiculo].map(m => [m.data + " " + m.hora, m.tipo, m.motorista, m.km + " KM", m.obs]),
-            theme: 'grid',
-            headStyles: { fillColor: [230, 57, 70] }, // Cabeçalho da tabela em vermelho
-            margin: { left: 14, right: 14 }
-        });
-        yPos = doc.lastAutoTable.finalY + 12;
+    doc.autoTable({
+        startY: 30,
+        head: [['Data/Hora', 'Viatura', 'Tipo', 'Motorista', 'KM', 'Obs']],
+        body: dados.map(m => [
+            m.data + " " + m.hora, 
+            m.placa, 
+            m.tipo, 
+            m.motorista, 
+            m.km + " KM", 
+            m.obs || '-'
+        ]),
+        theme: 'grid',
+        headStyles: { fillColor: [230, 57, 70] },
+        styles: { fontSize: 8 }
     });
 
-    doc.save(`movimentacao_${new Date().getTime()}.pdf`);
+    doc.save(`movimentacao_japan_${Date.now()}.pdf`);
 }
 
-// 7. Carregamento Inicial
+// 7. CARREGAMENTO INICIAL
 window.onload = () => {
-    const v = JSON.parse(localStorage.getItem("veiculos")) || [];
+    // Carrega a lista de placas para o "Datalist" (Autocompletar)
+    const v = JSON.parse(localStorage.getItem("vehicles")) || [];
     const datalist = document.getElementById('listaVeiculos');
     if(datalist) {
         datalist.innerHTML = v.map(i => `<option value="${i.placa}">${i.nome}</option>`).join('');
