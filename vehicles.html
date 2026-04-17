@@ -2,41 +2,109 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Japan Security | Frota</title>
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
+    <style>
+        .clickable { cursor: pointer; }
+        .clickable:active { background: #252525; }
+        .btn-excluir { color: #888; transition: 0.2s; padding: 5px; }
+        .btn-excluir:active { color: #e63946; }
+    </style>
 </head>
 <body>
-    <main class="main-content">
-        <header class="top-bar">
-            <a href="index.html" class="btn-voltar"><i class="fas fa-arrow-left"></i> Início</a>
-            <h1>Frota</h1>
-        </header>
 
-        <div class="card">
+    <header style="background: #1a1a1a; padding: 15px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 1000;">
+        <a href="index.html" style="color: white; text-decoration: none; font-size: 0.9rem; font-weight: bold; display: flex; align-items: center; gap: 8px;">
+            <i class="fas fa-chevron-left"></i> INÍCIO
+        </a>
+        <div style="color: #e63946; font-weight: 900; font-size: 0.8rem; letter-spacing: 2px;">FROTA</div>
+        <div style="width: 50px;"></div>
+    </header>
+
+    <main class="main-content" style="padding: 15px;">
+        
+        <div class="card" style="margin-bottom: 15px;">
             <div class="input-group">
-                <label>Pesquisar Viatura</label>
-                <input type="text" id="inputBusca" class="modern-input" placeholder="Buscar placa ou modelo..." onkeyup="buscarVeiculo()">
+                <label style="color: #888; font-size: 0.7rem; text-transform: uppercase;">Pesquisar Viatura</label>
+                <input type="text" id="filtroFrota" class="modern-input" placeholder="Placa ou modelo..." onkeyup="filtrarTabelaLocal()">
             </div>
+            <button class="btn-primary" style="background: #34495e; margin-top: 10px; padding: 12px;" onclick="gerarRelatorioFrotaPDF()">
+                <i class="fas fa-file-pdf"></i> RELATÓRIO DE FROTA
+            </button>
         </div>
 
-        <div class="card">
-            <div class="card-header"><i class="fas fa-plus"></i> Novo Veículo</div>
-            <div class="row">
-                <div class="input-group"><label>Placa</label><input id="placaNew" class="modern-input"></div>
-                <div class="input-group"><label>Nome/Modelo</label><input id="nomeNew" class="modern-input"></div>
+        <div class="card" style="margin-bottom: 20px;">
+            <div id="formTitle" style="color: #e63946; font-size: 0.85rem; font-weight: bold; margin-bottom: 15px; text-transform: uppercase;">
+                <i class="fas fa-plus-circle"></i> Novo Veículo
             </div>
-            <button class="btn-primary" onclick="adicionarVeiculo()">Cadastrar</button>
+            
+            <input type="hidden" id="veiculoId">
+
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <div class="input-group">
+                    <label>Modelo / Nome VTR</label>
+                    <input type="text" id="nome" class="modern-input" placeholder="Ex: Gol VTR 01">
+                </div>
+                <div class="input-group">
+                    <label>Placa</label>
+                    <input type="text" id="placa" class="modern-input" placeholder="ABC-1234">
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <div class="input-group" style="flex: 1;">
+                        <label>Ano</label>
+                        <input type="text" id="ano" class="modern-input" placeholder="2023">
+                    </div>
+                    <div class="input-group" style="flex: 1;">
+                        <label>KM Inicial</label>
+                        <input type="number" id="kmAtual" class="modern-input" placeholder="0">
+                    </div>
+                </div>
+                
+                <button class="btn-primary" onclick="salvarVeiculo()">
+                    <i class="fas fa-save"></i> SALVAR VEÍCULO
+                </button>
+            </div>
         </div>
 
         <div class="table-responsive">
             <table class="modern-table">
-                <thead><tr><th>Placa</th><th>Modelo</th><th>Ações</th></tr></thead>
-                <tbody id="tabelaFrota"></tbody>
+                <thead>
+                    <tr>
+                        <th>Modelo</th>
+                        <th>Placa</th>
+                        <th>Ano</th>
+                        <th>KM</th>
+                        <th style="text-align: right;"><i class="fas fa-cog"></i></th>
+                    </tr>
+                </thead>
+                <tbody id="tabelaVeiculos">
+                    </tbody>
             </table>
         </div>
+
     </main>
+
+    <script>
+        // Função de filtro para busca rápida na tabela de frota
+        function filtrarTabelaLocal() {
+            const input = document.getElementById('filtroFrota');
+            const filter = input.value.toUpperCase();
+            const tr = document.querySelectorAll("#tabelaVeiculos tr");
+
+            tr.forEach(row => {
+                const text = row.textContent || row.innerText;
+                row.style.display = text.toUpperCase().includes(filter) ? "" : "none";
+            });
+        }
+    </script>
+
     <script src="js/db.js"></script>
     <script src="js/vehicles.js"></script>
 </body>
