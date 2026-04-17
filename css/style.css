@@ -1,40 +1,34 @@
-/* =========================================
-   CONFIGURAÇÕES GERAIS E CORES
-   ========================================= */
+/* ============================================================
+   ESTILO GLOBAL - JAPAN SECURITY (DARK MODE)
+   ============================================================ */
+
+:root {
+    --primary-color: #e63946;    /* Vermelho Japan Security */
+    --secondary-color: #27ae60;  /* Verde Sucesso */
+    --bg-dark: #121212;          /* Fundo Principal */
+    --card-bg: #1e1e1e;          /* Fundo dos Cards */
+    --sidebar-bg: #000000;       /* Fundo Lateral */
+    --text-main: #ffffff;
+    --text-muted: #b0b0b0;
+    --border-color: #333333;
+}
+
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
-:root {
-    --primary-red: #e63946;
-    --dark-bg: #1a1a1a;
-    --card-bg: #2a2a2a;
-    --sidebar-bg: #111111;
-    --text-white: #ffffff;
-    --text-gray: #b0b0b0;
-    --border-color: #3d3d3d;
-}
-
-/* Otimização para rolagem no celular */
-html, body {
-    background-color: var(--dark-bg);
-    color: var(--text-white);
-    line-height: 1.6;
-    min-height: 100vh; /* Garante altura mínima da tela */
-    height: auto;
+body {
+    background-color: var(--bg-dark);
+    color: var(--text-main);
     overflow-x: hidden;
-    overflow-y: auto; /* Permite o scroll vertical sempre */
-    -webkit-overflow-scrolling: touch; /* Scroll suave no iOS */
 }
 
-/* =========================================
-   ESTRUTURA DE NAVEGAÇÃO
-   ========================================= */
+/* --- LAYOUT COM SIDEBAR --- */
 .has-sidebar {
-    padding-left: 260px;
+    display: flex;
 }
 
 .sidebar {
@@ -42,10 +36,8 @@ html, body {
     height: 100vh;
     background-color: var(--sidebar-bg);
     position: fixed;
-    left: 0;
-    top: 0;
     border-right: 1px solid var(--border-color);
-    z-index: 1000;
+    z-index: 100;
 }
 
 .sidebar-header {
@@ -62,204 +54,168 @@ html, body {
 
 .logo-icon {
     font-size: 2rem;
-    color: var(--primary-red);
+    color: var(--primary-color);
+}
+
+.logo-area h2 {
+    font-size: 1.2rem;
+    letter-spacing: 2px;
+}
+
+.logo-area span {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    display: block;
+    text-align: left;
 }
 
 .sidebar-nav ul {
     list-style: none;
-    padding: 0 15px;
-}
-
-.sidebar-nav ul li {
-    margin-bottom: 8px;
+    margin-top: 20px;
 }
 
 .sidebar-nav ul li a {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 12px 15px;
-    color: var(--text-gray);
+    padding: 15px 25px;
+    color: var(--text-muted);
     text-decoration: none;
-    border-radius: 8px;
     transition: 0.3s;
+    font-size: 0.95rem;
+    border-left: 4px solid transparent;
+}
+
+.sidebar-nav ul li a i {
+    margin-right: 15px;
+    width: 20px;
 }
 
 .sidebar-nav ul li a:hover, 
 .sidebar-nav ul li a.active {
-    background-color: var(--primary-red);
-    color: white;
+    color: #fff;
+    background-color: rgba(230, 57, 70, 0.1);
+    border-left-color: var(--primary-color);
 }
 
-/* =========================================
-   CONTEÚDO E CARDS
-   ========================================= */
 .main-content {
-    padding: 30px;
-    max-width: 1200px;
-    margin: 0 auto;
+    flex: 1;
+    margin-left: 260px;
+    padding: 20px 40px;
     min-height: 100vh;
-    display: block;
-    padding-bottom: 50px; /* Espaço extra no final para não cortar conteúdo */
 }
 
+/* --- TOP BAR & STATUS --- */
 .top-bar {
-    margin-bottom: 30px;
-    border-bottom: 2px solid var(--border-color);
-    padding-bottom: 15px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.top-bar h1 {
+    font-size: 1.5rem;
+    font-weight: 400;
+}
+
+/* --- CARDS & GRID --- */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
 }
 
 .card {
     background-color: var(--card-bg);
-    border-radius: 12px;
+    border-radius: 10px;
     padding: 20px;
-    margin-bottom: 20px;
+    border: 1px solid var(--border-color);
     box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+
+.dash-card {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.dash-card i {
+    font-size: 2.5rem;
+}
+
+.dash-card .info h3 {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+}
+
+.dash-card .info p {
+    font-size: 1.8rem;
+    font-weight: bold;
 }
 
 .card-header {
     font-weight: bold;
     margin-bottom: 20px;
-    color: var(--primary-red);
     display: flex;
     align-items: center;
     gap: 10px;
-    text-transform: uppercase;
-    font-size: 0.9rem;
+    color: var(--text-muted);
 }
 
-/* =========================================
-   FORMULÁRIOS E INPUTS
-   ========================================= */
-.row {
-    display: flex;
-    gap: 20px;
-    margin-bottom: 15px;
+/* --- TABELAS MODERNAS --- */
+.table-responsive {
+    overflow-x: auto;
 }
 
-.input-group {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
-.input-group label {
-    font-size: 0.85rem;
-    color: var(--text-gray);
-}
-
-.modern-input {
-    background: #333;
-    border: 1px solid var(--border-color);
-    padding: 12px;
-    border-radius: 8px;
-    color: white;
-    outline: none;
-    font-size: 1rem;
+.modern-table {
     width: 100%;
-}
-
-.modern-input:focus {
-    border-color: var(--primary-red);
-}
-
-/* =========================================
-   BOTÕES
-   ========================================= */
-.btn-primary { 
-    background: var(--primary-red); 
-    color: white; 
-    border: none; 
-    padding: 15px 25px; 
-    border-radius: 8px; 
-    cursor: pointer; 
-    font-weight: bold; 
-    width: 100%; 
-    font-size: 1rem;
-    transition: 0.3s; 
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-}
-
-.btn-primary:active {
-    transform: scale(0.98);
-}
-
-.btn-delete {
-    background: #c0392b;
-    color: white;
-    border: none;
-    padding: 10px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: 0.2s;
-}
-
-.btn-voltar {
-    display: none; /* Só aparece no mobile */
-    background: #333;
-    color: white;
-    padding: 12px 18px;
-    border-radius: 8px;
-    text-decoration: none;
-    margin-bottom: 20px;
-    font-size: 0.9rem;
-    border: 1px solid var(--border-color);
-    width: fit-content;
-}
-
-/* =========================================
-   TABELAS E UTILITÁRIOS
-   ========================================= */
-.table-responsive { 
-    width: 100%; 
-    overflow-x: auto; 
-    -webkit-overflow-scrolling: touch;
+    border-collapse: collapse;
     margin-top: 10px;
-    border-radius: 8px;
-    background: #222;
 }
 
-.modern-table { width: 100%; border-collapse: collapse; min-width: 600px; }
-.modern-table th { background: #111; color: var(--primary-red); text-align: left; padding: 15px; font-size: 0.85rem; text-transform: uppercase; }
-.modern-table td { padding: 15px; border-bottom: 1px solid var(--border-color); font-size: 0.9rem; vertical-align: middle; }
+.modern-table th {
+    text-align: left;
+    padding: 12px;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.9rem;
+}
 
-.mt-20 { margin-top: 20px; }
+.modern-table td {
+    padding: 15px 12px;
+    border-bottom: 1px solid #2a2a2a;
+    font-size: 0.9rem;
+}
 
-/* =========================================
-   RESPONSIVIDADE (MOBILE)
-   ========================================= */
+/* --- BADGES (ENTRADA/SAÍDA) --- */
+.badge {
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: bold;
+}
+
+.badge-saida { background-color: rgba(230, 57, 70, 0.2); color: #e63946; }
+.badge-entrada { background-color: rgba(39, 174, 96, 0.2); color: #27ae60; }
+
+/* --- RESPONSIVIDADE CELULAR --- */
 @media (max-width: 768px) {
-    .sidebar { display: none !important; }
-    .has-sidebar { padding-left: 0 !important; }
-    
-    .main-content { 
-        padding: 15px !important; 
-        margin: 0 !important;
-        min-height: 100vh;
-        height: auto !important;
-    }
-    
-    .btn-voltar { display: flex; align-items: center; gap: 8px; }
+    .sidebar { width: 70px; }
+    .sidebar-header h2, .sidebar-header span, .sidebar-nav span { display: none; }
+    .main-content { margin-left: 70px; padding: 15px; }
+    .sidebar-nav ul li a i { margin-right: 0; font-size: 1.2rem; }
+}
 
-    .row {
-        flex-direction: column;
-        gap: 15px;
-    }
+/* --- ANIMAÇÃO PULSE (ALERTA) --- */
+.pulse {
+    animation: shadow-pulse 2s infinite;
+}
 
-    /* Melhora o toque no mobile */
-    .modern-input, .btn-primary {
-        font-size: 16px; /* Evita zoom automático no iPhone */
-        padding: 14px;
-    }
-
-    .modern-table th, .modern-table td {
-        padding: 12px 10px;
-    }
+@keyframes shadow-pulse {
+    0% { box-shadow: 0 0 0 0px rgba(230, 57, 70, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(230, 57, 70, 0); }
+    100% { box-shadow: 0 0 0 0px rgba(230, 57, 70, 0); }
 }
