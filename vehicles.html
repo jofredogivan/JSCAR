@@ -4,64 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Japan Security | Frota</title>
-    <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root { --red: #e63946; --dark: #121212; --card: #1e1e1e; --border: #333; }
-        body { background: var(--dark); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; }
-        .sidebar { width: 250px; background: #000; height: 100vh; border-right: 1px solid var(--border); position: fixed; }
-        .sidebar-nav a { display: block; padding: 15px 20px; color: #888; text-decoration: none; border-left: 4px solid transparent; }
-        .sidebar-nav a.active { color: white; background: rgba(230,57,70,0.1); border-left-color: var(--red); }
-        .main { flex: 1; margin-left: 250px; padding: 30px; }
-        .card { background: var(--card); border-radius: 8px; padding: 20px; border: 1px solid var(--border); margin-bottom: 20px; }
-        .grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 15px; }
-        .modern-input { width: 100%; background: #2a2a2a; border: 1px solid var(--border); color: white; padding: 12px; border-radius: 4px; box-sizing: border-box; }
-        .btn { padding: 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; color: white; transition: 0.3s; }
-        .btn-save { background: var(--red); width: 100%; margin-top: 20px; }
-        .btn-pdf { background: #27ae60; margin-bottom: 15px; }
-        table { width: 100%; border-collapse: collapse; }
-        th { text-align: left; color: #888; padding: 12px; border-bottom: 2px solid var(--border); font-size: 12px; }
-        td { padding: 12px; border-bottom: 1px solid var(--border); }
-        .filter-group { display: flex; gap: 10px; margin-bottom: 20px; align-items: flex-end; }
-    </style>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <aside class="sidebar">
-        <div style="padding: 30px; text-align: center;"><h2 style="color:var(--red); margin:0;">JAPAN</h2><span style="font-size:10px;">SECURITY</span></div>
-        <nav class="sidebar-nav">
-            <a href="entrada_saida.html"><i class="fas fa-exchange-alt"></i> Movimentação</a>
-            <a href="vistoria.html"><i class="fas fa-clipboard-check"></i> Vistoria</a>
-            <a href="vehicles.html" class="active"><i class="fas fa-car"></i> Veículos</a>
-        </nav>
-    </aside>
+    <main class="main-content">
+        <header class="top-bar">
+            <a href="index.html" class="btn-voltar"><i class="fas fa-arrow-left"></i> Início</a>
+            <h1>Frota de Veículos</h1>
+        </header>
 
-    <main class="main">
         <div class="card">
-            <h4 id="formTitle"><i class="fas fa-plus-circle"></i> Cadastrar Veículo</h4>
-            <input type="hidden" id="veiculoId">
-            <div class="grid">
-                <div><label>Modelo/VTR</label><input id="nome" class="modern-input" placeholder="Ex: Kwid VTR 62"></div>
-                <div><label>Placa</label><input id="placa" class="modern-input" placeholder="PBP1962"></div>
-                <div><label>Ano</label><input id="ano" type="number" class="modern-input"></div>
-                <div><label>KM Inicial</label><input id="kmAtual" type="number" class="modern-input"></div>
-            </div>
-            <button class="btn btn-save" onclick="salvarVeiculo()"><i class="fas fa-save"></i> SALVAR NO SISTEMA</button>
+            <div class="input-group"><label>Placa</label><input id="placa" class="modern-input"></div>
+            <div class="input-group"><label>Nome/Modelo</label><input id="nome" class="modern-input"></div>
+            <button class="btn-primary" onclick="salvarVeiculo()"><i class="fas fa-plus"></i> Adicionar Veículo</button>
         </div>
-
-        <div class="card">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <h4><i class="fas fa-list"></i> Frota Cadastrada</h4>
-                <button class="btn btn-pdf" onclick="gerarRelatorioFrotaPDF()"><i class="fas fa-file-pdf"></i> PDF DA FROTA</button>
-            </div>
-            <table>
-                <thead><tr><th>Modelo</th><th>Placa</th><th>Ano</th><th>KM</th><th style="text-align:right">Ação</th></tr></thead>
-                <tbody id="tabelaVeiculos"></tbody>
+        
+        <div class="table-responsive">
+            <table class="modern-table">
+                <thead><tr><th>Veículo</th><th>Status</th><th>Ação</th></tr></thead>
+                <tbody id="listaFrota"></tbody>
             </table>
         </div>
     </main>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <script src="js/db.js"></script>
     <script src="js/vehicles.js"></script>
 </body>
