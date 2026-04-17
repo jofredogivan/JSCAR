@@ -11,58 +11,63 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
-        :root { --red: #e63946; --card: #1e1e1e; }
-        
-        /* Layout Mobile-First */
-        .main-content { padding: 15px; background: #121212; min-height: 100vh; }
+        :root { --red-japan: #e63946; --bg-card: #1e1e1e; }
 
-        /* Grid de Números Rápido no Topo */
-        .stats-grid {
+        body { background-color: #121212; color: white; margin: 0; font-family: sans-serif; }
+
+        /* Grid de Indicadores rápidos */
+        .stats-container {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-
-        .stat-item {
-            background: var(--card);
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
             padding: 15px;
-            border-radius: 12px;
-            text-align: center;
-            border-bottom: 3px solid var(--red);
         }
 
-        .stat-item span { font-size: 0.7rem; color: #888; display: block; text-transform: uppercase; }
-        .stat-item strong { font-size: 1.5rem; color: #fff; }
+        .stat-card {
+            background: var(--bg-card);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            border-bottom: 4px solid var(--red-japan);
+        }
+
+        .stat-card span { font-size: 0.7rem; color: #888; text-transform: uppercase; display: block; }
+        .stat-card strong { font-size: 1.8rem; display: block; margin-top: 5px; }
 
         /* Container dos Gráficos */
-        .chart-box {
-            background: var(--card);
+        .chart-section {
+            padding: 0 15px 20px;
+        }
+
+        .chart-card {
+            background: var(--bg-card);
             border-radius: 15px;
-            padding: 15px;
-            margin-bottom: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
             border: 1px solid #333;
         }
 
-        .card-title {
-            color: var(--red);
-            font-size: 0.85rem;
+        .chart-title {
+            font-size: 0.9rem;
             font-weight: bold;
+            color: var(--red-japan);
             margin-bottom: 15px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
         }
 
-        /* Altura controlada para os gráficos não sumirem no mobile */
-        .chart-container {
+        /* Mantém a proporção no mobile */
+        .canvas-container {
             position: relative;
-            height: 200px; 
+            height: 220px;
             width: 100%;
         }
 
+        /* Área de Alertas (Troca de Óleo) */
         #areaAlertas {
-            margin-top: 10px;
+            padding: 0 15px;
+            margin-bottom: 10px;
         }
     </style>
 </head>
@@ -70,41 +75,42 @@
 
     <header style="background: #1a1a1a; padding: 15px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 1000;">
         <a href="index.html" style="color: white; text-decoration: none; font-size: 0.9rem; font-weight: bold; display: flex; align-items: center; gap: 8px;">
-            <i class="fas fa-chevron-left"></i> MENU
+            <i class="fas fa-chevron-left"></i> VOLTAR
         </a>
-        <div style="color: var(--red); font-weight: 900; font-size: 0.8rem; letter-spacing: 2px;">DASHBOARD</div>
-        <div style="width: 50px;"></div> </header>
+        <div style="color: var(--red-japan); font-weight: 900; font-size: 0.8rem; letter-spacing: 2px;">DASHBOARD OPERACIONAL</div>
+        <div style="width: 50px;"></div>
+    </header>
 
-    <main class="main-content">
-        
-        <div class="stats-grid">
-            <div class="stat-item">
-                <span>Frota Total</span>
-                <strong id="countFrotaTotal">0</strong>
-            </div>
-            <div class="stat-item">
-                <span>Vistorias Hoje</span>
-                <strong id="countVistorias">0</strong>
-            </div>
+    <section class="stats-container">
+        <div class="stat-card">
+            <span>Frota Total</span>
+            <strong id="countFrotaTotal">0</strong>
         </div>
+        <div class="stat-card">
+            <span>Vistorias Hoje</span>
+            <strong id="countVistorias">0</strong>
+        </div>
+    </section>
 
-        <div id="areaAlertas"></div>
+    <div id="areaAlertas"></div>
 
-        <div class="chart-box">
-            <div class="card-title"><i class="fas fa-chart-pie"></i> Status Operacional (Rota vs Base)</div>
-            <div class="chart-container">
+    <section class="chart-section">
+        
+        <div class="chart-card">
+            <div class="chart-title"><i class="fas fa-chart-pie"></i> STATUS DA FROTA</div>
+            <div class="canvas-container">
                 <canvas id="graficoPizza"></canvas>
             </div>
         </div>
 
-        <div class="chart-box">
-            <div class="card-title"><i class="fas fa-chart-line"></i> Atividade Semanal</div>
-            <div class="chart-container">
+        <div class="chart-card">
+            <div class="chart-title"><i class="fas fa-chart-line"></i> MOVIMENTAÇÃO SEMANAL</div>
+            <div class="canvas-container">
                 <canvas id="graficoLinha"></canvas>
             </div>
         </div>
 
-    </main>
+    </section>
 
     <script src="js/db.js"></script>
     <script src="js/dashboard.js"></script>
