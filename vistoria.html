@@ -2,27 +2,124 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Japan Security | Vistoria</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body>
-    <main class="main-content">
-        <header class="top-bar">
-            <a href="index.html" class="btn-voltar"><i class="fas fa-arrow-left"></i> Início</a>
-            <h1>Vistoria</h1>
-        </header>
 
-        <div class="card">
-            <div class="input-group">
-                <label>Selecione o Veículo</label>
-                <input list="listaVeiculos" id="veiculo" class="modern-input" onchange="carregarDadosVeiculo()">
-                <datalist id="listaVeiculos"></datalist>
+    <header style="background: #1a1a1a; padding: 15px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 1000;">
+        <a href="index.html" style="color: white; text-decoration: none; font-size: 0.9rem; font-weight: bold; display: flex; align-items: center; gap: 8px;">
+            <i class="fas fa-chevron-left"></i> INÍCIO
+        </a>
+        <div style="color: #e63946; font-weight: 900; font-size: 0.8rem; letter-spacing: 2px;">VISTORIA</div>
+        <div style="width: 50px;"></div>
+    </header>
+
+    <main class="main-content" style="padding: 15px;">
+        
+        <div class="card" style="margin-bottom: 15px;">
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div style="display: flex; gap: 10px;">
+                    <div style="flex: 1;">
+                        <label style="font-size: 0.65rem; color: #888;">INÍCIO</label>
+                        <input type="date" id="f_data_ini" class="modern-input">
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="font-size: 0.65rem; color: #888;">FIM</label>
+                        <input type="date" id="f_data_fim" class="modern-input">
+                    </div>
+                </div>
+                <button class="btn-primary" style="background: #34495e;" onclick="gerarVistoriaPDF()">
+                    <i class="fas fa-file-pdf"></i> GERAR RELATÓRIO DE VISTORIAS
+                </button>
             </div>
-            <button class="btn-primary" onclick="salvarVistoria()"><i class="fas fa-save"></i> Finalizar Vistoria</button>
         </div>
+
+        <div class="card" style="margin-bottom: 20px;">
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                
+                <div class="input-group">
+                    <label>Viatura (Selecione)</label>
+                    <input list="listaVeiculos" id="veiculo" class="modern-input" placeholder="Selecione a placa...">
+                    <datalist id="listaVeiculos"></datalist>
+                </div>
+
+                <div style="display: flex; gap: 10px;">
+                    <div class="input-group" style="flex: 1;">
+                        <label>KM Atual</label>
+                        <input type="number" id="km" class="modern-input">
+                    </div>
+                    <div class="input-group" style="flex: 1;">
+                        <label>Vigilante</label>
+                        <input type="text" id="vigilante" class="modern-input" placeholder="Nome">
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #252525; padding: 15px; border-radius: 10px;">
+                    <label class="check-container"><input type="checkbox" id="oleo"> Óleo</label>
+                    <label class="check-container"><input type="checkbox" id="agua"> Água</label>
+                    <label class="check-container"><input type="checkbox" id="pneus"> Pneus</label>
+                    <label class="check-container"><input type="checkbox" id="limpeza"> Limpeza</label>
+                    <label class="check-container"><input type="checkbox" id="macaco"> Macaco</label>
+                    <label class="check-container"><input type="checkbox" id="triangulo"> Triângulo</label>
+                    <label class="check-container"><input type="checkbox" id="f_esq"> Farol Esq.</label>
+                    <label class="check-container"><input type="checkbox" id="f_dir"> Farol Dir.</label>
+                    <label class="check-container"><input type="checkbox" id="l_esq"> Lant. Esq.</label>
+                    <label class="check-container"><input type="checkbox" id="l_dir"> Lant. Dir.</label>
+                </div>
+
+                <div class="input-group">
+                    <label>Observações</label>
+                    <textarea id="obs" class="modern-input" rows="2"></textarea>
+                </div>
+
+                <div class="input-group" style="text-align: center;">
+                    <label class="btn-primary" style="background: #222; border: 1px dashed #555; cursor: pointer;">
+                        <i class="fas fa-camera"></i> TIRAR FOTO
+                        <input type="file" accept="image/*" capture="camera" onchange="previewImagem(this)" style="display: none;">
+                    </label>
+                    <img id="preview" style="display: none; width: 100%; margin-top: 10px; border-radius: 10px; border: 2px solid #333;">
+                </div>
+
+                <button class="btn-primary" onclick="salvarVistoria()">
+                    <i class="fas fa-save"></i> FINALIZAR VISTORIA
+                </button>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="modern-table">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>VTR</th>
+                        <th>Vigilante</th>
+                        <th><i class="fas fa-camera"></i></th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="tabelaVistoria"></tbody>
+            </table>
+        </div>
+
     </main>
+
+    <style>
+        .check-container { 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+            color: #ccc; 
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+        .check-container input { width: 18px; height: 18px; accent-color: #e63946; }
+    </style>
+
     <script src="js/db.js"></script>
     <script src="js/vistoria.js"></script>
 </body>
