@@ -1,141 +1,80 @@
 /* ============================================================
    ARQUIVO: js/vehicles.js
-   SISTEMA: Gestão de Frota - Japan Security
    ============================================================ */
 
-// 1. Carrega os dados da "gaveta" antiga para garantir que nada sumiu
-let veiculos = JSON.parse(localStorage.getItem('vehicles')) || [];
-
-// 2. Inicialização ao carregar a página
-document.addEventListener('DOMContentLoaded', () => {
-    renderizarTabela();
-});
-
-// 3. Função para Salvar Novo ou Atualizar Existente
-function salvarVeiculo() {
-    const nome = document.getElementById('nome').value;
-    const placa = document.getElementById('placa').value.toUpperCase();
-    const ano = document.getElementById('ano').value;
-    const kmAtual = document.getElementById('kmAtual').value;
-    const kmTroca = document.getElementById('kmTroca').value;
-    const editIndex = document.getElementById('editIndex').value;
-
-    // Validação de campos essenciais
-    if (!nome || !placa || !ano) {
-        alert("Por favor, preencha Modelo, Placa e Ano!");
-        return;
-    }
-
-    const veiculoData = {
-        nome: nome,
-        placa: placa,
-        ano: ano,
-        kmAtual: kmAtual || 0,
-        kmTroca: kmTroca || 0
-    };
-
-    if (editIndex === "-1") {
-        // NOVO CADASTRO
-        veiculos.push(veiculoData);
-        alert("Veículo cadastrado com sucesso!");
-    } else {
-        // ATUALIZAÇÃO DE EXISTENTE
-        veiculos[editIndex] = veiculoData;
-        alert("Dados atualizados com sucesso!");
-    }
-
-    // Salva na chave 'vehicles' para manter compatibilidade
-    localStorage.setItem('vehicles', JSON.stringify(veiculos));
-    
-    limparCampos();
+async function inicializar() {
     renderizarTabela();
 }
 
-// 4. Função para desenhar a tabela na tela
-function renderizarTabela() {
+async function salvarVeiculo() {
+    const pInput = document.getElementById('placa');
+    const nInput = document.getElementById('nome');
+    const kInput = document.getElementById('kmAtual');
+    const mInput = document.getElementById('modelo');
+
+    if (!pInput.value || !nInput.value || !kInput.value) {
+        return alert("Placa, Nome e KM Inicial são obrigatórios!");
+    }
+
+    const placa = pInput.value.toUpperCase().trim();
+
+    // Criamos o objeto do veículo
+    // Note: kmProximaTroca começa vazio até que se registre uma manutenção
+    const novoVeiculo = {
+        placa: placa,
+        nome: nInput.value,
+        kmAtual: parseInt(kInput.value),
+        modelo: mInput.value,
+        kmProximaTroca: null,
+        dataCadastro: new Date().toLocaleDateString('pt-BR')
+    };
+
+    // Salva no IndexedDB (Object Store: "vehicles")
+    await dbSalvar("vehicles", novoVeiculo);
+
+    alert(`Viatura ${placa} cadastrada com sucesso!`);
+    
+    // Limpa os campos
+    pInput.value = "";
+    nInput.value = "";
+    kInput.value = "";
+    mInput.value = "";
+    
+    renderizarTabela();
+}
+
+async function renderizarTabela() {
+    const dados = await dbListar("vehicles");
     const tbody = document.getElementById('tabelaVeiculos');
     if (!tbody) return;
 
-    tbody.innerHTML = '';
+    if (dados.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Nenhum veículo cadastrado.</td></tr>';
+        return;
+    }
 
-    veiculos.forEach((v, index) => {
-        const tr = document.createElement('tr');
-        tr.style.cursor = "pointer"; // Indica que a linha pode ser clicada
-        
-        tr.innerHTML = `
-            <td onclick="prepararEdicao(${index})">
-                <strong>${v.nome}</strong> ${v.ano ? `(${v.ano})` : ''}
+    tbody.innerHTML = dados.map(v => `
+        <tr>
+            <td><strong>${v.placa}</strong></td>
+            <td>${v.nome} <br><small style="color:#888">${v.modelo || ''}</small></td>
+            <td>${v.kmAtual} KM</td>
+            <td style="color: ${v.kmProximaTroca ? '#f1c40f' : '#888'}">
+                ${v.kmProximaTroca ? v.kmProximaTroca + ' KM' : 'Não definida'}
             </td>
-            <td onclick="prepararEdicao(${index})">${v.placa}</td>
-            <td onclick="prepararEdicao(${index})">${v.kmAtual} KM</td>
-            <td onclick="prepararEdicao(${index})">${v.kmTroca} KM</td>
-            <td style="text-align: center;">
-                <button onclick="excluirVeiculo(${index})" style="background:none; border:none; color:#e63946; cursor:pointer;">
+            <td>
+                <button onclick="excluirVeiculo('${v.placa}')" style="background:none; border:none; color:#e63946; cursor:pointer;">
                     <i class="fas fa-trash-alt"></i>
                 </button>
             </td>
-        `;
-        tbody.appendChild(tr);
-    });
+        </tr>
+    `).join('');
 }
 
-// 5. Função para carregar os dados no formulário (EDITAR)
-function prepararEdicao(index) {
-    const v = veiculos[index];
-
-    document.getElementById('nome').value = v.nome;
-    document.getElementById('placa').value = v.placa;
-    document.getElementById('ano').value = v.ano || '';
-    document.getElementById('kmAtual').value = v.kmAtual || '';
-    document.getElementById('kmTroca').value = v.kmTroca || '';
-    
-    // Define o índice de edição no campo oculto
-    document.getElementById('editIndex').value = index;
-
-    // Muda o visual do botão para indicar edição
-    const btnSalvar = document.getElementById('btnSalvar');
-    btnSalvar.innerHTML = '<i class="fas fa-sync"></i> Atualizar Dados';
-    btnSalvar.style.background = '#d4af37'; // Destaque em dourado
-    btnSalvar.style.color = '#000';
-
-    document.getElementById('btnCancelar').style.display = 'block';
-
-    // Sobe para o formulário (melhor experiência no celular)
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-// 6. Função para EXCLUIR veículo
-function excluirVeiculo(index) {
-    const placa = veiculos[index].placa;
-    if (confirm(`Deseja realmente remover a viatura placa ${placa}?`)) {
-        veiculos.splice(index, 1);
-        localStorage.setItem('vehicles', JSON.stringify(veiculos));
+async function excluirVeiculo(placa) {
+    if (confirm(`Deseja remover a viatura ${placa} do sistema? Isso não apagará o histórico de movimentações.`)) {
+        await dbExcluir("vehicles", placa);
         renderizarTabela();
-        
-        // Se o veículo excluído estava sendo editado, limpa o form
-        if (document.getElementById('editIndex').value == index) {
-            limparCampos();
-        }
     }
 }
 
-// 7. Funções Utilitárias (Limpar e Cancelar)
-function limparCampos() {
-    document.getElementById('nome').value = '';
-    document.getElementById('placa').value = '';
-    document.getElementById('ano').value = '';
-    document.getElementById('kmAtual').value = '';
-    document.getElementById('kmTroca').value = '';
-    document.getElementById('editIndex').value = "-1";
-
-    const btnSalvar = document.getElementById('btnSalvar');
-    btnSalvar.innerHTML = '<i class="fas fa-save"></i> Salvar Veículo';
-    btnSalvar.style.background = ''; // Volta ao padrão do CSS
-    btnSalvar.style.color = '';
-
-    document.getElementById('btnCancelar').style.display = 'none';
-}
-
-function cancelarEdicao() {
-    limparCampos();
-}
+window.onload = inicializar;
