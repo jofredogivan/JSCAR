@@ -11,19 +11,29 @@
     <main class="main-content">
         <header class="top-bar">
             <a href="index.html" class="btn-voltar"><i class="fas fa-arrow-left"></i> Início</a>
-            <h1>Frota de Veículos</h1>
+            <h1>Frota</h1>
         </header>
 
         <div class="card">
-            <div class="input-group"><label>Placa</label><input id="placa" class="modern-input"></div>
-            <div class="input-group"><label>Nome/Modelo</label><input id="nome" class="modern-input"></div>
-            <button class="btn-primary" onclick="salvarVeiculo()"><i class="fas fa-plus"></i> Adicionar Veículo</button>
+            <div class="input-group">
+                <label>Pesquisar Viatura</label>
+                <input type="text" id="inputBusca" class="modern-input" placeholder="Buscar placa ou modelo..." onkeyup="buscarVeiculo()">
+            </div>
         </div>
-        
+
+        <div class="card">
+            <div class="card-header"><i class="fas fa-plus"></i> Novo Veículo</div>
+            <div class="row">
+                <div class="input-group"><label>Placa</label><input id="placaNew" class="modern-input"></div>
+                <div class="input-group"><label>Nome/Modelo</label><input id="nomeNew" class="modern-input"></div>
+            </div>
+            <button class="btn-primary" onclick="adicionarVeiculo()">Cadastrar</button>
+        </div>
+
         <div class="table-responsive">
             <table class="modern-table">
-                <thead><tr><th>Veículo</th><th>Status</th><th>Ação</th></tr></thead>
-                <tbody id="listaFrota"></tbody>
+                <thead><tr><th>Placa</th><th>Modelo</th><th>Ações</th></tr></thead>
+                <tbody id="tabelaFrota"></tbody>
             </table>
         </div>
     </main>
