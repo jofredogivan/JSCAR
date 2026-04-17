@@ -4,179 +4,53 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Japan Security | Home</title>
-    <link rel="icon" type="image/png" href="icons/icon-192x192.png">
-    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root {
-            --red: #e63946;
-            --dark: #121212;
-            --card: #1e1e1e;
-            --border: #333;
-            --text-gray: #888;
-        }
+        :root { --red: #e63946; --dark: #121212; --card: #1e1e1e; --border: #333; }
+        body { background: var(--dark); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        
+        .header-home { text-align: center; padding: 50px 20px; }
+        .header-home h1 { color: var(--red); margin: 0; font-size: 2.5rem; letter-spacing: 3px; }
+        .header-home p { color: #888; font-size: 0.9rem; margin-top: 5px; }
 
-        body {
-            background-color: var(--dark);
-            color: white;
-            font-family: 'Segoe UI', Roboto, sans-serif;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-        }
-
-        /* Topo da Home */
-        .header-home {
-            text-align: center;
-            padding: 40px 20px;
-            width: 100%;
-        }
-
-        .header-home h1 {
-            color: var(--red);
-            margin: 0;
-            font-size: 2.5rem;
-            letter-spacing: 2px;
-        }
-
-        .header-home p {
-            color: var(--text-gray);
-            font-size: 0.9rem;
-            margin-top: 5px;
-        }
-
-        /* Grade de Botões (Menu Central) */
-        .menu-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr); /* 2 colunas no mobile */
-            gap: 20px;
-            padding: 20px;
-            width: 100%;
-            max-width: 500px; /* Limita largura em tablets/pc */
-            box-sizing: border-box;
-        }
-
-        .menu-item {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 15px;
-            padding: 30px 10px;
-            text-decoration: none;
-            color: white;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            transition: transform 0.2s, background 0.2s;
-            text-align: center;
-        }
-
-        .menu-item:active {
-            transform: scale(0.95);
-            background: #252525;
-        }
-
-        .menu-item i {
-            font-size: 2.5rem;
-            margin-bottom: 15px;
-            color: var(--red);
-        }
-
-        .menu-item span {
-            font-weight: bold;
-            font-size: 1rem;
-        }
-
-        /* Seção de Status/Alertas na Home */
-        .status-bar {
-            margin-top: auto;
-            width: 100%;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-
-        .alert-card {
-            background: rgba(230, 57, 70, 0.1);
-            border: 1px solid var(--red);
-            border-radius: 10px;
-            padding: 15px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .alert-card i {
-            color: var(--red);
-            font-size: 1.5rem;
-        }
-
-        .alert-info h4 { margin: 0; font-size: 14px; }
-        .alert-info p { margin: 0; font-size: 12px; color: var(--text-gray); }
-
+        .menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; padding: 20px; width: 100%; max-width: 500px; box-sizing: border-box; }
+        
+        .menu-item { background: var(--card); border: 1px solid var(--border); border-radius: 15px; padding: 35px 10px; text-decoration: none; color: white; display: flex; flex-direction: column; align-items: center; transition: 0.2s; }
+        .menu-item:active { transform: scale(0.95); background: #252525; }
+        .menu-item i { font-size: 2.5rem; color: var(--red); margin-bottom: 15px; }
+        .menu-item span { font-weight: bold; font-size: 1rem; }
+        
+        /* Botão de destaque para o Dashboard */
+        .btn-dash-link { margin-top: 20px; color: var(--red); text-decoration: none; font-size: 0.9rem; border-bottom: 1px solid var(--red); padding-bottom: 2px; }
     </style>
 </head>
 <body>
 
     <header class="header-home">
         <h1>JAPAN</h1>
-        <p>SISTEMA DE GESTÃO OPERACIONAL</p>
+        <p>OPERACIONAL MOBILE</p>
     </header>
 
     <div class="menu-grid">
         <a href="entrada_saida.html" class="menu-item">
             <i class="fas fa-exchange-alt"></i>
-            <span>Entrada / Saída</span>
+            <span>Movimentação</span>
         </a>
-
         <a href="vistoria.html" class="menu-item">
             <i class="fas fa-clipboard-check"></i>
             <span>Vistoria</span>
         </a>
-
         <a href="vehicles.html" class="menu-item">
             <i class="fas fa-car"></i>
             <span>Frota</span>
         </a>
-
-        <a href="#" class="menu-item" style="opacity: 0.5;">
-            <i class="fas fa-chart-line"></i>
-            <span>Relatórios</span>
+        <a href="dashboard.html" class="menu-item">
+            <i class="fas fa-chart-pie"></i>
+            <span>Dashboard</span>
         </a>
     </div>
 
-    <div class="status-bar">
-        <div class="alert-card" id="cardAlertaHome" style="display:none;">
-            <i class="fas fa-exclamation-triangle"></i>
-            <div class="alert-info">
-                <h4>Manutenção Pendente</h4>
-                <p id="msgAlertaHome">Verifique a aba Frota para detalhes.</p>
-            </div>
-        </div>
-    </div>
+    <a href="dashboard.html" class="btn-dash-link">Ver Alertas de Manutenção</a>
 
-    <script src="js/db.js"></script>
-    <script>
-        // Lógica simples para mostrar se há alertas de óleo logo na Home
-        async function checkAlertas() {
-            const frota = await dbListar("vehicles");
-            const vistorias = await dbListar("vistorias");
-            const movimentos = await dbListar("movimentacao");
-
-            for (let v of frota) {
-                // Busca o KM mais alto deste veículo
-                const registros = [...vistorias, ...movimentos].filter(r => r.veiculo === v.placa);
-                const kmAtual = registros.length > 0 ? Math.max(...registros.map(r => r.km)) : v.kmAtual;
-                
-                if (kmAtual - v.kmUltimaTroca >= 9500) {
-                    document.getElementById('cardAlertaHome').style.display = 'flex';
-                    document.getElementById('msgAlertaHome').innerText = `O veículo ${v.nome} atingiu o limite de KM para troca de óleo.`;
-                    break;
-                }
-            }
-        }
-        checkAlertas();
-    </script>
 </body>
 </html>
