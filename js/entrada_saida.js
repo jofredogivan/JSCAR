@@ -1,8 +1,8 @@
 /* ============================================================
-   ARQUIVO: js/entrada_saida.js - Movimentação Japan Security
+   ARQUIVO: js/entrada_saida.js - Versão Completa Japan Security
    ============================================================ */
 
-// 1. Carrega a lista de veículos nos inputs de autocompletar
+// 1. Carrega a lista de veículos cadastrados
 async function carregarListaVeiculos() {
     const veiculos = await dbListar("vehicles");
     const datalist = document.getElementById('listaVeiculos');
@@ -11,7 +11,7 @@ async function carregarListaVeiculos() {
     }
 }
 
-// 2. Reconhecimento Automático de KM ao selecionar/digitar veículo
+// 2. Reconhecimento Automático de KM
 document.getElementById('veiculoInput').addEventListener('change', async function() {
     const placaDigitada = this.value.toUpperCase();
     if (!placaDigitada) return;
@@ -22,7 +22,6 @@ document.getElementById('veiculoInput').addEventListener('change', async functio
         dbListar("vehicles")
     ]);
 
-    // Busca o KM mais recente em movimentações ou vistorias
     const historico = [...movs, ...vists]
         .filter(r => (r.veiculo === placaDigitada || r.viatura === placaDigitada))
         .sort((a, b) => b.timestamp - a.timestamp);
@@ -35,14 +34,14 @@ document.getElementById('veiculoInput').addEventListener('change', async functio
     }
 });
 
-// 3. Registro de Entrada/Saída com Motorista
+// 3. Registro de Entrada/Saída
 async function registrarMovimentacao(tipo) {
     const vtr = document.getElementById('veiculoInput').value.toUpperCase();
     const km = document.getElementById('kmInput').value;
     const motorista = document.getElementById('motoristaInput').value;
 
     if (!vtr || !km || !motorista) {
-        alert("Atenção: Viatura, KM e Motorista são obrigatórios!");
+        alert("Preencha Viatura, KM e Motorista!");
         return;
     }
 
@@ -53,23 +52,32 @@ async function registrarMovimentacao(tipo) {
         viatura: vtr,
         km: parseInt(km),
         motorista: motorista,
-        tipo: tipo 
+        tipo: tipo
     };
 
     await dbSalvar("movimentacao", registro);
     
-    // Limpa campos e recarrega a tela
+    // Limpa campos
     document.getElementById('veiculoInput').value = "";
     document.getElementById('kmInput').value = "";
     document.getElementById('motoristaInput').value = "";
     carregarTabelaMovimentacao();
 }
 
-// 4. Carregar Tabela com Nome do Motorista
+// 4. Carregar Tabela com Filtro de Data
 async function carregarTabelaMovimentacao() {
-    const registros = await dbListar("movimentacao");
+    let registros = await dbListar("movimentacao");
     const tbody = document.getElementById('corpoTabela');
     if (!tbody) return;
+
+    const dIni = document.getElementById('data_ini').value;
+    const dFim = document.getElementById('data_fim').value;
+
+    if (dIni && dFim) {
+        const start = new Date(dIni + "T00:00:00").getTime();
+        const end = new Date(dFim + "T23:59:59").getTime();
+        registros = registros.filter(r => r.timestamp >= start && r.timestamp <= end);
+    }
 
     registros.sort((a, b) => b.timestamp - a.timestamp);
 
@@ -83,31 +91,40 @@ async function carregarTabelaMovimentacao() {
     `).join('');
 }
 
-// 5. Gerar PDF Separado por Veículo e Ordenado por Data
+// 5. Gerar PDF Agrupado por Veículo e Filtrado por Data
 async function gerarPDFMovimentacao() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
-    const registros = await dbListar("movimentacao");
+    let registros = await dbListar("movimentacao");
 
-    if (registros.length === 0) return alert("Não há dados para gerar o PDF.");
+    const dIni = document.getElementById('data_ini').value;
+    const dFim = document.getElementById('data_fim').value;
 
-    // Agrupar registros por Viatura
+    if (dIni && dFim) {
+        const start = new Date(dIni + "T00:00:00").getTime();
+        const end = new Date(dFim + "T23:59:59").getTime();
+        registros = registros.filter(r => r.timestamp >= start && r.timestamp <= end);
+    }
+
+    if (registros.length === 0) return alert("Nenhum registro no período.");
+
     const agrupadoPorVtr = registros.reduce((acc, reg) => {
         if (!acc[reg.viatura]) acc[reg.viatura] = [];
         acc[reg.viatura].push(reg);
         return acc;
     }, {});
 
-    doc.setFontSize(16);
+    doc.setFontSize(14);
     doc.setTextColor(230, 57, 70);
-    doc.text("JAPAN SECURITY - RELATÓRIO DE MOVIMENTAÇÃO", 14, 20);
+    doc.text("JAPAN SECURITY - RELATÓRIO DE MOVIMENTAÇÃO", 14, 15);
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text(`Período: ${dIni || 'Total'} até ${dFim || 'Total'}`, 14, 22);
     
     let yPos = 30;
 
     for (const vtr in agrupadoPorVtr) {
-        // Ordena do mais antigo para o mais novo dentro do grupo do veículo
         const logs = agrupadoPorVtr[vtr].sort((a, b) => a.timestamp - b.timestamp);
-        
         const rows = logs.map(l => [l.data, l.motorista, l.km, l.tipo]);
 
         doc.autoTable({
@@ -121,17 +138,12 @@ async function gerarPDFMovimentacao() {
         });
 
         yPos = doc.lastAutoTable.finalY + 15;
-
-        if (yPos > 250) {
-            doc.addPage();
-            yPos = 20;
-        }
+        if (yPos > 250) { doc.addPage(); yPos = 20; }
     }
 
-    doc.save(`movimentacao_japan_security.pdf`);
+    doc.save(`movimentacao_japan.pdf`);
 }
 
-// Inicialização
 window.onload = () => {
     carregarListaVeiculos();
     carregarTabelaMovimentacao();
