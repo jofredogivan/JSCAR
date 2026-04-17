@@ -4,25 +4,23 @@
 
 async function exportarBackup() {
     try {
-        // Coleta dados de todas as tabelas
+        // Coleta dados de todas as tabelas (Ajustado para os nomes reais do seu DB)
         const veiculos = await dbListar("vehicles");
         const vistorias = await dbListar("vistorias");
         const movimentacoes = await dbListar("movimentacao");
-        const manutencoes = await dbListar("maintenance");
+        const manutencoes = await dbListar("manutencoes"); // Ajustado para coincidir com maintenance.js
 
         const dadosCompletos = {
             dataBackup: new Date().toISOString(),
             vehicles: veiculos,
             vistorias: vistorias,
             movimentacao: movimentacoes,
-            maintenance: manutencoes
+            manutencoes: manutencoes
         };
 
-        // Converte para JSON string
         const blob = new Blob([JSON.stringify(dadosCompletos, null, 2)], { type: "application/json" });
         const url = URL.createObjectURL(blob);
         
-        // Cria o link de download
         const a = document.createElement("a");
         a.href = url;
         a.download = `backup_japan_security_${new Date().toLocaleDateString('pt-BR').replace(/\//g, '-')}.json`;
@@ -31,7 +29,7 @@ async function exportarBackup() {
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
 
-        alert("Backup exportado com sucesso! Guarde este arquivo em um local seguro.");
+        alert("Backup exportado com sucesso! Guarde este arquivo com segurança.");
     } catch (error) {
         console.error(error);
         alert("Erro ao gerar backup: " + error);
@@ -41,7 +39,7 @@ async function exportarBackup() {
 async function importarBackup() {
     const fileInput = document.getElementById('fileBackup');
     if (!fileInput.files.length) {
-        return alert("Por favor, selecione o arquivo de backup (.json) primeiro.");
+        return alert("Selecione o arquivo .json baixado anteriormente.");
     }
 
     const arquivo = fileInput.files[0];
@@ -51,9 +49,9 @@ async function importarBackup() {
         try {
             const dados = JSON.parse(e.target.result);
 
-            if (confirm("Isso irá substituir os dados atuais. Deseja continuar?")) {
+            if (confirm("Isso apagará os dados atuais do celular e colocará os do arquivo. Confirmar?")) {
                 
-                // Importa cada categoria para sua respectiva Object Store
+                // Importa cada categoria
                 if (dados.vehicles) {
                     for (let v of dados.vehicles) await dbSalvar("vehicles", v);
                 }
@@ -63,15 +61,15 @@ async function importarBackup() {
                 if (dados.movimentacao) {
                     for (let m of dados.movimentacao) await dbSalvar("movimentacao", m);
                 }
-                if (dados.maintenance) {
-                    for (let man of dados.maintenance) await dbSalvar("maintenance", man);
+                if (dados.manutencoes) {
+                    for (let man of dados.manutencoes) await dbSalvar("manutencoes", man);
                 }
 
-                alert("Dados restaurados com sucesso! O sistema irá recarregar.");
+                alert("Restauração concluída!");
                 window.location.href = "index.html";
             }
         } catch (error) {
-            alert("Erro ao processar o arquivo de backup. Verifique se o formato está correto.");
+            alert("Arquivo inválido. Certifique-se de usar o arquivo .json gerado pelo sistema.");
         }
     };
 
