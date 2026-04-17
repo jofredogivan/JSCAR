@@ -4,46 +4,93 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Japan Security | Home</title>
-    <link rel="icon" type="image/png" href="icons/icon-192x192.png">
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
+    
+    <style>
+        /* Ajuste específico para os botões inferiores não encavalarem */
+        .footer-container {
+            display: flex;
+            flex-direction: column; /* Força um embaixo do outro */
+            gap: 12px;             /* Espaço entre eles */
+            padding: 20px;
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .btn-footer {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 18px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 0.9rem;
+            transition: 0.2s;
+            width: 100%;
+            border: 1px solid transparent;
+        }
+
+        /* Botão Dashboard - Vermelho Japan */
+        .btn-dash {
+            background: rgba(230, 57, 70, 0.15);
+            color: #e63946;
+            border-color: #e63946;
+        }
+
+        /* Botão Backup - Cinza/Escuro */
+        .btn-backup {
+            background: #252525;
+            color: #bbb;
+            border-color: #444;
+        }
+
+        .btn-footer:active {
+            transform: scale(0.96);
+        }
+    </style>
 </head>
 <body>
+
     <header style="text-align: center; padding: 40px 20px 10px;">
         <i class="fas fa-shield-alt" style="font-size: 3.5rem; color: #e63946;"></i>
-        <h1 style="margin: 0; font-size: 2.5rem; letter-spacing: 5px;">JAPAN</h1>
-        <p style="color: #888; font-size: 0.75rem; text-transform: uppercase;">Security Car Management</p>
+        <h1 style="margin: 0; font-size: 2.5rem; letter-spacing: 5px; font-weight: 900; color: white;">JAPAN</h1>
+        <p style="color: #888; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px;">Security Car Management</p>
     </header>
 
     <nav style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding: 20px; width: 100%; max-width: 400px; margin: 0 auto;">
-        <a href="entrada_saida.html" class="card" style="text-decoration: none; display: flex; flex-direction: column; align-items: center; padding: 25px 10px;">
+        <a href="entrada_saida.html" class="card" style="text-decoration: none; display: flex; flex-direction: column; align-items: center; padding: 25px 10px; background: #1e1e1e; border: 1px solid #333; border-radius: 15px;">
             <i class="fas fa-exchange-alt" style="font-size: 2rem; color: #e63946; margin-bottom: 10px;"></i>
             <span style="color: white; font-weight: bold; font-size: 0.85rem;">Movimentação</span>
         </a>
-        <a href="vistoria.html" class="card" style="text-decoration: none; display: flex; flex-direction: column; align-items: center; padding: 25px 10px;">
+        <a href="vistoria.html" class="card" style="text-decoration: none; display: flex; flex-direction: column; align-items: center; padding: 25px 10px; background: #1e1e1e; border: 1px solid #333; border-radius: 15px;">
             <i class="fas fa-clipboard-check" style="font-size: 2rem; color: #e63946; margin-bottom: 10px;"></i>
             <span style="color: white; font-weight: bold; font-size: 0.85rem;">Vistoria</span>
         </a>
-        <a href="maintenance.html" class="card" style="text-decoration: none; display: flex; flex-direction: column; align-items: center; padding: 25px 10px;">
+        <a href="maintenance.html" class="card" style="text-decoration: none; display: flex; flex-direction: column; align-items: center; padding: 25px 10px; background: #1e1e1e; border: 1px solid #333; border-radius: 15px;">
             <i class="fas fa-tools" style="font-size: 2rem; color: #e63946; margin-bottom: 10px;"></i>
             <span style="color: white; font-weight: bold; font-size: 0.85rem;">Manutenção</span>
         </a>
-        <a href="vehicles.html" class="card" style="text-decoration: none; display: flex; flex-direction: column; align-items: center; padding: 25px 10px;">
+        <a href="vehicles.html" class="card" style="text-decoration: none; display: flex; flex-direction: column; align-items: center; padding: 25px 10px; background: #1e1e1e; border: 1px solid #333; border-radius: 15px;">
             <i class="fas fa-car" style="font-size: 2rem; color: #e63946; margin-bottom: 10px;"></i>
             <span style="color: white; font-weight: bold; font-size: 0.85rem;">Frota</span>
         </a>
     </nav>
 
-    <div style="padding: 0 20px 40px; width: 100%; max-width: 400px; margin: 0 auto;">
-        
-        <a href="dashboard.html" class="btn-primary" style="text-decoration: none; background: rgba(230, 57, 70, 0.1); border: 1px solid #e63946; margin-bottom: 12px;">
-            <i class="fas fa-chart-line"></i> DASHBOARD OPERACIONAL
+    <div class="footer-container">
+        <a href="dashboard.html" class="btn-footer btn-dash">
+            <i class="fas fa-chart-line"></i>
+            DASHBOARD OPERACIONAL
         </a>
 
-        <a href="backup.html" class="btn-primary" style="text-decoration: none; background: #222; border: 1px solid #444; color: #bbb;">
-            <i class="fas fa-database"></i> BACKUP DE DADOS
+        <a href="backup.html" class="btn-footer btn-backup">
+            <i class="fas fa-database"></i>
+            BACKUP DE DADOS
         </a>
-        
     </div>
 
     <script src="js/db.js"></script>
