@@ -1,26 +1,20 @@
 /* ============================================================
-   ARQUIVO: js/entrada_saida.js (VERSÃO DE RECUPERAÇÃO)
+   ARQUIVO: js/entrada_saida.js - VERSÃO FINAL CORRIGIDA
    ============================================================ */
 
-// FUNÇÃO PARA LER OS DADOS (BUSCA EM TODAS AS CHAVES POSSÍVEIS)
+// Função para ler o histórico (tenta todos os nomes de backup)
 function lerMovimentacoes() {
-    // 1. Tenta ler o nome novo
     let dados = localStorage.getItem("movimentacao");
-    
-    // 2. Se estiver vazio, tenta ler o nome que está no seu backup JSON (vistorias)
     if (!dados || dados === "[]") {
-        dados = localStorage.getItem("vistorias");
-        
-        // Se achou como 'vistorias', já salva no nome certo para as próximas vezes
+        dados = localStorage.getItem("vistorias"); // Nome que está no seu JSON de backup
         if (dados && dados !== "[]") {
             localStorage.setItem("movimentacao", dados);
         }
     }
-    
-    return JSON.parse(dados) || [];
+    return JSON.parse(dados || "[]");
 }
 
-// 1. Busca KM automático ao selecionar veículo
+// 1. Busca KM automático
 function puxarKmAutomatico() {
     const campoPlaca = document.getElementById('veiculo');
     if (!campoPlaca) return;
@@ -32,20 +26,33 @@ function puxarKmAutomatico() {
     }
 }
 
-// 2. Salva o registro
+// 2. Função Salvar (CORRIGIDA)
 function salvar() {
-    const placaDigitada = document.getElementById('veiculo').value.toUpperCase();
-    const km = document.getElementById('km').value;
-    const motorista = document.getElementById('motorista').value;
-    const obs = document.getElementById('obs').value;
-    const tipo = document.getElementById('tipo').value;
+    // Pegando os valores dos campos exatamente como estão no seu HTML
+    const veiculoInput = document.getElementById('veiculo');
+    const kmInput = document.getElementById('km');
+    const motoristaInput = document.getElementById('motorista');
+    const tipoInput = document.getElementById('tipo');
+    const obsInput = document.getElementById('obs');
 
-    if (!placaDigitada || !km || !motorista) return alert("Preencha os campos obrigatórios!");
+    const placaDigitada = veiculoInput.value.toUpperCase();
+    const km = kmInput.value;
+    const motorista = motoristaInput.value;
+    const tipo = tipoInput.value;
+    const obs = obsInput.value;
 
+    // Validação
+    if (!placaDigitada || !km || !motorista) {
+        alert("Atenção: Viatura, KM e Motorista são obrigatórios!");
+        return;
+    }
+
+    // Busca o nome do veículo na base para o relatório
     const veiculosBase = JSON.parse(localStorage.getItem("vehicles")) || [];
     const infoVeiculo = veiculosBase.find(v => v.placa.toUpperCase() === placaDigitada);
     const nomeVeiculo = infoVeiculo ? infoVeiculo.nome : "Não Identificado";
 
+    // Cria o objeto do registro
     const registro = {
         id: Date.now(),
         data: new Date().toLocaleDateString('pt-BR'),
@@ -58,41 +65,51 @@ function salvar() {
         obs: obs
     };
 
-    const historico = lerMovimentacoes();
-    historico.unshift(registro);
-    localStorage.setItem("movimentacao", JSON.stringify(historico));
+    try {
+        // Salva no Histórico
+        const historico = lerMovimentacoes();
+        historico.unshift(registro);
+        localStorage.setItem("movimentacao", JSON.stringify(historico));
 
-    // Atualiza KM na base de veículos
-    let idx = veiculosBase.findIndex(v => v.placa.toUpperCase() === placaDigitada);
-    if (idx !== -1) { 
-        veiculosBase[idx].kmAtual = km; 
-        localStorage.setItem("vehicles", JSON.stringify(veiculosBase)); 
+        // Atualiza o KM na base de veículos (vehicles)
+        let idx = veiculosBase.findIndex(v => v.placa.toUpperCase() === placaDigitada);
+        if (idx !== -1) { 
+            veiculosBase[idx].kmAtual = km; 
+            localStorage.setItem("vehicles", JSON.stringify(veiculosBase)); 
+        }
+
+        // Limpa os campos e atualiza a tela
+        veiculoInput.value = "";
+        kmInput.value = "";
+        motoristaInput.value = "";
+        obsInput.value = "";
+        
+        renderizarTabela();
+        alert("Movimentação registrada com sucesso!");
+    } catch (e) {
+        console.error("Erro ao salvar:", e);
+        alert("Erro técnico ao salvar. Verifique o console.");
     }
-
-    renderizarTabela();
-    limparCampos();
 }
 
-function limparCampos() {
-    document.getElementById('veiculo').value = "";
-    document.getElementById('km').value = "";
-    document.getElementById('motorista').value = "";
-    document.getElementById('obs').value = "";
-}
-
-// 3. Renderiza a tabela (Puxa os dados antigos e novos)
+// 3. Renderiza a tabela
 function renderizarTabela() {
     const dados = lerMovimentacoes();
     const tbody = document.getElementById('tabela');
     if (!tbody) return;
 
+    if (dados.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center">Nenhum registro encontrado</td></tr>';
+        return;
+    }
+
     tbody.innerHTML = dados.map((m) => `
         <tr>
             <td>${m.data}<br><small>${m.hora}</small></td>
             <td><strong>${m.placa}</strong><br><small>${m.veiculoNome || ''}</small></td>
-            <td><span class="${m.tipo === 'Entrada' ? 'badge-entrada' : 'badge-saida'}">${m.tipo || 'N/A'}</span></td>
+            <td><span class="${m.tipo === 'Entrada' ? 'badge-entrada' : 'badge-saida'}">${m.tipo || 'Saída'}</span></td>
             <td>${m.motorista || m.vigilante || '-'}</td>
-            <td>${m.km || '0'} KM</td>
+            <td>${m.km} KM</td>
             <td>
                 <button class="btn-delete" onclick="excluirRegistro(${m.id})">
                     <i class="fas fa-trash-alt"></i>
@@ -102,8 +119,9 @@ function renderizarTabela() {
     `).join('');
 }
 
+// 4. Excluir
 function excluirRegistro(id) {
-    if (confirm("Deseja excluir?")) {
+    if (confirm("Deseja realmente excluir este registro?")) {
         let dados = lerMovimentacoes();
         const novaLista = dados.filter(item => item.id !== id);
         localStorage.setItem("movimentacao", JSON.stringify(novaLista));
@@ -111,7 +129,7 @@ function excluirRegistro(id) {
     }
 }
 
-// Função para gerar o PDF respeitando os dados recuperados
+// 5. PDF
 function gerarPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
@@ -119,7 +137,9 @@ function gerarPDF() {
 
     if (dados.length === 0) return alert("Sem dados para exportar!");
 
-    doc.text("RELATÓRIO DE MOVIMENTAÇÃO - JAPAN SECURITY", 14, 15);
+    doc.setFontSize(14);
+    doc.text("JAPAN SECURITY - RELATÓRIO DE MOVIMENTAÇÃO", 14, 15);
+    
     doc.autoTable({
         startY: 25,
         head: [['Data', 'Placa', 'Tipo', 'Motorista', 'KM']],
@@ -127,9 +147,10 @@ function gerarPDF() {
         theme: 'grid',
         headStyles: { fillColor: [230, 57, 70] }
     });
-    doc.save('movimentacao_japan.pdf');
+    doc.save('movimentacao.pdf');
 }
 
+// Inicialização
 window.onload = () => {
     const v = JSON.parse(localStorage.getItem("vehicles")) || [];
     const dl = document.getElementById('listaVeiculos');
