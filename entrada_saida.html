@@ -24,20 +24,33 @@
     <main class="main-content" style="padding: 15px;">
         
         <div class="card" style="margin-bottom: 15px;">
-            <div class="input-group">
-                <label style="color: #888; font-size: 0.7rem; text-transform: uppercase;">Buscar na Tabela</label>
-                <input type="text" id="filtroPlaca" class="modern-input" placeholder="Digite placa ou motorista..." onkeyup="filtrarTabela()">
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div style="display: flex; gap: 10px;">
+                    <div style="flex: 1;">
+                        <label style="font-size: 0.65rem; color: #888;">DATA INICIAL</label>
+                        <input type="date" id="data_ini" class="modern-input" onchange="carregarTabelaMovimentacao()">
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="font-size: 0.65rem; color: #888;">DATA FINAL</label>
+                        <input type="date" id="data_fim" class="modern-input" onchange="carregarTabelaMovimentacao()">
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <input type="text" id="filtroPlaca" class="modern-input" placeholder="Buscar placa ou motorista na tabela..." onkeyup="filtrarTabela()">
+                </div>
+
+                <button class="btn-primary" style="background: #34495e; padding: 12px;" onclick="gerarPDFMovimentacao()">
+                    <i class="fas fa-file-pdf"></i> GERAR PDF DO PERÍODO
+                </button>
             </div>
-            <button class="btn-primary" style="background: #34495e; margin-top: 10px; padding: 12px;" onclick="gerarPDFMovimentacao()">
-                <i class="fas fa-file-pdf"></i> GERAR RELATÓRIO PDF
-            </button>
         </div>
 
         <div class="card" style="margin-bottom: 20px;">
             <div style="display: flex; flex-direction: column; gap: 15px;">
                 
                 <div class="input-group">
-                    <label style="color: #888; font-size: 0.7rem; text-transform: uppercase;">Selecione a Viatura</label>
+                    <label style="color: #888; font-size: 0.7rem; text-transform: uppercase;">Viatura</label>
                     <input list="listaVeiculos" id="veiculoInput" class="modern-input" placeholder="Selecione a placa...">
                     <datalist id="listaVeiculos"></datalist>
                 </div>
@@ -73,15 +86,13 @@
                         <th>Tipo</th>
                     </tr>
                 </thead>
-                <tbody id="corpoTabela">
-                    </tbody>
+                <tbody id="corpoTabela"></tbody>
             </table>
         </div>
 
     </main>
 
     <script>
-        // Função de busca rápida na tabela
         function filtrarTabela() {
             const input = document.getElementById('filtroPlaca');
             const filter = input.value.toUpperCase();
