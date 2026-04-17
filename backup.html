@@ -2,52 +2,91 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Japan Security | Backup</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
-    
+
     <style>
-        /* Ajuste para garantir que funcione bem no celular sem a sidebar */
-        body { background: #121212; color: white; margin: 0; font-family: sans-serif; }
-        .main-content { margin-left: 0 !important; width: 100%; padding: 15px; box-sizing: border-box; }
-        .top-bar { padding: 20px 0; border-bottom: 1px solid #333; margin-bottom: 20px; }
-        .top-bar h1 { font-size: 1.4rem; color: #e63946; margin: 0; }
-        .card { background: #1e1e1e; border: 1px solid #333; border-radius: 12px; padding: 20px; margin-bottom: 20px; }
-        .card-header { font-weight: bold; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; color: #e63946; }
-        .btn-voltar { color: #888; text-decoration: none; font-size: 0.9rem; display: block; margin-bottom: 10px; }
-        .modern-input { width: 100%; background: #222; border: 1px solid #444; color: white; padding: 12px; border-radius: 8px; margin-top: 10px; box-sizing: border-box; }
-        .btn-primary { width: 100%; padding: 15px; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .backup-icon {
+            font-size: 3rem;
+            color: #e63946;
+            margin: 20px 0;
+            display: block;
+            text-align: center;
+        }
+        .info-text {
+            color: #888;
+            font-size: 0.85rem;
+            text-align: center;
+            margin-bottom: 25px;
+            line-height: 1.4;
+        }
+        .section-title {
+            color: white;
+            font-size: 1rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .divider {
+            height: 1px;
+            background: #333;
+            margin: 30px 0;
+        }
     </style>
 </head>
 <body>
 
-    <main class="main-content">
-        <a href="index.html" class="btn-voltar"><i class="fas fa-arrow-left"></i> Voltar ao Menu</a>
+    <header style="background: #1a1a1a; padding: 15px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 1000;">
+        <a href="index.html" style="color: white; text-decoration: none; font-size: 0.9rem; font-weight: bold; display: flex; align-items: center; gap: 8px;">
+            <i class="fas fa-chevron-left"></i> INÍCIO
+        </a>
+        <div style="color: #e63946; font-weight: 900; font-size: 0.8rem; letter-spacing: 2px;">BACKUP</div>
+        <div style="width: 50px;"></div>
+    </header>
+
+    <main class="main-content" style="padding: 15px;">
         
-        <header class="top-bar">
-            <h1>Cópia de Segurança</h1>
-        </header>
+        <i class="fas fa-database backup-icon"></i>
+        <p class="info-text">
+            O backup salva todos os dados de veículos, vistorias e movimentações em um único arquivo.
+        </p>
 
-        <section class="content-body">
-            <div class="card">
-                <div class="card-header"><i class="fas fa-file-export"></i> Exportar Dados</div>
-                <p style="color: #bbb; font-size: 0.9rem; margin-bottom: 15px;">Gera um arquivo com veículos, vistorias e fotos para segurança.</p>
-                <button class="btn-primary" style="background: #27ae60;" onclick="exportarBackup()">
-                    <i class="fas fa-download"></i> Baixar Arquivo JSON
-                </button>
+        <div class="card">
+            <div class="section-title">
+                <i class="fas fa-file-export"></i> Exportar Dados
+            </div>
+            <p style="color: #666; font-size: 0.75rem; margin-bottom: 15px;">
+                Crie um arquivo de segurança para guardar ou transferir para outro dispositivo.
+            </p>
+            <button class="btn-primary" onclick="exportarBackup()">
+                <i class="fas fa-download"></i> BAIXAR BACKUP (.JSON)
+            </button>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="card">
+            <div class="section-title" style="color: #27ae60;">
+                <i class="fas fa-file-import"></i> Restaurar Backup
+            </div>
+            <p style="color: #666; font-size: 0.75rem; margin-bottom: 15px;">
+                Selecione um arquivo de backup para restaurar os dados neste dispositivo.
+            </p>
+            
+            <div class="input-group">
+                <input type="file" id="fileBackup" accept=".json" class="modern-input" style="padding: 10px; font-size: 0.8rem;">
             </div>
 
-            <div class="card">
-                <div class="card-header"><i class="fas fa-file-import"></i> Importar Dados</div>
-                <p style="color: #bbb; font-size: 0.9rem; margin-bottom: 15px;">Atenção: Isso substituirá as informações atuais deste aparelho.</p>
-                <input type="file" id="fileBackup" class="modern-input" accept=".json">
-                <button class="btn-primary" style="margin-top: 15px; background: #e67e22;" onclick="importarBackup()">
-                    <i class="fas fa-upload"></i> Restaurar Banco de Dados
-                </button>
-            </div>
-        </section>
+            <button class="btn-primary" style="background: #27ae60; margin-top: 15px;" onclick="importarBackup()">
+                <i class="fas fa-upload"></i> IMPORTAR E SOBREPOR DADOS
+            </button>
+        </div>
+
     </main>
 
     <script src="js/db.js"></script>
