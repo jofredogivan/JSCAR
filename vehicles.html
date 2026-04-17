@@ -12,7 +12,10 @@
 
     <aside class="sidebar">
         <div class="sidebar-header">
-            <div class="logo-area"><i class="fas fa-shield-alt logo-icon"></i><div><h2>JAPAN</h2><span>SECURITY</span></div></div>
+            <div class="logo-area">
+                <i class="fas fa-shield-alt logo-icon"></i>
+                <div><h2>JAPAN</h2><span>SECURITY</span></div>
+            </div>
         </div>
         <nav class="sidebar-nav">
             <ul>
@@ -29,7 +32,10 @@
 
         <section class="content-body">
             <div class="card form-card">
-                <div class="card-header"><i class="fas fa-plus-circle"></i> Novo Veículo</div>
+                <div class="card-header"><i class="fas fa-plus-circle"></i> Gerenciar Veículo</div>
+                
+                <input type="hidden" id="editIndex" value="-1">
+                
                 <div class="row">
                     <div class="input-group">
                         <label>Nome/Modelo</label>
@@ -38,6 +44,10 @@
                     <div class="input-group">
                         <label>Placa</label>
                         <input id="placa" class="modern-input" placeholder="ABC-1234">
+                    </div>
+                    <div class="input-group">
+                        <label>Ano</label>
+                        <input id="ano" type="number" class="modern-input" placeholder="Ex: 2023">
                     </div>
                 </div>
                 <div class="row">
@@ -50,7 +60,15 @@
                         <input id="kmTroca" type="number" class="modern-input">
                     </div>
                 </div>
-                <button class="btn-primary" onclick="salvarVeiculo()"><i class="fas fa-save"></i> Salvar Veículo</button>
+                
+                <div style="display: flex; gap: 10px;">
+                    <button id="btnSalvar" class="btn-primary" onclick="salvarVeiculo()">
+                        <i class="fas fa-save"></i> Salvar Veículo
+                    </button>
+                    <button id="btnCancelar" class="btn-primary" style="background: #555; display: none;" onclick="cancelarEdicao()">
+                        <i class="fas fa-times"></i> Cancelar
+                    </button>
+                </div>
             </div>
 
             <div class="card table-card mt-20">
@@ -59,7 +77,7 @@
                     <table class="modern-table">
                         <thead>
                             <tr>
-                                <th>Modelo</th>
+                                <th>Modelo (Ano)</th>
                                 <th>Placa</th>
                                 <th>KM Atual</th>
                                 <th>Prox. Troca</th>
@@ -70,9 +88,13 @@
                             </tbody>
                     </table>
                 </div>
+                <p style="color: #888; font-size: 0.75rem; margin-top: 10px; padding: 0 15px;">
+                    * Clique em um veículo na tabela para editar seus dados.
+                </p>
             </div>
         </section>
     </main>
+
     <script src="js/vehicles.js"></script>
 </body>
 </html>
