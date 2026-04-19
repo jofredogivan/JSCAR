@@ -3,7 +3,7 @@
    ============================================================ */
 
 const dbName = "JapanSecurityDB";
-const dbVersion = 4; // Subi para 4 para garantir a criação da nova tabela
+const dbVersion = 5; // Subi para 5 para aplicar a criação da tabela de manutenção
 
 function abrirDB() {
     return new Promise((resolve, reject) => {
@@ -24,9 +24,9 @@ function abrirDB() {
             if (!db.objectStoreNames.contains("movimentacao")) {
                 db.createObjectStore("movimentacao", { keyPath: "id" });
             }
-            // Tabela de Manutenções (Adicionada agora para evitar erros)
-            if (!db.objectStoreNames.contains("manutencoes")) {
-                db.createObjectStore("manutencoes", { keyPath: "id" });
+            // Tabela de Manutenções (Ajustado para o singular)
+            if (!db.objectStoreNames.contains("manutencao")) {
+                db.createObjectStore("manutencao", { keyPath: "id" });
             }
         };
 
@@ -51,11 +51,16 @@ async function dbSalvar(storeName, objeto) {
 async function dbListar(storeName) {
     const db = await abrirDB();
     return new Promise((resolve, reject) => {
-        const transaction = db.transaction([storeName], "readonly");
-        const store = transaction.objectStore(storeName);
-        const request = store.getAll();
-        request.onsuccess = () => resolve(request.result || []);
-        request.onerror = () => reject(request.error);
+        try {
+            const transaction = db.transaction([storeName], "readonly");
+            const store = transaction.objectStore(storeName);
+            const request = store.getAll();
+            request.onsuccess = () => resolve(request.result || []);
+            request.onerror = () => reject(request.error);
+        } catch (e) {
+            console.error("Erro ao listar store: " + storeName, e);
+            resolve([]); // Retorna vazio se a store ainda não existir
+        }
     });
 }
 
