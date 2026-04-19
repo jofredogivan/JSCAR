@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Japan Security | Movimentação</title>
+    <title>Japan Security | Entrada e Saída</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
@@ -17,7 +17,7 @@
         <a href="index.html" style="color: white; text-decoration: none; font-size: 0.9rem; font-weight: bold; display: flex; align-items: center; gap: 8px;">
             <i class="fas fa-chevron-left"></i> INÍCIO
         </a>
-        <div style="color: #e63946; font-weight: 900; font-size: 0.8rem; letter-spacing: 2px;">MOVIMENTAÇÃO</div>
+        <div style="color: #e63946; font-weight: 900; font-size: 0.8rem; letter-spacing: 2px;">ENTRADA E SAÍDA</div>
         <div style="width: 50px;"></div>
     </header>
 
@@ -27,21 +27,21 @@
             <div style="display: flex; flex-direction: column; gap: 10px;">
                 <div style="display: flex; gap: 10px;">
                     <div style="flex: 1;">
-                        <label style="font-size: 0.65rem; color: #888;">DATA INICIAL</label>
-                        <input type="date" id="data_ini" class="modern-input" onchange="carregarTabelaMovimentacao()">
+                        <label style="font-size: 0.65rem; color: #888;">INÍCIO (DATA/HORA)</label>
+                        <input type="datetime-local" id="data_ini" class="modern-input" onchange="carregarTabelaMovimentacao()">
                     </div>
                     <div style="flex: 1;">
-                        <label style="font-size: 0.65rem; color: #888;">DATA FINAL</label>
-                        <input type="date" id="data_fim" class="modern-input" onchange="carregarTabelaMovimentacao()">
+                        <label style="font-size: 0.65rem; color: #888;">FIM (DATA/HORA)</label>
+                        <input type="datetime-local" id="data_fim" class="modern-input" onchange="carregarTabelaMovimentacao()">
                     </div>
                 </div>
                 
                 <div class="input-group">
-                    <input type="text" id="filtroPlaca" class="modern-input" placeholder="Buscar placa ou motorista na tabela..." onkeyup="filtrarTabela()">
+                    <input type="text" id="filtroPlaca" class="modern-input" placeholder="Buscar placa ou motorista..." onkeyup="filtrarTabela()">
                 </div>
 
                 <button class="btn-primary" style="background: #34495e; padding: 12px;" onclick="gerarPDFMovimentacao()">
-                    <i class="fas fa-file-pdf"></i> GERAR PDF DO PERÍODO
+                    <i class="fas fa-file-pdf"></i> GERAR PDF PROFISSIONAL
                 </button>
             </div>
         </div>
@@ -81,10 +81,10 @@
                 <thead>
                     <tr>
                         <th style="width: 30%;">Data/Hora</th>
-                        <th>Viatura / Motorista</th>
+                        <th>Viatura / Condutor</th>
                         <th>KM</th>
                         <th>Tipo</th>
-                    </tr>
+                        <th style="width: 40px;"></th> </tr>
                 </thead>
                 <tbody id="corpoTabela"></tbody>
             </table>
