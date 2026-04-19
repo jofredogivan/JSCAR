@@ -6,6 +6,7 @@
     <title>Japan Security | Vistoria</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 </head>
@@ -25,12 +26,12 @@
             <div style="display: flex; flex-direction: column; gap: 10px;">
                 <div style="display: flex; gap: 10px;">
                     <div style="flex: 1;">
-                        <label style="font-size: 0.65rem; color: #888;">INÍCIO</label>
-                        <input type="date" id="f_data_ini" class="modern-input">
+                        <label style="font-size: 0.65rem; color: #888;">INÍCIO (DATA/HORA)</label>
+                        <input type="datetime-local" id="f_data_ini" class="modern-input" onchange="carregarTabelaVistoria()">
                     </div>
                     <div style="flex: 1;">
-                        <label style="font-size: 0.65rem; color: #888;">FIM</label>
-                        <input type="date" id="f_data_fim" class="modern-input">
+                        <label style="font-size: 0.65rem; color: #888;">FIM (DATA/HORA)</label>
+                        <input type="datetime-local" id="f_data_fim" class="modern-input" onchange="carregarTabelaVistoria()">
                     </div>
                 </div>
                 <button class="btn-primary" style="background: #34495e;" onclick="gerarVistoriaPDF()">
@@ -80,7 +81,7 @@
                 <div class="input-group" style="text-align: center;">
                     <label class="btn-primary" style="background: #222; border: 1px dashed #555; cursor: pointer;">
                         <i class="fas fa-camera"></i> TIRAR FOTO
-                        <input type="file" accept="image/*" capture="camera" onchange="previewImagem(this)" style="display: none;">
+                        <input type="file" id="inputFoto" accept="image/*" capture="camera" onchange="previewImagem(this)" style="display: none;">
                     </label>
                     <img id="preview" style="display: none; width: 100%; margin-top: 10px; border-radius: 10px; border: 2px solid #333;">
                 </div>
@@ -95,12 +96,11 @@
             <table class="modern-table">
                 <thead>
                     <tr>
-                        <th>Data</th>
+                        <th>Data/Hora</th>
                         <th>VTR</th>
                         <th>Vigilante</th>
                         <th><i class="fas fa-camera"></i></th>
-                        <th></th>
-                    </tr>
+                        <th style="width: 40px;"></th> </tr>
                 </thead>
                 <tbody id="tabelaVistoria"></tbody>
             </table>
