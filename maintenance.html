@@ -2,27 +2,107 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Japan Security | Manutenção</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body>
-    <main class="main-content">
-        <header class="top-bar">
-            <a href="index.html" class="btn-voltar"><i class="fas fa-arrow-left"></i> Início</a>
-            <h1>Manutenção</h1>
-        </header>
 
-        <div class="card">
-            <div class="row">
-                <div class="input-group"><label>Veículo</label><input list="listaVeiculos" id="veiculo" class="modern-input" onchange="puxarKmAutomatico()"><datalist id="listaVeiculos"></datalist></div>
-                <div class="input-group"><label>KM do Serviço</label><input id="km" type="number" class="modern-input"></div>
-                <div class="input-group"><label>Tipo de Serviço</label><input id="servico" class="modern-input" placeholder="Ex: Troca de Óleo"></div>
+    <header style="background: #1a1a1a; padding: 15px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 1000;">
+        <a href="index.html" style="color: white; text-decoration: none; font-size: 0.9rem; font-weight: bold; display: flex; align-items: center; gap: 8px;">
+            <i class="fas fa-chevron-left"></i> INÍCIO
+        </a>
+        <div style="color: #e63946; font-weight: 900; font-size: 0.8rem; letter-spacing: 2px;">MANUTENÇÃO</div>
+        <div style="width: 50px;"></div>
+    </header>
+
+    <main class="main-content" style="padding: 15px;">
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+            <div class="card" style="text-align: center; border-bottom: 3px solid #e63946; padding: 10px;">
+                <small style="color: #888; font-size: 0.6rem; text-transform: uppercase;">Investimento Total</small>
+                <div id="totalGasto" style="font-size: 1.1rem; font-weight: bold; color: #fff;">R$ 0,00</div>
             </div>
-            <button class="btn-primary" onclick="salvar()"><i class="fas fa-check-circle"></i> Salvar Manutenção</button>
+            <div class="card" style="text-align: center; border-bottom: 3px solid #3498db; padding: 10px;">
+                <small style="color: #888; font-size: 0.6rem; text-transform: uppercase;">Qtd. Serviços</small>
+                <div id="totalRegistros" style="font-size: 1.1rem; font-weight: bold; color: #fff;">0</div>
+            </div>
         </div>
+
+        <div class="card" style="margin-bottom: 20px;">
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                
+                <div class="input-group">
+                    <label style="font-size: 0.7rem; color: #888;">VIATURA</label>
+                    <input list="listaVeiculos" id="m_veiculo" class="modern-input" placeholder="Selecione a placa...">
+                    <datalist id="listaVeiculos"></datalist>
+                </div>
+
+                <div style="display: flex; gap: 10px;">
+                    <div style="flex: 1;">
+                        <label style="font-size: 0.7rem; color: #888;">TIPO</label>
+                        <select id="m_tipo" class="modern-input">
+                            <option value="PREVENTIVA">PREVENTIVA</option>
+                            <option value="CORRETIVA">CORRETIVA</option>
+                            <option value="PNEUS">PNEUS</option>
+                            <option value="OUTROS">OUTROS</option>
+                        </select>
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="font-size: 0.7rem; color: #888;">VALOR (R$)</label>
+                        <input type="number" id="m_valor" class="modern-input" placeholder="0,00">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label style="font-size: 0.7rem; color: #888;">DESCRIÇÃO DO SERVIÇO</label>
+                    <input type="text" id="m_servico" class="modern-input" placeholder="O que foi feito?">
+                </div>
+
+                <div style="display: flex; gap: 10px;">
+                    <div style="flex: 1;">
+                        <label style="font-size: 0.7rem; color: #888;">KM ATUAL</label>
+                        <input type="number" id="m_km" class="modern-input">
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="font-size: 0.7rem; color: #888;">PRÓXIMA (KM)</label>
+                        <input type="number" id="m_proxima" class="modern-input" placeholder="Opcional">
+                    </div>
+                </div>
+
+                <div class="input-group" style="text-align: center;">
+                    <label class="btn-primary" style="background: #222; border: 1px dashed #444; cursor: pointer; padding: 10px;">
+                        <i class="fas fa-camera"></i> FOTO DO RECIBO / NOTA
+                        <input type="file" accept="image/*" capture="camera" onchange="previewNota(this)" style="display: none;">
+                    </label>
+                    <img id="previewNota" style="display: none; width: 100%; margin-top: 10px; border-radius: 8px; border: 1px solid #333;">
+                </div>
+
+                <button class="btn-primary" onclick="salvarManutencao()" style="background: #e63946; padding: 15px; font-weight: bold;">
+                    <i class="fas fa-save"></i> SALVAR MANUTENÇÃO
+                </button>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="modern-table">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>VTR / Serviço</th>
+                        <th>Valor</th>
+                        <th style="width: 40px;"></th>
+                    </tr>
+                </thead>
+                <tbody id="tabelaManutencao"></tbody>
+            </table>
+        </div>
+
     </main>
+
     <script src="js/db.js"></script>
     <script src="js/maintenance.js"></script>
 </body>
