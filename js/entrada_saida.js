@@ -1,6 +1,20 @@
 /* ============================================================
    ARQUIVO: js/entrada_saida.js - Design & Funcionalidades Premium
+   Atualizado para Lançamento Retroativo (Data/Hora Manual)
    ============================================================ */
+
+window.onload = () => {
+    // Configura data/hora atual nos campos de registro por padrão
+    const agora = new Date();
+    const campoData = document.getElementById('reg_data');
+    const campoHora = document.getElementById('reg_hora');
+    
+    if(campoData) campoData.value = agora.toISOString().split('T')[0];
+    if(campoHora) campoHora.value = agora.toTimeString().slice(0, 5);
+
+    carregarListaVeiculos();
+    carregarTabelaMovimentacao();
+};
 
 async function carregarListaVeiculos() {
     const veiculos = await dbListar("vehicles");
@@ -22,7 +36,7 @@ document.getElementById('veiculoInput').addEventListener('change', async functio
     ]);
 
     const historico = [...movs, ...vists]
-        .filter(r => (r.veiculo === placaDigitada || r.viatura === placaDigitada))
+        .filter(r => (r.viatura === placaDigitada || r.veiculo === placaDigitada))
         .sort((a, b) => b.timestamp - a.timestamp);
 
     if (historico.length > 0) {
@@ -37,16 +51,23 @@ async function registrarMovimentacao(tipo) {
     const vtr = document.getElementById('veiculoInput').value.toUpperCase();
     const km = document.getElementById('kmInput').value;
     const motorista = document.getElementById('motoristaInput').value;
+    
+    // Captura os valores dos campos de data/hora manuais
+    const dataManual = document.getElementById('reg_data').value;
+    const horaManual = document.getElementById('reg_hora').value;
 
-    if (!vtr || !km || !motorista) {
-        alert("Preencha Viatura, KM e Motorista!");
+    if (!vtr || !km || !motorista || !dataManual || !horaManual) {
+        alert("Preencha todos os campos corretamente!");
         return;
     }
 
+    // Monta o timestamp baseado na data/hora escolhida pelo usuário
+    const dataHoraRegistro = new Date(`${dataManual}T${horaManual}`);
+
     const registro = {
         id: Date.now(),
-        timestamp: new Date().getTime(),
-        data: new Date().toLocaleString('pt-BR'),
+        timestamp: dataHoraRegistro.getTime(),
+        data: dataHoraRegistro.toLocaleString('pt-BR'),
         viatura: vtr,
         km: parseInt(km),
         motorista: motorista,
@@ -55,6 +76,7 @@ async function registrarMovimentacao(tipo) {
 
     await dbSalvar("movimentacao", registro);
     
+    // Limpa os campos de texto para o próximo uso
     document.getElementById('veiculoInput').value = "";
     document.getElementById('kmInput').value = "";
     document.getElementById('motoristaInput').value = "";
@@ -82,7 +104,7 @@ async function carregarTabelaMovimentacao() {
     const dFim = document.getElementById('data_fim').value;
 
     let filtrados = registros;
-    // Ajuste para filtro de Data e Hora exata
+    
     if (dIni && dFim) {
         const start = new Date(dIni).getTime();
         const end = new Date(dFim).getTime();
@@ -137,7 +159,6 @@ async function gerarPDFMovimentacao() {
 
     if (filtrados.length === 0) return alert("Nenhum dado para o período.");
 
-    // Formatação de data/hora para o cabeçalho do PDF
     const dataFormatada = (dt) => dt ? new Date(dt).toLocaleString('pt-BR').substring(0, 16) : '---';
 
     doc.setFillColor(230, 57, 70); 
@@ -162,7 +183,7 @@ async function gerarPDFMovimentacao() {
         
         doc.autoTable({
             head: [[{content: `VEÍCULO: ${vtr} - ${modelo}`, colSpan: 4, styles: {halign: 'center', fillColor: [30, 30, 30]}}], 
-                   ['DATA/HORA', 'MOTORISTA', 'KM', 'STATUS']],
+                    ['DATA/HORA', 'MOTORISTA', 'KM', 'STATUS']],
             body: logs.map(l => [l.data, l.motorista, l.km, l.tipo]),
             startY: yPos,
             theme: 'striped',
@@ -181,8 +202,3 @@ async function gerarPDFMovimentacao() {
 
     doc.save(`Relatorio_Frota_JapanSecurity.pdf`);
 }
-
-window.onload = () => {
-    carregarListaVeiculos();
-    carregarTabelaMovimentacao();
-};
