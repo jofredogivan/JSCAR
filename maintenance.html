@@ -5,13 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Japan Security | Manutenção</title>
     <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png">
-<link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512x512.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512x512.png">
+    <link rel="manifest" href="manifest.json">
 
-<link rel="manifest" href="manifest.json">
-
-<meta name="theme-color" content="#1a1a1a">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#1a1a1a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -81,6 +80,11 @@
                     </div>
                 </div>
 
+                <div class="input-group" style="background: #2a2a2a; padding: 10px; border-radius: 8px; border: 1px dashed #444;">
+                    <label style="font-size: 0.6rem; color: #bbb;">DATA DO SERVIÇO (PARA LANÇAMENTO RETROATIVO)</label>
+                    <input type="date" id="m_data" class="modern-input" style="border-color: #555;">
+                </div>
+
                 <div class="input-group" style="text-align: center;">
                     <label class="btn-primary" style="background: #222; border: 1px dashed #444; cursor: pointer; padding: 10px;">
                         <i class="fas fa-camera"></i> FOTO DO RECIBO / NOTA
@@ -91,6 +95,25 @@
 
                 <button class="btn-primary" onclick="salvarManutencao()" style="background: #e63946; padding: 15px; font-weight: bold;">
                     <i class="fas fa-save"></i> SALVAR MANUTENÇÃO
+                </button>
+            </div>
+        </div>
+
+        <div class="card" style="margin-bottom: 15px; border-top: 3px solid #34495e;">
+            <div style="color: #888; font-size: 0.6rem; font-weight: bold; margin-bottom: 10px; text-transform: uppercase;">Filtrar Histórico / Gerar Relatório</div>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div style="display: flex; gap: 10px;">
+                    <div style="flex: 1;">
+                        <label style="font-size: 0.6rem; color: #888;">DE:</label>
+                        <input type="date" id="filtro_data_ini" class="modern-input" onchange="listarManutencoes()">
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="font-size: 0.6rem; color: #888;">ATÉ:</label>
+                        <input type="date" id="filtro_data_fim" class="modern-input" onchange="listarManutencoes()">
+                    </div>
+                </div>
+                <button class="btn-primary" style="background: #34495e; padding: 12px;" onclick="gerarPDFManutencao()">
+                    <i class="fas fa-file-pdf"></i> GERAR PDF DE MANUTENÇÃO
                 </button>
             </div>
         </div>
