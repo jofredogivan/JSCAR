@@ -101,7 +101,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, query, where, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, query, where, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
@@ -118,6 +118,7 @@
         const auth = getAuth(app);
 
         let dadosFiltrados = [];
+        let veiculosCache = {}; // Para o KM Automático
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
@@ -128,7 +129,14 @@
             }
         });
 
-        // FUNÇÃO GLOBAL PARA EXCLUIR
+        // KM AUTOMÁTICO AO SELECIONAR VEÍCULO
+        document.getElementById('es_veiculo').addEventListener('input', (e) => {
+            const vtr = e.target.value.toUpperCase().trim();
+            if(veiculosCache[vtr]) {
+                document.getElementById('es_km').value = veiculosCache[vtr].km;
+            }
+        });
+
         window.deletarRegistro = async (id) => {
             if (confirm("Deseja realmente excluir este lançamento?")) {
                 try {
@@ -143,6 +151,7 @@
             const dIni = document.getElementById('f_data_ini').value;
             const dFim = document.getElementById('f_data_fim').value;
 
+            // Busca sem filtros pesados para garantir visualização
             const q = query(collection(db, "movimentacoes"), where("usuario", "==", auth.currentUser.email));
             
             try {
@@ -150,15 +159,14 @@
                 const corpo = document.getElementById('tabelaES');
                 corpo.innerHTML = "";
                 dadosFiltrados = [];
-
                 let lista = [];
+
                 snap.forEach(d => {
                     let item = d.data();
                     item.id = d.id;
                     lista.push(item);
                 });
 
-                // Ordenar por data (mais recente primeiro)
                 lista.sort((a, b) => b.timestamp - a.timestamp);
 
                 lista.forEach(item => {
@@ -170,7 +178,6 @@
                         dadosFiltrados.push(item);
                         const corTipo = item.tipo === "SAIDA" ? "#e63946" : "#2ecc71";
                         
-                        // Exibição da Data e Hora na Tabela
                         corpo.innerHTML += `<tr>
                             <td style="font-size:0.7rem; line-height: 1.2;">
                                 <b>${item.dataExibicao.split(',')[0]}</b><br>
@@ -186,7 +193,11 @@
                         </tr>`;
                     }
                 });
-            } catch (e) { console.error(e); }
+
+                if(lista.length === 0) {
+                    corpo.innerHTML = "<tr><td colspan='4' style='text-align:center; color:#777;'>Nenhum registro encontrado</td></tr>";
+                }
+            } catch (e) { console.error("Erro na busca:", e); }
         }
 
         document.getElementById('btnFiltrar').onclick = buscarDados;
@@ -195,9 +206,9 @@
             const btn = document.getElementById('btnSalvarES');
             const vtr = document.getElementById('es_veiculo').value.toUpperCase().trim();
             const km = document.getElementById('es_km').value;
-            const vig = document.getElementById('es_vigilante').value.toUpperCase();
+            const vig = document.getElementById('es_vigilante').value.toUpperCase().trim();
 
-            if(!vtr || !km) return alert("Informe Viatura e KM!");
+            if(!vtr || !km || !vig) return alert("Preencha Viatura, KM e Vigilante!");
 
             const dataInput = document.getElementById('es_data_retroativa').value;
             const agora = dataInput ? new Date(dataInput) : new Date();
@@ -211,46 +222,70 @@
                     tipo: document.getElementById('es_tipo').value,
                     km: Number(km),
                     vigilante: vig,
-                    dataExibicao: agora.toLocaleString('pt-BR'), // Aqui salva data e hora
+                    dataExibicao: agora.toLocaleString('pt-BR'),
                     dataISO: agora.toISOString(),
                     timestamp: agora.getTime(),
                     usuario: auth.currentUser.email
                 });
+
+                // Opcional: Atualizar o KM no cadastro do veículo também
+                if(veiculosCache[vtr]) {
+                    const vtrRef = doc(db, "veiculos", veiculosCache[vtr].id);
+                    await updateDoc(vtrRef, { kmAtual: Number(km) });
+                    veiculosCache[vtr].km = Number(km);
+                }
                 
+                alert("Salvo com sucesso!");
                 document.getElementById('es_km').value = "";
                 buscarDados();
-                alert("Registro concluído com sucesso!");
-            } catch (e) { alert("Erro ao salvar dados."); }
+            } catch (e) { alert("Erro ao salvar."); }
 
             btn.disabled = false;
             btn.innerText = "REGISTRAR MOVIMENTAÇÃO";
         };
 
-        // PDF corrigido com Hora
+        // PDF COM KM E VIGILANTE
         document.getElementById('btnPDF').onclick = () => {
             const { jsPDF } = window.jspdf;
-            const docPdf = new jsPDF();
+            const docPdf = new jsPDF('l', 'mm', 'a4'); // 'l' para modo paisagem (cabe tudo)
+            
             docPdf.setFontSize(16);
-            docPdf.text("JAPAN SECURITY - RELATÓRIO DE FROTA", 14, 15);
+            docPdf.setTextColor(230, 57, 70);
+            docPdf.text("JAPAN SECURITY - RELATÓRIO DE MOVIMENTAÇÃO", 14, 15);
             
             const colunas = ["Data/Hora", "VTR", "Evento", "KM", "Vigilante"];
-            const linhas = dadosFiltrados.map(i => [i.dataExibicao, i.veiculo, i.tipo, i.km, i.vigilante]);
+            const linhas = dadosFiltrados.map(i => [
+                i.dataExibicao, 
+                i.veiculo, 
+                i.tipo, 
+                i.km + " KM", 
+                i.vigilante
+            ]);
 
             docPdf.autoTable({
                 head: [colunas],
                 body: linhas,
                 startY: 25,
-                styles: { fontSize: 8 },
-                headStyles: { fillColor: [230, 57, 70] }
+                styles: { fontSize: 9 },
+                headStyles: { fillColor: [26, 26, 26] },
+                alternateRowStyles: { fillColor: [245, 245, 245] }
             });
-            docPdf.save(`movimentacao_${new Date().getTime()}.pdf`);
+
+            docPdf.save(`relatorio_${vtr}_${new Date().getTime()}.pdf`);
         };
 
         async function carregarVeiculos() {
             const q = query(collection(db, "veiculos"), where("usuario", "==", auth.currentUser.email));
             const snap = await getDocs(q);
             const list = document.getElementById('listaVeiculos');
-            snap.forEach(d => { list.innerHTML += `<option value="${d.data().placa}">`; });
+            list.innerHTML = "";
+            veiculosCache = {};
+
+            snap.forEach(d => {
+                const info = d.data();
+                veiculosCache[info.placa] = { km: info.kmAtual || 0, id: d.id };
+                list.innerHTML += `<option value="${info.placa}">`;
+            });
         }
     </script>
 </body>
