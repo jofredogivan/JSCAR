@@ -4,79 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Japan Security | Dashboard</title>
-
-    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png">
-<link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512x512.png">
-
-<link rel="manifest" href="manifest.json">
-
-<meta name="theme-color" content="#1a1a1a">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
-    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
     <style>
         :root { --red-japan: #e63946; --bg-card: #1e1e1e; }
-
         body { background-color: #121212; color: white; margin: 0; font-family: sans-serif; }
-
-        /* Grid de Indicadores rápidos */
-        .stats-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            padding: 15px;
-        }
-
-        .stat-card {
-            background: var(--bg-card);
-            padding: 20px;
-            border-radius: 15px;
-            text-align: center;
-            border-bottom: 4px solid var(--red-japan);
-        }
-
+        .stats-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 15px; }
+        .stat-card { background: var(--bg-card); padding: 20px; border-radius: 15px; text-align: center; border-bottom: 4px solid var(--red-japan); }
         .stat-card span { font-size: 0.7rem; color: #888; text-transform: uppercase; display: block; }
         .stat-card strong { font-size: 1.8rem; display: block; margin-top: 5px; }
-
-        /* Container dos Gráficos */
-        .chart-section {
-            padding: 0 15px 20px;
-        }
-
-        .chart-card {
-            background: var(--bg-card);
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 20px;
-            border: 1px solid #333;
-        }
-
-        .chart-title {
-            font-size: 0.9rem;
-            font-weight: bold;
-            color: var(--red-japan);
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        /* Mantém a proporção no mobile */
-        .canvas-container {
-            position: relative;
-            height: 220px;
-            width: 100%;
-        }
-
-        /* Área de Alertas (Troca de Óleo) */
-        #areaAlertas {
-            padding: 0 15px;
-            margin-bottom: 10px;
-        }
+        .chart-section { padding: 0 15px 20px; }
+        .chart-card { background: var(--bg-card); border-radius: 15px; padding: 20px; margin-bottom: 20px; border: 1px solid #333; }
+        .chart-title { font-size: 0.9rem; font-weight: bold; color: var(--red-japan); margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+        .canvas-container { position: relative; height: 220px; width: 100%; }
     </style>
 </head>
 <body>
@@ -100,27 +41,93 @@
         </div>
     </section>
 
-    <div id="areaAlertas"></div>
-
     <section class="chart-section">
-        
         <div class="chart-card">
             <div class="chart-title"><i class="fas fa-chart-pie"></i> STATUS DA FROTA</div>
             <div class="canvas-container">
                 <canvas id="graficoPizza"></canvas>
             </div>
         </div>
-
         <div class="chart-card">
             <div class="chart-title"><i class="fas fa-chart-line"></i> MOVIMENTAÇÃO SEMANAL</div>
             <div class="canvas-container">
                 <canvas id="graficoLinha"></canvas>
             </div>
         </div>
-
     </section>
 
-    <script src="js/db.js"></script>
-    <script src="js/dashboard.js"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDczjdNxa2TZP07iiwTAkOLFbKcOPx1POo",
+            authDomain: "japan-security-car-1a7d8.firebaseapp.com",
+            projectId: "japan-security-car-1a7d8",
+            storageBucket: "japan-security-car-1a7d8.firebasestorage.app",
+            messagingSenderId: "616009365036",
+            appId: "1:616009365036:web:f644dd6106818566900389"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                renderizarDashboard(user.email);
+            } else {
+                window.location.href = "login.html";
+            }
+        });
+
+        async function renderizarDashboard(email) {
+            // 1. Frota Total
+            const qFrota = query(collection(db, "veiculos"), where("usuario", "==", email));
+            const snapFrota = await getDocs(qFrota);
+            document.getElementById('countFrotaTotal').innerText = snapFrota.size;
+
+            // 2. Vistorias Hoje
+            const hoje = new Date().toISOString().split('T')[0];
+            const qVistorias = query(collection(db, "vistorias"), where("usuario", "==", email), where("data", "==", hoje));
+            const snapVistorias = await getDocs(qVistorias);
+            document.getElementById('countVistorias').innerText = snapVistorias.size;
+
+            // Aqui você chamaria as funções dos gráficos passando os dados do snapFrota
+            iniciarGraficos();
+        }
+
+        function iniciarGraficos() {
+            // Exemplo simples de gráfico de pizza (Status)
+            new Chart(document.getElementById('graficoPizza'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Operacional', 'Manutenção'],
+                    datasets: [{
+                        data: [12, 2], // Aqui você pode somar os status do Firebase
+                        backgroundColor: ['#27ae60', '#e63946'],
+                        borderWidth: 0
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+
+            // Exemplo de gráfico de linha
+            new Chart(document.getElementById('graficoLinha'), {
+                type: 'line',
+                data: {
+                    labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
+                    datasets: [{
+                        label: 'Movimentações',
+                        data: [5, 8, 3, 10, 15, 4, 2],
+                        borderColor: '#e63946',
+                        tension: 0.4
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+    </script>
 </body>
 </html>
