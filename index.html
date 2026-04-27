@@ -4,30 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Japan Security | Home</title>
-
     <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png">
-<link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512x512.png">
-
-<link rel="manifest" href="manifest.json">
-
-<meta name="theme-color" content="#1a1a1a">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512x512.png">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1a1a1a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
     
     <style>
-        /* Ajuste específico para os botões inferiores não encavalarem */
         .footer-container {
             display: flex;
-            flex-direction: column; /* Força um embaixo do outro */
-            gap: 12px;             /* Espaço entre eles */
+            flex-direction: column;
+            gap: 12px;
             padding: 20px;
             width: 100%;
             max-width: 400px;
             margin: 0 auto;
         }
-
         .btn-footer {
             display: flex;
             align-items: center;
@@ -42,32 +37,32 @@
             width: 100%;
             border: 1px solid transparent;
         }
-
-        /* Botão Dashboard - Vermelho Japan */
-        .btn-dash {
-            background: rgba(230, 57, 70, 0.15);
-            color: #e63946;
-            border-color: #e63946;
-        }
-
-        /* Botão Backup - Cinza/Escuro */
-        .btn-backup {
-            background: #252525;
-            color: #bbb;
-            border-color: #444;
-        }
-
-        .btn-footer:active {
-            transform: scale(0.96);
+        .btn-dash { background: rgba(230, 57, 70, 0.15); color: #e63946; border-color: #e63946; }
+        .btn-backup { background: #252525; color: #bbb; border-color: #444; }
+        .btn-footer:active { transform: scale(0.96); }
+        
+        #userBadge {
+            color: #888;
+            font-size: 0.65rem;
+            text-align: center;
+            margin-top: 10px;
+            text-transform: lowercase;
         }
     </style>
 </head>
 <body>
 
+    <div style="position: absolute; top: 15px; right: 15px;">
+        <button id="btnLogout" style="background: none; border: none; color: #555; font-size: 1.2rem;">
+            <i class="fas fa-sign-out-alt"></i>
+        </button>
+    </div>
+
     <header style="text-align: center; padding: 40px 20px 10px;">
         <i class="fas fa-shield-alt" style="font-size: 3.5rem; color: #e63946;"></i>
         <h1 style="margin: 0; font-size: 2.5rem; letter-spacing: 5px; font-weight: 900; color: white;">JAPAN</h1>
         <p style="color: #888; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px;">Security Car Management</p>
+        <div id="userBadge">Verificando acesso...</div>
     </header>
 
     <nav style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding: 20px; width: 100%; max-width: 400px; margin: 0 auto;">
@@ -96,11 +91,42 @@
         </a>
 
         <a href="backup.html" class="btn-footer btn-backup">
-            <i class="fas fa-database"></i>
-            BACKUP DE DADOS
+            <i class="fas fa-cloud-upload-alt"></i>
+            SINCRONIZAR NUVEM
         </a>
     </div>
 
-    <script src="js/db.js"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDczjdNxa2TZP07iiwTAkOLFbKcOPx1POo",
+            authDomain: "japan-security-car-1a7d8.firebaseapp.com",
+            projectId: "japan-security-car-1a7d8",
+            storageBucket: "japan-security-car-1a7d8.firebasestorage.app",
+            messagingSenderId: "616009365036",
+            appId: "1:616009365036:web:f644dd6106818566900389"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // Verifica se está logado
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.getElementById('userBadge').innerText = "conectado: " + user.email;
+            } else {
+                window.location.href = "login.html";
+            }
+        });
+
+        // Função de Sair
+        document.getElementById('btnLogout').onclick = () => {
+            signOut(auth).then(() => {
+                window.location.href = "login.html";
+            });
+        };
+    </script>
 </body>
 </html>
