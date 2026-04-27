@@ -30,13 +30,13 @@
         
         <i class="fas fa-cloud-upload-alt backup-icon"></i>
         <p class="info-text">
-            Sincronize os dados do seu backup JSON com o servidor. <br>
-            Utilizador atual: <b><span id="userEmail">...</span></b>
+            Importe o seu backup JSON para sincronizar com o Firebase. <br>
+            Usuário: <b><span id="userEmail">...</span></b>
         </p>
 
         <div class="card">
             <div class="section-title" style="color: #27ae60;">
-                <i class="fas fa-sync"></i> Migrar Dados (JSON -> Firebase)
+                <i class="fas fa-sync"></i> Sincronização Inteligente
             </div>
             
             <div class="input-group">
@@ -44,10 +44,10 @@
             </div>
 
             <button id="btnImport" class="btn-primary" style="background: #27ae60; margin-top: 15px;">
-                <i class="fas fa-cloud-upload-alt"></i> INICIAR SINCRONIZAÇÃO
+                <i class="fas fa-cloud-upload-alt"></i> INICIAR IMPORTAÇÃO
             </button>
 
-            <div id="syncStatus" class="status-sync">A processar ficheiro...</div>
+            <div id="syncStatus" class="status-sync">Processando arquivo...</div>
             <div class="progress-container" id="progContainer">
                 <div class="progress-bar" id="progBar"></div>
             </div>
@@ -85,106 +85,114 @@
             const progContainer = document.getElementById('progContainer');
             
             if (!fileInput.files[0]) {
-                alert("Por favor, selecione o ficheiro JSON!");
+                alert("Selecione o arquivo de backup!");
                 return;
             }
 
-            const file = fileInput.files[0];
             const reader = new FileReader();
-
             reader.onload = async (e) => {
                 try {
                     const dados = JSON.parse(e.target.result);
                     const emailAtual = auth.currentUser.email;
+
+                    // Proteção contra campos nulos no JSON (Evita o erro de length)
+                    const listaVeiculos = dados.vehicles || [];
+                    const listaLogs = dados.logs || [];
+                    const listaVistorias = dados.vistorias || [];
+                    const listaManutencoes = dados.manutencoes || [];
+
+                    const totalGeral = listaVeiculos.length + listaLogs.length + listaVistorias.length + listaManutencoes.length;
                     
+                    if (totalGeral === 0) {
+                        alert("Arquivo vazio ou formato não reconhecido.");
+                        return;
+                    }
+
                     status.style.display = "block";
                     progContainer.style.display = "block";
-                    
-                    // Cálculo do total de tarefas
-                    const totalVehicles = dados.vehicles ? dados.vehicles.length : 0;
-                    const totalLogs = dados.logs ? dados.logs.length : 0;
-                    const totalVistorias = dados.vistorias ? dados.vistorias.length : 0;
-                    const totalGeral = totalVehicles + totalLogs + totalVistorias;
-                    
                     let processados = 0;
-                    let veiculosNovos = 0;
 
-                    const updateProgress = () => {
+                    const atualizarProgresso = (nome) => {
                         processados++;
-                        const porc = (processados / totalGeral) * 100;
+                        let porc = (processados / totalGeral) * 100;
                         progBar.style.width = porc + "%";
-                        status.innerText = `A processar: ${processados} de ${totalGeral}...`;
+                        status.innerText = `Sincronizando ${nome}: ${processados} de ${totalGeral}...`;
                     };
 
-                    // 1. SINCRONIZAR VEÍCULOS (Evitando duplicados por Placa)
-                    if (totalVehicles > 0) {
-                        const snapExistentes = await getDocs(query(collection(db, "veiculos"), where("usuario", "==", emailAtual)));
-                        const placasExistentes = snapExistentes.docs.map(doc => doc.data().placa.toUpperCase());
+                    // 1. VEÍCULOS (Evita duplicar placa)
+                    const snapExistentes = await getDocs(query(collection(db, "veiculos"), where("usuario", "==", emailAtual)));
+                    const placasExistentes = snapExistentes.docs.map(doc => doc.data().placa.toUpperCase());
 
-                        for (let v of dados.vehicles) {
-                            const placaFmt = v.placa.toUpperCase().trim();
-                            if (!placasExistentes.includes(placaFmt)) {
-                                await addDoc(collection(db, "veiculos"), {
-                                    placa: placaFmt,
-                                    nome: v.nome.toUpperCase(),
-                                    ano: v.ano || "N/A",
-                                    kmAtual: v.kmAtual || 0,
-                                    usuario: emailAtual
-                                });
-                                placasExistentes.push(placaFmt);
-                                veiculosNovos++;
-                            }
-                            updateProgress();
-                        }
-                    }
-
-                    // 2. SINCRONIZAR MOVIMENTAÇÕES (logs)
-                    if (totalLogs > 0) {
-                        for (let log of dados.logs) {
-                            const dataObj = new Date(log.timestamp || Date.now());
-                            await addDoc(collection(db, "movimentacoes"), {
-                                veiculo: log.viatura.toUpperCase(), // Converte 'viatura' para 'veiculo'
-                                km: log.km || 0,
-                                motorista: log.motorista.toUpperCase(),
-                                tipo: log.tipo,
-                                dataExibicao: log.data || dataObj.toLocaleString('pt-BR'),
-                                dataISO: dataObj.toISOString(),
-                                timestamp: log.timestamp || dataObj.getTime(),
+                    for (let v of listaVeiculos) {
+                        const placaFmt = v.placa.toUpperCase().trim();
+                        if (!placasExistentes.includes(placaFmt)) {
+                            await addDoc(collection(db, "veiculos"), {
+                                placa: placaFmt,
+                                nome: v.nome.toUpperCase(),
+                                ano: v.ano || "N/A",
+                                kmAtual: v.kmAtual || 0,
                                 usuario: emailAtual
                             });
-                            updateProgress();
+                            placasExistentes.push(placaFmt);
                         }
+                        atualizarProgresso("Veículos");
                     }
 
-                    // 3. SINCRONIZAR VISTORIAS
-                    if (totalVistorias > 0) {
-                        for (let vis of dados.vistorias) {
-                            const dataObjV = new Date(vis.timestamp || Date.now());
-                            await addDoc(collection(db, "vistorias"), {
-                                veiculo: (vis.veiculo || vis.viatura).toUpperCase(),
-                                km: vis.km || 0,
-                                vigilante: (vis.vigilante || vis.motorista || "SISTEMA").toUpperCase(),
-                                checkList: vis.checkList || "N/A",
-                                obs: vis.obs || "",
-                                dataExibicao: vis.data || dataObjV.toLocaleString('pt-BR'),
-                                dataISO: dataObjV.toISOString(),
-                                timestamp: vis.timestamp || dataObjV.getTime(),
-                                usuario: emailAtual
-                            });
-                            updateProgress();
-                        }
+                    // 2. MOVIMENTAÇÕES (logs -> movimentacoes)
+                    for (let log of listaLogs) {
+                        const dataObj = new Date(log.timestamp || Date.now());
+                        await addDoc(collection(db, "movimentacoes"), {
+                            veiculo: (log.viatura || log.veiculo || "DESCONHECIDO").toUpperCase(),
+                            km: log.km || 0,
+                            motorista: (log.motorista || "SISTEMA").toUpperCase(),
+                            tipo: log.tipo || "N/A",
+                            dataExibicao: log.data || dataObj.toLocaleString('pt-BR'),
+                            dataISO: dataObj.toISOString().split('T')[0],
+                            timestamp: log.timestamp || dataObj.getTime(),
+                            usuario: emailAtual
+                        });
+                        atualizarProgresso("Movimentações");
                     }
 
-                    alert(`Sincronização Finalizada!\n\n- Veículos novos: ${veiculosNovos}\n- Movimentações/Vistorias: ${totalLogs + totalVistorias}`);
+                    // 3. VISTORIAS
+                    for (let vis of listaVistorias) {
+                        const dVis = new Date(vis.timestamp || Date.now());
+                        await addDoc(collection(db, "vistorias"), {
+                            veiculo: (vis.veiculo || vis.viatura || "DESCONHECIDO").toUpperCase(),
+                            km: vis.km || 0,
+                            vigilante: (vis.vigilante || vis.motorista || "SISTEMA").toUpperCase(),
+                            checkList: vis.checkList || "OK",
+                            obs: vis.obs || "",
+                            dataExibicao: vis.data || dVis.toLocaleString('pt-BR'),
+                            dataISO: dVis.toISOString().split('T')[0],
+                            timestamp: vis.timestamp || dVis.getTime(),
+                            usuario: emailAtual
+                        });
+                        atualizarProgresso("Vistorias");
+                    }
+
+                    // 4. MANUTENÇÕES
+                    for (let m of listaManutencoes) {
+                        const dM = new Date(m.timestamp || Date.now());
+                        await addDoc(collection(db, "manutencoes"), {
+                            ...m,
+                            veiculo: (m.veiculo || m.viatura || "DESCONHECIDO").toUpperCase(),
+                            dataExibicao: m.data || dM.toLocaleString('pt-BR'),
+                            dataISO: dM.toISOString().split('T')[0],
+                            usuario: emailAtual
+                        });
+                        atualizarProgresso("Manutenções");
+                    }
+
+                    alert("✅ Tudo pronto! Os dados foram vinculados ao seu usuário.");
                     location.reload();
 
                 } catch (err) {
                     console.error(err);
-                    alert("Erro ao importar: " + err.message);
+                    alert("Erro crítico: " + err.message);
                 }
             };
-
-            reader.readAsText(file);
+            reader.readAsText(fileInput.files[0]);
         });
     </script>
 </body>
