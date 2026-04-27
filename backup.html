@@ -11,8 +11,9 @@
         .backup-icon { font-size: 3rem; color: #e63946; margin: 20px 0; display: block; text-align: center; }
         .info-text { color: #888; font-size: 0.85rem; text-align: center; margin-bottom: 25px; line-height: 1.4; }
         .section-title { color: white; font-size: 1rem; font-weight: bold; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
-        .divider { height: 1px; background: #333; margin: 30px 0; }
-        .status-sync { color: #ffb703; font-size: 0.75rem; text-align: center; margin-top: 10px; display: none; }
+        .status-sync { color: #ffb703; font-size: 0.8rem; text-align: center; margin-top: 15px; display: none; font-weight: bold; }
+        .progress-container { width: 100%; background: #333; height: 10px; border-radius: 5px; margin-top: 10px; display: none; }
+        .progress-bar { width: 0%; height: 100%; background: #e63946; border-radius: 5px; transition: 0.3s; }
     </style>
 </head>
 <body>
@@ -29,15 +30,15 @@
         
         <i class="fas fa-cloud-upload-alt backup-icon"></i>
         <p class="info-text">
-            Use esta tela para enviar seus dados antigos do celular para o novo servidor da <b>Japan Security</b>.
+            Esta função irá "carimbar" seus dados antigos com seu e-mail (<b><span id="userEmail">...</span></b>) e subir para o novo servidor.
         </p>
 
         <div class="card">
             <div class="section-title" style="color: #27ae60;">
-                <i class="fas fa-sync"></i> Sincronizar com Nuvem
+                <i class="fas fa-sync"></i> Migrar Dados para Firebase
             </div>
             <p style="color: #666; font-size: 0.75rem; margin-bottom: 15px;">
-                Selecione seu arquivo .JSON antigo para subir todos os dados de uma vez para o Firebase.
+                Selecione o arquivo <b>.JSON</b> gerado pelo backup do sistema anterior.
             </p>
             
             <div class="input-group">
@@ -45,9 +46,13 @@
             </div>
 
             <button id="btnImport" class="btn-primary" style="background: #27ae60; margin-top: 15px;">
-                <i class="fas fa-cloud-upload-alt"></i> SUBIR DADOS PARA NUVEM
+                <i class="fas fa-cloud-upload-alt"></i> INICIAR MIGRAÇÃO AGORA
             </button>
-            <div id="syncStatus" class="status-sync">Enviando dados... aguarde.</div>
+
+            <div id="syncStatus" class="status-sync">Preparando envio...</div>
+            <div class="progress-container" id="progContainer">
+                <div class="progress-bar" id="progBar"></div>
+            </div>
         </div>
 
     </main>
@@ -70,15 +75,19 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        // BLOQUEIO DE SEGURANÇA
         onAuthStateChanged(auth, (user) => {
-            if (!user) window.location.href = "login.html";
+            if (!user) {
+                window.location.href = "login.html";
+            } else {
+                document.getElementById('userEmail').innerText = user.email;
+            }
         });
 
-        // FUNÇÃO DE MIGRAÇÃO (LÊ O JSON E JOGA NO FIREBASE)
         document.getElementById('btnImport').addEventListener('click', async () => {
             const fileInput = document.getElementById('fileBackup');
             const status = document.getElementById('syncStatus');
+            const progBar = document.getElementById('progBar');
+            const progContainer = document.getElementById('progContainer');
             
             if (!fileInput.files[0]) {
                 alert("Selecione o arquivo de backup primeiro!");
@@ -91,34 +100,74 @@
             reader.onload = async (e) => {
                 try {
                     const dados = JSON.parse(e.target.result);
+                    const emailAtual = auth.currentUser.email;
                     status.style.display = "block";
+                    progContainer.style.display = "block";
                     
-                    // Se o seu JSON tiver uma lista de manutenções, por exemplo:
-                    if (dados.manutencoes) {
-                        for (let item of dados.manutencoes) {
-                            await addDoc(collection(db, "manutencoes"), {
-                                ...item,
-                                usuario: auth.currentUser.email,
-                                migrado: true
-                            });
-                        }
-                    }
+                    let totalItens = (dados.vehicles?.length || 0) + (dados.logs?.length || 0) + (dados.manutencoes?.length || 0);
+                    let processados = 0;
 
-                    // Se tiver veículos:
-                    if (dados.veiculos) {
-                        for (let v of dados.veiculos) {
+                    const atualizarProgresso = () => {
+                        processados++;
+                        let porc = (processados / totalItens) * 100;
+                        progBar.style.width = porc + "%";
+                        status.innerText = `Sincronizando: ${processados} de ${totalItens}...`;
+                    };
+
+                    // 1. MIGRAÇÃO DE VEÍCULOS (vehicles no JSON antigo)
+                    if (dados.vehicles) {
+                        for (let v of dados.vehicles) {
                             await addDoc(collection(db, "veiculos"), {
-                                ...v,
-                                usuario: auth.currentUser.email
+                                placa: v.placa.toUpperCase(),
+                                nome: v.nome.toUpperCase(),
+                                ano: v.ano || "N/A",
+                                kmAtual: v.kmAtual || 0,
+                                usuario: emailAtual
                             });
+                            atualizarProgresso();
                         }
                     }
 
-                    alert("✅ Dados sincronizados com a Nuvem com sucesso!");
+                    // 2. MIGRAÇÃO DE MOVIMENTAÇÕES (logs no JSON antigo)
+                    if (dados.logs) {
+                        for (let log of dados.logs) {
+                            // Gera campos de data compatíveis com os novos filtros
+                            const dataObj = new Date(log.timestamp || Date.now());
+                            await addDoc(collection(db, "movimentacoes"), {
+                                veiculo: log.viatura.toUpperCase(),
+                                km: log.km,
+                                motorista: log.motorista.toUpperCase(),
+                                tipo: log.tipo,
+                                dataExibicao: log.data || dataObj.toLocaleString('pt-BR'),
+                                dataISO: dataObj.toISOString(),
+                                timestamp: log.timestamp || dataObj.getTime(),
+                                usuario: emailAtual
+                            });
+                            atualizarProgresso();
+                        }
+                    }
+
+                    // 3. MIGRAÇÃO DE MANUTENÇÕES (se houver)
+                    if (dados.manutencoes) {
+                        for (let m of dados.manutencoes) {
+                            const dataObjM = new Date(m.timestamp || Date.now());
+                            await addDoc(collection(db, "manutencoes"), {
+                                ...m,
+                                dataExibicao: m.data || dataObjM.toLocaleString('pt-BR'),
+                                dataISO: dataObjM.toISOString(),
+                                usuario: emailAtual
+                            });
+                            atualizarProgresso();
+                        }
+                    }
+
+                    alert("✅ " + processados + " registros migrados com sucesso para o seu usuário!");
                     status.innerText = "Sincronização concluída!";
+                    status.style.color = "#27ae60";
+                    
                 } catch (err) {
-                    alert("Erro ao ler arquivo: " + err);
-                    status.style.display = "none";
+                    console.error(err);
+                    alert("Erro crítico na migração: " + err.message);
                 }
             };
 
