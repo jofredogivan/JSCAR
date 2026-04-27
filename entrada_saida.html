@@ -23,16 +23,16 @@
         
         <div class="card" style="margin-bottom: 15px; border: 1px solid #e63946; background: #1a1a1a;">
             <div style="display: flex; flex-direction: column; gap: 10px;">
-                <label style="color: #e63946; font-size: 0.7rem; font-weight: bold;">FILTRAR POR DATA E VIATURA</label>
+                <label style="color: #e63946; font-size: 0.7rem; font-weight: bold;">FILTRAR POR PERÍODO COMPLETO E VTR</label>
                 <input list="listaVeiculos" id="f_placa" class="modern-input" placeholder="Todas as Viaturas">
                 <div style="display: flex; gap: 10px;">
                     <div style="flex:1">
-                        <label style="font-size: 0.6rem; color: #777;">INÍCIO</label>
-                        <input type="date" id="f_data_ini" class="modern-input">
+                        <label style="font-size: 0.6rem; color: #777;">INÍCIO (DATA E HORA)</label>
+                        <input type="datetime-local" id="f_data_ini" class="modern-input">
                     </div>
                     <div style="flex:1">
-                        <label style="font-size: 0.6rem; color: #777;">FIM</label>
-                        <input type="date" id="f_data_fim" class="modern-input">
+                        <label style="font-size: 0.6rem; color: #777;">FIM (DATA E HORA)</label>
+                        <input type="datetime-local" id="f_data_fim" class="modern-input">
                     </div>
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
@@ -63,7 +63,7 @@
                 </div>
 
                 <div class="input-group" style="background: #252525; padding: 10px; border-radius: 8px; border: 1px solid #333;">
-                    <label style="font-size: 0.65rem; color: #e63946; font-weight: bold;">DATA E HORA DO EVENTO (OPCIONAL)</label>
+                    <label style="font-size: 0.65rem; color: #e63946; font-weight: bold;">DATA E HORA DO EVENTO</label>
                     <input type="datetime-local" id="es_data_retroativa" class="modern-input">
                 </div>
 
@@ -129,7 +129,7 @@
             }
         });
 
-        // KM AUTOMÁTICO AO SELECIONAR VEÍCULO
+        // KM AUTOMÁTICO
         document.getElementById('es_veiculo').addEventListener('input', (e) => {
             const vtr = e.target.value.toUpperCase().trim();
             if(veiculosCache[vtr]) {
@@ -139,8 +139,12 @@
 
         async function buscarDados() {
             const placaFiltro = document.getElementById('f_placa').value.toUpperCase().trim();
-            const dIni = document.getElementById('f_data_ini').value;
-            const dFim = document.getElementById('f_data_fim').value;
+            const f_ini = document.getElementById('f_data_ini').value;
+            const f_fim = document.getElementById('f_data_fim').value;
+
+            // Converte filtros para timestamp para comparação precisa
+            const tsIni = f_ini ? new Date(f_ini).getTime() : 0;
+            const tsFim = f_fim ? new Date(f_fim).getTime() : Infinity;
 
             const q = query(collection(db, "movimentacoes"), where("usuario", "==", auth.currentUser.email));
             
@@ -160,15 +164,13 @@
                 lista.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
 
                 lista.forEach(item => {
-                    const dataISOString = item.dataISO ? item.dataISO.split('T')[0] : "";
+                    const itemTS = item.timestamp || 0;
                     const batePlaca = placaFiltro === "" || item.veiculo.includes(placaFiltro);
-                    const bateData = (!dIni || dataISOString >= dIni) && (!dFim || dataISOString <= dFim);
+                    const bateDataHora = itemTS >= tsIni && itemTS <= tsFim;
 
-                    if (batePlaca && bateData) {
+                    if (batePlaca && bateDataHora) {
                         dadosFiltrados.push(item);
                         const corTipo = item.tipo === "SAIDA" ? "#e63946" : "#2ecc71";
-                        
-                        // Exibição da Data e Hora na Tabela (Data em cima, Hora em baixo)
                         const partesData = item.dataExibicao ? item.dataExibicao.split(' ') : ["--", "--"];
 
                         corpo.innerHTML += `<tr>
@@ -210,7 +212,7 @@
             btn.innerText = "REGISTRANDO...";
 
             try {
-                const novoRegistro = {
+                await addDoc(collection(db, "movimentacoes"), {
                     veiculo: vtr,
                     tipo: document.getElementById('es_tipo').value,
                     km: Number(km),
@@ -219,18 +221,15 @@
                     dataISO: agora.toISOString(),
                     timestamp: agora.getTime(),
                     usuario: auth.currentUser.email
-                };
+                });
 
-                await addDoc(collection(db, "movimentacoes"), novoRegistro);
-
-                // Atualiza o KM no cadastro do veículo para o próximo registro ser automático
                 if(veiculosCache[vtr]) {
                     const vtrRef = doc(db, "veiculos", veiculosCache[vtr].id);
                     await updateDoc(vtrRef, { kmAtual: Number(km) });
                     veiculosCache[vtr].km = Number(km);
                 }
                 
-                alert("Registro salvo com sucesso!");
+                alert("Salvo com sucesso!");
                 document.getElementById('es_km').value = "";
                 buscarDados(); 
             } catch (e) { alert("Erro ao salvar."); }
@@ -239,36 +238,23 @@
             btn.innerText = "REGISTRAR MOVIMENTAÇÃO";
         };
 
-        // PDF COM DATA, HORA, KM E VIGILANTE
         document.getElementById('btnPDF').onclick = () => {
-            if(dadosFiltrados.length === 0) return alert("Filtre os dados antes de gerar PDF!");
-            
+            if(dadosFiltrados.length === 0) return alert("Filtre os dados primeiro!");
             const { jsPDF } = window.jspdf;
             const docPdf = new jsPDF('l', 'mm', 'a4'); 
-            
-            docPdf.setFontSize(16);
-            docPdf.setTextColor(230, 57, 70);
             docPdf.text("JAPAN SECURITY - RELATÓRIO DE MOVIMENTAÇÃO", 14, 15);
             
             const colunas = ["Data e Hora", "VTR", "Evento", "KM", "Vigilante"];
-            const linhas = dadosFiltrados.map(i => [
-                i.dataExibicao, 
-                i.veiculo, 
-                i.tipo, 
-                i.km + " KM", 
-                i.vigilante
-            ]);
+            const linhas = dadosFiltrados.map(i => [i.dataExibicao, i.veiculo, i.tipo, i.km + " KM", i.vigilante]);
 
             docPdf.autoTable({
                 head: [colunas],
                 body: linhas,
                 startY: 25,
                 styles: { fontSize: 9 },
-                headStyles: { fillColor: [26, 26, 26] },
-                alternateRowStyles: { fillColor: [245, 245, 245] }
+                headStyles: { fillColor: [26, 26, 26] }
             });
-
-            docPdf.save(`relatorio_japan_${new Date().getTime()}.pdf`);
+            docPdf.save(`relatorio_${new Date().getTime()}.pdf`);
         };
 
         async function carregarVeiculos() {
@@ -277,7 +263,6 @@
             const list = document.getElementById('listaVeiculos');
             list.innerHTML = "";
             veiculosCache = {};
-
             snap.forEach(d => {
                 const info = d.data();
                 veiculosCache[info.placa] = { km: info.kmAtual || 0, id: d.id };
@@ -286,7 +271,7 @@
         }
 
         window.deletarRegistro = async (id) => {
-            if (confirm("Deseja realmente excluir este lançamento?")) {
+            if (confirm("Excluir este lançamento?")) {
                 try {
                     await deleteDoc(doc(db, "movimentacoes", id));
                     buscarDados();
