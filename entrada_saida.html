@@ -6,7 +6,6 @@
     <title>Japan Security | Movimentação</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
-    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 </head>
@@ -24,11 +23,17 @@
         
         <div class="card" style="margin-bottom: 15px; border: 1px solid #e63946; background: #1a1a1a;">
             <div style="display: flex; flex-direction: column; gap: 10px;">
-                <label style="color: #e63946; font-size: 0.7rem; font-weight: bold;">FILTRAR E EXPORTAR</label>
+                <label style="color: #e63946; font-size: 0.7rem; font-weight: bold;">FILTRAR POR DATA E VIATURA</label>
                 <input list="listaVeiculos" id="f_placa" class="modern-input" placeholder="Todas as Viaturas">
                 <div style="display: flex; gap: 10px;">
-                    <input type="date" id="f_data_ini" class="modern-input">
-                    <input type="date" id="f_data_fim" class="modern-input">
+                    <div style="flex:1">
+                        <label style="font-size: 0.6rem; color: #777;">INÍCIO</label>
+                        <input type="date" id="f_data_ini" class="modern-input">
+                    </div>
+                    <div style="flex:1">
+                        <label style="font-size: 0.6rem; color: #777;">FIM</label>
+                        <input type="date" id="f_data_fim" class="modern-input">
+                    </div>
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                     <button class="btn-primary" id="btnFiltrar" style="background: #333;">
@@ -58,7 +63,7 @@
                 </div>
 
                 <div class="input-group" style="background: #252525; padding: 10px; border-radius: 8px; border: 1px solid #333;">
-                    <label style="font-size: 0.65rem; color: #e63946; font-weight: bold;">DATA/HORA DO EVENTO</label>
+                    <label style="font-size: 0.65rem; color: #e63946; font-weight: bold;">DATA E HORA DO EVENTO</label>
                     <input type="datetime-local" id="es_data_retroativa" class="modern-input">
                 </div>
 
@@ -96,7 +101,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, query, where, orderBy, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, query, where, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
@@ -123,123 +128,129 @@
             }
         });
 
-        // --- FUNÇÃO PARA DELETAR REGISTRO ---
+        // FUNÇÃO GLOBAL PARA EXCLUIR
         window.deletarRegistro = async (id) => {
             if (confirm("Deseja realmente excluir este lançamento?")) {
                 try {
                     await deleteDoc(doc(db, "movimentacoes", id));
-                    alert("Registro excluído!");
-                    buscarDados(); // Atualiza a lista sem recarregar a página toda
-                } catch (error) {
-                    alert("Erro ao excluir registro.");
-                }
+                    buscarDados();
+                } catch (e) { alert("Erro ao excluir."); }
             }
         };
 
-        // --- BUSCA E FILTROS ---
         async function buscarDados() {
-            const placa = document.getElementById('f_placa').value.toUpperCase();
+            const placaFiltro = document.getElementById('f_placa').value.toUpperCase().trim();
             const dIni = document.getElementById('f_data_ini').value;
             const dFim = document.getElementById('f_data_fim').value;
 
-            const q = query(collection(db, "movimentacoes"), where("usuario", "==", auth.currentUser.email), orderBy("timestamp", "desc"));
-            const snap = await getDocs(q);
+            const q = query(collection(db, "movimentacoes"), where("usuario", "==", auth.currentUser.email));
             
-            const corpo = document.getElementById('tabelaES');
-            corpo.innerHTML = "";
-            dadosFiltrados = [];
+            try {
+                const snap = await getDocs(q);
+                const corpo = document.getElementById('tabelaES');
+                corpo.innerHTML = "";
+                dadosFiltrados = [];
 
-            snap.forEach(documento => {
-                const item = documento.data();
-                const id = documento.id; // Pegando o ID do Firebase
-                const dataItem = item.dataISO ? item.dataISO.split('T')[0] : "";
-                
-                const batePlaca = placa === "" || item.veiculo.includes(placa);
-                const bateData = (!dIni || dataItem >= dIni) && (!dFim || dataItem <= dFim);
+                let lista = [];
+                snap.forEach(d => {
+                    let item = d.data();
+                    item.id = d.id;
+                    lista.push(item);
+                });
 
-                if (batePlaca && bateData) {
-                    dadosFiltrados.push(item);
-                    const corTipo = item.tipo === "SAIDA" ? "#e63946" : "#2ecc71";
-                    corpo.innerHTML += `<tr>
-                        <td style="font-size:0.65rem">${item.dataExibicao}</td>
-                        <td><b>${item.veiculo}</b></td>
-                        <td style="color:${corTipo}; font-weight:bold; font-size:0.7rem">${item.tipo}</td>
-                        <td>
-                            <button onclick="deletarRegistro('${id}')" style="background:none; border:none; color:#ff4d4d; cursor:pointer; font-size:1rem;">
-                                <i class="fas fa-trash-alt"></i>
-                            </button>
-                        </td>
-                    </tr>`;
-                }
-            });
+                // Ordenar por data (mais recente primeiro)
+                lista.sort((a, b) => b.timestamp - a.timestamp);
+
+                lista.forEach(item => {
+                    const dataISOString = item.dataISO ? item.dataISO.split('T')[0] : "";
+                    const batePlaca = placaFiltro === "" || item.veiculo.includes(placaFiltro);
+                    const bateData = (!dIni || dataISOString >= dIni) && (!dFim || dataISOString <= dFim);
+
+                    if (batePlaca && bateData) {
+                        dadosFiltrados.push(item);
+                        const corTipo = item.tipo === "SAIDA" ? "#e63946" : "#2ecc71";
+                        
+                        // Exibição da Data e Hora na Tabela
+                        corpo.innerHTML += `<tr>
+                            <td style="font-size:0.7rem; line-height: 1.2;">
+                                <b>${item.dataExibicao.split(',')[0]}</b><br>
+                                <span style="color:#888">${item.dataExibicao.split(',')[1] || ''}</span>
+                            </td>
+                            <td><b>${item.veiculo}</b></td>
+                            <td style="color:${corTipo}; font-weight:bold; font-size:0.7rem">${item.tipo}</td>
+                            <td>
+                                <button onclick="deletarRegistro('${item.id}')" style="background:none; border:none; color:#e63946; padding:10px;">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </td>
+                        </tr>`;
+                    }
+                });
+            } catch (e) { console.error(e); }
         }
 
         document.getElementById('btnFiltrar').onclick = buscarDados;
 
-        // --- SALVAR REGISTRO ---
         document.getElementById('btnSalvarES').onclick = async () => {
             const btn = document.getElementById('btnSalvarES');
-            const dataRetro = document.getElementById('es_data_retroativa').value;
-            const dataObj = dataRetro ? new Date(dataRetro) : new Date();
+            const vtr = document.getElementById('es_veiculo').value.toUpperCase().trim();
+            const km = document.getElementById('es_km').value;
+            const vig = document.getElementById('es_vigilante').value.toUpperCase();
 
-            if(!document.getElementById('es_veiculo').value) {
-                alert("Selecione uma viatura!");
-                return;
-            }
+            if(!vtr || !km) return alert("Informe Viatura e KM!");
+
+            const dataInput = document.getElementById('es_data_retroativa').value;
+            const agora = dataInput ? new Date(dataInput) : new Date();
 
             btn.disabled = true;
             btn.innerText = "REGISTRANDO...";
 
-            const dados = {
-                veiculo: document.getElementById('es_veiculo').value.toUpperCase(),
-                tipo: document.getElementById('es_tipo').value,
-                km: document.getElementById('es_km').value || 0,
-                vigilante: document.getElementById('es_vigilante').value.toUpperCase(),
-                dataExibicao: dataObj.toLocaleString('pt-BR'),
-                dataISO: dataObj.toISOString(),
-                timestamp: dataObj.getTime(),
-                usuario: auth.currentUser.email
-            };
+            try {
+                await addDoc(collection(db, "movimentacoes"), {
+                    veiculo: vtr,
+                    tipo: document.getElementById('es_tipo').value,
+                    km: Number(km),
+                    vigilante: vig,
+                    dataExibicao: agora.toLocaleString('pt-BR'), // Aqui salva data e hora
+                    dataISO: agora.toISOString(),
+                    timestamp: agora.getTime(),
+                    usuario: auth.currentUser.email
+                });
+                
+                document.getElementById('es_km').value = "";
+                buscarDados();
+                alert("Registro concluído com sucesso!");
+            } catch (e) { alert("Erro ao salvar dados."); }
 
-            await addDoc(collection(db, "movimentacoes"), dados);
-            alert("Registrado com sucesso!");
-            location.reload();
+            btn.disabled = false;
+            btn.innerText = "REGISTRAR MOVIMENTAÇÃO";
         };
 
-        // --- GERAR PDF ---
+        // PDF corrigido com Hora
         document.getElementById('btnPDF').onclick = () => {
             const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
+            const docPdf = new jsPDF();
+            docPdf.setFontSize(16);
+            docPdf.text("JAPAN SECURITY - RELATÓRIO DE FROTA", 14, 15);
             
-            doc.setFillColor(26, 26, 26);
-            doc.rect(0, 0, 210, 35, 'F');
-            doc.setTextColor(230, 57, 70);
-            doc.setFontSize(20);
-            doc.text("JAPAN SECURITY", 14, 18);
-            doc.setTextColor(255, 255, 255);
-            doc.setFontSize(10);
-            doc.text("RELATÓRIO OPERACIONAL DE MOVIMENTAÇÃO DE FROTA", 14, 28);
-
             const colunas = ["Data/Hora", "VTR", "Evento", "KM", "Vigilante"];
             const linhas = dadosFiltrados.map(i => [i.dataExibicao, i.veiculo, i.tipo, i.km, i.vigilante]);
 
-            doc.autoTable({
+            docPdf.autoTable({
                 head: [colunas],
                 body: linhas,
-                startY: 40,
-                headStyles: { fillColor: [230, 57, 70] },
-                theme: 'grid',
-                styles: { fontSize: 8 }
+                startY: 25,
+                styles: { fontSize: 8 },
+                headStyles: { fillColor: [230, 57, 70] }
             });
-
-            doc.save(`movimentacao_${new Date().getTime()}.pdf`);
+            docPdf.save(`movimentacao_${new Date().getTime()}.pdf`);
         };
 
         async function carregarVeiculos() {
             const q = query(collection(db, "veiculos"), where("usuario", "==", auth.currentUser.email));
             const snap = await getDocs(q);
             const list = document.getElementById('listaVeiculos');
-            snap.forEach(doc => { list.innerHTML += `<option value="${doc.data().placa}">`; });
+            snap.forEach(d => { list.innerHTML += `<option value="${d.data().placa}">`; });
         }
     </script>
 </body>
