@@ -4,15 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Japan Security | Manutenção</title>
-    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png">
-    <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512x512.png">
-    <link rel="manifest" href="manifest.json">
-
-    <meta name="theme-color" content="#1a1a1a">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 </head>
@@ -30,7 +24,7 @@
         
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
             <div class="card" style="text-align: center; border-bottom: 3px solid #e63946; padding: 10px;">
-                <small style="color: #888; font-size: 0.6rem; text-transform: uppercase;">Investimento Total</small>
+                <small style="color: #888; font-size: 0.6rem; text-transform: uppercase;">Investimento Filtrado</small>
                 <div id="totalGasto" style="font-size: 1.1rem; font-weight: bold; color: #fff;">R$ 0,00</div>
             </div>
             <div class="card" style="text-align: center; border-bottom: 3px solid #3498db; padding: 10px;">
@@ -39,13 +33,36 @@
             </div>
         </div>
 
+        <div class="card" style="margin-bottom: 15px; border: 1px solid #e63946; background: #1a1a1a;">
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <label style="color: #e63946; font-size: 0.7rem; font-weight: bold;">FILTRAR E GERAR RELATÓRIO</label>
+                <input list="listaVeiculos" id="f_placa" class="modern-input" placeholder="Todas as Placas">
+                <div style="display: flex; gap: 10px;">
+                    <input type="date" id="f_data_ini" class="modern-input">
+                    <input type="date" id="f_data_fim" class="modern-input">
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <button class="btn-primary" id="btnFiltrar" style="background: #333;">
+                        <i class="fas fa-search"></i> FILTRAR
+                    </button>
+                    <button class="btn-primary" id="btnExportarPDF" style="background: #34495e;">
+                        <i class="fas fa-file-pdf"></i> GERAR PDF
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <div class="card" style="margin-bottom: 20px;">
             <div style="display: flex; flex-direction: column; gap: 12px;">
-                
                 <div class="input-group">
                     <label style="font-size: 0.7rem; color: #888;">VIATURA</label>
                     <input list="listaVeiculos" id="m_veiculo" class="modern-input" placeholder="Selecione a placa...">
                     <datalist id="listaVeiculos"></datalist>
+                </div>
+
+                <div class="input-group" style="background: #252525; padding: 10px; border-radius: 8px; border: 1px solid #333;">
+                    <label style="font-size: 0.65rem; color: #e63946; font-weight: bold;">DATA/HORA DO SERVIÇO</label>
+                    <input type="datetime-local" id="m_data_retroativa" class="modern-input">
                 </div>
 
                 <div style="display: flex; gap: 10px;">
@@ -60,7 +77,7 @@
                     </div>
                     <div style="flex: 1;">
                         <label style="font-size: 0.7rem; color: #888;">VALOR (R$)</label>
-                        <input type="number" id="m_valor" class="modern-input" placeholder="0,00">
+                        <input type="number" id="m_valor" class="modern-input" placeholder="0.00">
                     </div>
                 </div>
 
@@ -76,44 +93,12 @@
                     </div>
                     <div style="flex: 1;">
                         <label style="font-size: 0.7rem; color: #888;">PRÓXIMA (KM)</label>
-                        <input type="number" id="m_proxima" class="modern-input" placeholder="Opcional">
+                        <input type="number" id="m_proxima" class="modern-input">
                     </div>
                 </div>
 
-                <div class="input-group" style="background: #2a2a2a; padding: 10px; border-radius: 8px; border: 1px dashed #444;">
-                    <label style="font-size: 0.6rem; color: #bbb;">DATA DO SERVIÇO (PARA LANÇAMENTO RETROATIVO)</label>
-                    <input type="date" id="m_data" class="modern-input" style="border-color: #555;">
-                </div>
-
-                <div class="input-group" style="text-align: center;">
-                    <label class="btn-primary" style="background: #222; border: 1px dashed #444; cursor: pointer; padding: 10px;">
-                        <i class="fas fa-camera"></i> FOTO DO RECIBO / NOTA
-                        <input type="file" accept="image/*" capture="camera" onchange="previewNota(this)" style="display: none;">
-                    </label>
-                    <img id="previewNota" style="display: none; width: 100%; margin-top: 10px; border-radius: 8px; border: 1px solid #333;">
-                </div>
-
-                <button class="btn-primary" onclick="salvarManutencao()" style="background: #e63946; padding: 15px; font-weight: bold;">
-                    <i class="fas fa-save"></i> SALVAR MANUTENÇÃO
-                </button>
-            </div>
-        </div>
-
-        <div class="card" style="margin-bottom: 15px; border-top: 3px solid #34495e;">
-            <div style="color: #888; font-size: 0.6rem; font-weight: bold; margin-bottom: 10px; text-transform: uppercase;">Filtrar Histórico / Gerar Relatório</div>
-            <div style="display: flex; flex-direction: column; gap: 10px;">
-                <div style="display: flex; gap: 10px;">
-                    <div style="flex: 1;">
-                        <label style="font-size: 0.6rem; color: #888;">DE:</label>
-                        <input type="date" id="filtro_data_ini" class="modern-input" onchange="listarManutencoes()">
-                    </div>
-                    <div style="flex: 1;">
-                        <label style="font-size: 0.6rem; color: #888;">ATÉ:</label>
-                        <input type="date" id="filtro_data_fim" class="modern-input" onchange="listarManutencoes()">
-                    </div>
-                </div>
-                <button class="btn-primary" style="background: #34495e; padding: 12px;" onclick="gerarPDFManutencao()">
-                    <i class="fas fa-file-pdf"></i> GERAR PDF DE MANUTENÇÃO
+                <button class="btn-primary" id="btnSalvar" style="background: #e63946; padding: 15px; font-weight: bold;">
+                    <i class="fas fa-save"></i> SALVAR NA NUVEM
                 </button>
             </div>
         </div>
@@ -125,16 +110,146 @@
                         <th>Data</th>
                         <th>VTR / Serviço</th>
                         <th>Valor</th>
-                        <th style="width: 40px;"></th>
                     </tr>
                 </thead>
                 <tbody id="tabelaManutencao"></tbody>
             </table>
         </div>
-
     </main>
 
-    <script src="js/db.js"></script>
-    <script src="js/maintenance.js"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDczjdNxa2TZP07iiwTAkOLFbKcOPx1POo",
+            authDomain: "japan-security-car-1a7d8.firebaseapp.com",
+            projectId: "japan-security-car-1a7d8",
+            storageBucket: "japan-security-car-1a7d8.firebasestorage.app",
+            messagingSenderId: "616009365036",
+            appId: "1:616009365036:web:f644dd6106818566900389"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        let dadosFiltrados = [];
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                carregarVeiculos();
+                buscarManutencoes();
+            } else {
+                window.location.href = "login.html";
+            }
+        });
+
+        async function buscarManutencoes() {
+            const placa = document.getElementById('f_placa').value.toUpperCase();
+            const dIni = document.getElementById('f_data_ini').value;
+            const dFim = document.getElementById('f_data_fim').value;
+
+            const q = query(collection(db, "manutencoes"), where("usuario", "==", auth.currentUser.email), orderBy("timestamp", "desc"));
+            const snap = await getDocs(q);
+            
+            const corpo = document.getElementById('tabelaManutencao');
+            corpo.innerHTML = "";
+            dadosFiltrados = [];
+            let totalSoma = 0;
+
+            snap.forEach(doc => {
+                const item = doc.data();
+                const dataItem = item.dataISO ? item.dataISO.split('T')[0] : "";
+                
+                const batePlaca = placa === "" || item.veiculo.includes(placa);
+                const bateData = (!dIni || dataItem >= dIni) && (!dFim || dataItem <= dFim);
+
+                if (batePlaca && bateData) {
+                    dadosFiltrados.push(item);
+                    totalSoma += item.valor;
+                    corpo.innerHTML += `<tr>
+                        <td style="font-size:0.7rem">${item.dataExibicao}</td>
+                        <td><b>${item.veiculo}</b><br><small>${item.servico}</small></td>
+                        <td>R$ ${item.valor.toFixed(2)}</td>
+                    </tr>`;
+                }
+            });
+
+            document.getElementById('totalGasto').innerText = `R$ ${totalSoma.toFixed(2)}`;
+            document.getElementById('totalRegistros').innerText = dadosFiltrados.length;
+        }
+
+        document.getElementById('btnFiltrar').onclick = buscarManutencoes;
+
+        document.getElementById('btnSalvar').onclick = async () => {
+            const btn = document.getElementById('btnSalvar');
+            const dataRetro = document.getElementById('m_data_retroativa').value;
+            const dataObj = dataRetro ? new Date(dataRetro) : new Date();
+
+            btn.disabled = true;
+            btn.innerText = "SALVANDO...";
+
+            const dados = {
+                veiculo: document.getElementById('m_veiculo').value.toUpperCase(),
+                tipo: document.getElementById('m_tipo').value,
+                valor: parseFloat(document.getElementById('m_valor').value) || 0,
+                servico: document.getElementById('m_servico').value.toUpperCase(),
+                km: document.getElementById('m_km').value || "N/A",
+                proxima_km: document.getElementById('m_proxima').value || "N/A",
+                dataExibicao: dataObj.toLocaleString('pt-BR'),
+                dataISO: dataObj.toISOString(),
+                timestamp: dataObj.getTime(),
+                usuario: auth.currentUser.email
+            };
+
+            try {
+                await addDoc(collection(db, "manutencoes"), dados);
+                alert("Manutenção salva!");
+                location.reload();
+            } catch (e) {
+                alert("Erro: " + e);
+                btn.disabled = false;
+            }
+        };
+
+        document.getElementById('btnExportarPDF').onclick = () => {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            doc.setFillColor(26, 26, 26);
+            doc.rect(0, 0, 210, 35, 'F');
+            doc.setTextColor(230, 57, 70);
+            doc.setFontSize(22);
+            doc.text("JAPAN SECURITY", 14, 18);
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(10);
+            doc.text("RELATÓRIO TÉCNICO DE MANUTENÇÃO", 14, 28);
+
+            const colunas = ["Data", "VTR", "Serviço", "Tipo", "KM", "Valor"];
+            const linhas = dadosFiltrados.map(i => [
+                i.dataExibicao, i.veiculo, i.servico, i.tipo, i.km, `R$ ${i.valor.toFixed(2)}`
+            ]);
+
+            doc.autoTable({
+                head: [colunas],
+                body: linhas,
+                startY: 40,
+                headStyles: { fillColor: [230, 57, 70] },
+                theme: 'grid',
+                styles: { fontSize: 7 }
+            });
+
+            doc.save(`manutencao_${new Date().getTime()}.pdf`);
+        };
+
+        async function carregarVeiculos() {
+            const q = query(collection(db, "veiculos"), where("usuario", "==", auth.currentUser.email));
+            const snap = await getDocs(q);
+            const list = document.getElementById('listaVeiculos');
+            snap.forEach(doc => { list.innerHTML += `<option value="${doc.data().placa}">`; });
+        }
+    </script>
 </body>
 </html>
