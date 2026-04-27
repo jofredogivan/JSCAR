@@ -3,48 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Japan Security | Backup</title>
-    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png">
-<link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512x512.png">
-
-<link rel="manifest" href="manifest.json">
-
-<meta name="theme-color" content="#1a1a1a">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    
+    <title>Japan Security | Backup Nuvem</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
 
     <style>
-        .backup-icon {
-            font-size: 3rem;
-            color: #e63946;
-            margin: 20px 0;
-            display: block;
-            text-align: center;
-        }
-        .info-text {
-            color: #888;
-            font-size: 0.85rem;
-            text-align: center;
-            margin-bottom: 25px;
-            line-height: 1.4;
-        }
-        .section-title {
-            color: white;
-            font-size: 1rem;
-            font-weight: bold;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .divider {
-            height: 1px;
-            background: #333;
-            margin: 30px 0;
-        }
+        .backup-icon { font-size: 3rem; color: #e63946; margin: 20px 0; display: block; text-align: center; }
+        .info-text { color: #888; font-size: 0.85rem; text-align: center; margin-bottom: 25px; line-height: 1.4; }
+        .section-title { color: white; font-size: 1rem; font-weight: bold; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+        .divider { height: 1px; background: #333; margin: 30px 0; }
+        .status-sync { color: #ffb703; font-size: 0.75rem; text-align: center; margin-top: 10px; display: none; }
     </style>
 </head>
 <body>
@@ -53,51 +21,109 @@
         <a href="index.html" style="color: white; text-decoration: none; font-size: 0.9rem; font-weight: bold; display: flex; align-items: center; gap: 8px;">
             <i class="fas fa-chevron-left"></i> INÍCIO
         </a>
-        <div style="color: #e63946; font-weight: 900; font-size: 0.8rem; letter-spacing: 2px;">BACKUP</div>
+        <div style="color: #e63946; font-weight: 900; font-size: 0.8rem; letter-spacing: 2px;">BACKUP NUVEM</div>
         <div style="width: 50px;"></div>
     </header>
 
     <main class="main-content" style="padding: 15px;">
         
-        <i class="fas fa-database backup-icon"></i>
+        <i class="fas fa-cloud-upload-alt backup-icon"></i>
         <p class="info-text">
-            O backup salva todos os dados de veículos, vistorias e movimentações em um único arquivo.
+            Use esta tela para enviar seus dados antigos do celular para o novo servidor da <b>Japan Security</b>.
         </p>
 
         <div class="card">
-            <div class="section-title">
-                <i class="fas fa-file-export"></i> Exportar Dados
-            </div>
-            <p style="color: #666; font-size: 0.75rem; margin-bottom: 15px;">
-                Crie um arquivo de segurança para guardar ou transferir para outro dispositivo.
-            </p>
-            <button class="btn-primary" onclick="exportarBackup()">
-                <i class="fas fa-download"></i> BAIXAR BACKUP (.JSON)
-            </button>
-        </div>
-
-        <div class="divider"></div>
-
-        <div class="card">
             <div class="section-title" style="color: #27ae60;">
-                <i class="fas fa-file-import"></i> Restaurar Backup
+                <i class="fas fa-sync"></i> Sincronizar com Nuvem
             </div>
             <p style="color: #666; font-size: 0.75rem; margin-bottom: 15px;">
-                Selecione um arquivo de backup para restaurar os dados neste dispositivo.
+                Selecione seu arquivo .JSON antigo para subir todos os dados de uma vez para o Firebase.
             </p>
             
             <div class="input-group">
                 <input type="file" id="fileBackup" accept=".json" class="modern-input" style="padding: 10px; font-size: 0.8rem;">
             </div>
 
-            <button class="btn-primary" style="background: #27ae60; margin-top: 15px;" onclick="importarBackup()">
-                <i class="fas fa-upload"></i> IMPORTAR E SOBREPOR DADOS
+            <button id="btnImport" class="btn-primary" style="background: #27ae60; margin-top: 15px;">
+                <i class="fas fa-cloud-upload-alt"></i> SUBIR DADOS PARA NUVEM
             </button>
+            <div id="syncStatus" class="status-sync">Enviando dados... aguarde.</div>
         </div>
 
     </main>
 
-    <script src="js/db.js"></script>
-    <script src="js/backup.js"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDczjdNxa2TZP07iiwTAkOLFbKcOPx1POo",
+            authDomain: "japan-security-car-1a7d8.firebaseapp.com",
+            projectId: "japan-security-car-1a7d8",
+            storageBucket: "japan-security-car-1a7d8.firebasestorage.app",
+            messagingSenderId: "616009365036",
+            appId: "1:616009365036:web:f644dd6106818566900389"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // BLOQUEIO DE SEGURANÇA
+        onAuthStateChanged(auth, (user) => {
+            if (!user) window.location.href = "login.html";
+        });
+
+        // FUNÇÃO DE MIGRAÇÃO (LÊ O JSON E JOGA NO FIREBASE)
+        document.getElementById('btnImport').addEventListener('click', async () => {
+            const fileInput = document.getElementById('fileBackup');
+            const status = document.getElementById('syncStatus');
+            
+            if (!fileInput.files[0]) {
+                alert("Selecione o arquivo de backup primeiro!");
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+
+            reader.onload = async (e) => {
+                try {
+                    const dados = JSON.parse(e.target.result);
+                    status.style.display = "block";
+                    
+                    // Se o seu JSON tiver uma lista de manutenções, por exemplo:
+                    if (dados.manutencoes) {
+                        for (let item of dados.manutencoes) {
+                            await addDoc(collection(db, "manutencoes"), {
+                                ...item,
+                                usuario: auth.currentUser.email,
+                                migrado: true
+                            });
+                        }
+                    }
+
+                    // Se tiver veículos:
+                    if (dados.veiculos) {
+                        for (let v of dados.veiculos) {
+                            await addDoc(collection(db, "veiculos"), {
+                                ...v,
+                                usuario: auth.currentUser.email
+                            });
+                        }
+                    }
+
+                    alert("✅ Dados sincronizados com a Nuvem com sucesso!");
+                    status.innerText = "Sincronização concluída!";
+                } catch (err) {
+                    alert("Erro ao ler arquivo: " + err);
+                    status.style.display = "none";
+                }
+            };
+
+            reader.readAsText(file);
+        });
+    </script>
 </body>
 </html>
