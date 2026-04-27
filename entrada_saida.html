@@ -63,18 +63,18 @@
                 </div>
 
                 <div class="input-group" style="background: #252525; padding: 10px; border-radius: 8px; border: 1px solid #333;">
-                    <label style="font-size: 0.65rem; color: #e63946; font-weight: bold;">DATA E HORA DO EVENTO</label>
+                    <label style="font-size: 0.65rem; color: #e63946; font-weight: bold;">DATA E HORA DO EVENTO (OPCIONAL)</label>
                     <input type="datetime-local" id="es_data_retroativa" class="modern-input">
                 </div>
 
                 <div style="display: flex; gap: 10px;">
                     <div style="flex: 1;">
                         <label>KM</label>
-                        <input type="number" id="es_km" class="modern-input">
+                        <input type="number" id="es_km" class="modern-input" placeholder="0">
                     </div>
                     <div style="flex: 1;">
                         <label>Vigilante</label>
-                        <input type="text" id="es_vigilante" class="modern-input">
+                        <input type="text" id="es_vigilante" class="modern-input" placeholder="NOME">
                     </div>
                 </div>
 
@@ -118,7 +118,7 @@
         const auth = getAuth(app);
 
         let dadosFiltrados = [];
-        let veiculosCache = {}; // Para o KM Automático
+        let veiculosCache = {}; 
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
@@ -137,21 +137,11 @@
             }
         });
 
-        window.deletarRegistro = async (id) => {
-            if (confirm("Deseja realmente excluir este lançamento?")) {
-                try {
-                    await deleteDoc(doc(db, "movimentacoes", id));
-                    buscarDados();
-                } catch (e) { alert("Erro ao excluir."); }
-            }
-        };
-
         async function buscarDados() {
             const placaFiltro = document.getElementById('f_placa').value.toUpperCase().trim();
             const dIni = document.getElementById('f_data_ini').value;
             const dFim = document.getElementById('f_data_fim').value;
 
-            // Busca sem filtros pesados para garantir visualização
             const q = query(collection(db, "movimentacoes"), where("usuario", "==", auth.currentUser.email));
             
             try {
@@ -167,7 +157,7 @@
                     lista.push(item);
                 });
 
-                lista.sort((a, b) => b.timestamp - a.timestamp);
+                lista.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
 
                 lista.forEach(item => {
                     const dataISOString = item.dataISO ? item.dataISO.split('T')[0] : "";
@@ -178,10 +168,13 @@
                         dadosFiltrados.push(item);
                         const corTipo = item.tipo === "SAIDA" ? "#e63946" : "#2ecc71";
                         
+                        // Exibição da Data e Hora na Tabela (Data em cima, Hora em baixo)
+                        const partesData = item.dataExibicao ? item.dataExibicao.split(' ') : ["--", "--"];
+
                         corpo.innerHTML += `<tr>
-                            <td style="font-size:0.7rem; line-height: 1.2;">
-                                <b>${item.dataExibicao.split(',')[0]}</b><br>
-                                <span style="color:#888">${item.dataExibicao.split(',')[1] || ''}</span>
+                            <td style="font-size:0.75rem; line-height: 1.2;">
+                                <b style="color: #eee;">${partesData[0]}</b><br>
+                                <span style="color: #e63946; font-weight: bold;">${partesData[1] || ''}</span>
                             </td>
                             <td><b>${item.veiculo}</b></td>
                             <td style="color:${corTipo}; font-weight:bold; font-size:0.7rem">${item.tipo}</td>
@@ -194,10 +187,10 @@
                     }
                 });
 
-                if(lista.length === 0) {
-                    corpo.innerHTML = "<tr><td colspan='4' style='text-align:center; color:#777;'>Nenhum registro encontrado</td></tr>";
+                if(dadosFiltrados.length === 0) {
+                    corpo.innerHTML = "<tr><td colspan='4' style='text-align:center; color:#777; padding:20px;'>Nenhum registro encontrado</td></tr>";
                 }
-            } catch (e) { console.error("Erro na busca:", e); }
+            } catch (e) { console.error("Erro busca:", e); }
         }
 
         document.getElementById('btnFiltrar').onclick = buscarDados;
@@ -217,7 +210,7 @@
             btn.innerText = "REGISTRANDO...";
 
             try {
-                await addDoc(collection(db, "movimentacoes"), {
+                const novoRegistro = {
                     veiculo: vtr,
                     tipo: document.getElementById('es_tipo').value,
                     km: Number(km),
@@ -226,34 +219,38 @@
                     dataISO: agora.toISOString(),
                     timestamp: agora.getTime(),
                     usuario: auth.currentUser.email
-                });
+                };
 
-                // Opcional: Atualizar o KM no cadastro do veículo também
+                await addDoc(collection(db, "movimentacoes"), novoRegistro);
+
+                // Atualiza o KM no cadastro do veículo para o próximo registro ser automático
                 if(veiculosCache[vtr]) {
                     const vtrRef = doc(db, "veiculos", veiculosCache[vtr].id);
                     await updateDoc(vtrRef, { kmAtual: Number(km) });
                     veiculosCache[vtr].km = Number(km);
                 }
                 
-                alert("Salvo com sucesso!");
+                alert("Registro salvo com sucesso!");
                 document.getElementById('es_km').value = "";
-                buscarDados();
+                buscarDados(); 
             } catch (e) { alert("Erro ao salvar."); }
 
             btn.disabled = false;
             btn.innerText = "REGISTRAR MOVIMENTAÇÃO";
         };
 
-        // PDF COM KM E VIGILANTE
+        // PDF COM DATA, HORA, KM E VIGILANTE
         document.getElementById('btnPDF').onclick = () => {
+            if(dadosFiltrados.length === 0) return alert("Filtre os dados antes de gerar PDF!");
+            
             const { jsPDF } = window.jspdf;
-            const docPdf = new jsPDF('l', 'mm', 'a4'); // 'l' para modo paisagem (cabe tudo)
+            const docPdf = new jsPDF('l', 'mm', 'a4'); 
             
             docPdf.setFontSize(16);
             docPdf.setTextColor(230, 57, 70);
             docPdf.text("JAPAN SECURITY - RELATÓRIO DE MOVIMENTAÇÃO", 14, 15);
             
-            const colunas = ["Data/Hora", "VTR", "Evento", "KM", "Vigilante"];
+            const colunas = ["Data e Hora", "VTR", "Evento", "KM", "Vigilante"];
             const linhas = dadosFiltrados.map(i => [
                 i.dataExibicao, 
                 i.veiculo, 
@@ -271,7 +268,7 @@
                 alternateRowStyles: { fillColor: [245, 245, 245] }
             });
 
-            docPdf.save(`relatorio_${vtr}_${new Date().getTime()}.pdf`);
+            docPdf.save(`relatorio_japan_${new Date().getTime()}.pdf`);
         };
 
         async function carregarVeiculos() {
@@ -287,6 +284,15 @@
                 list.innerHTML += `<option value="${info.placa}">`;
             });
         }
+
+        window.deletarRegistro = async (id) => {
+            if (confirm("Deseja realmente excluir este lançamento?")) {
+                try {
+                    await deleteDoc(doc(db, "movimentacoes", id));
+                    buscarDados();
+                } catch (e) { alert("Erro ao excluir."); }
+            }
+        };
     </script>
 </body>
 </html>
