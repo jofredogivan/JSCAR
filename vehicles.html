@@ -4,26 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Japan Security | Frota</title>
-
-    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png">
-<link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512x512.png">
-
-<link rel="manifest" href="manifest.json">
-
-<meta name="theme-color" content="#1a1a1a">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-
     <style>
-        .clickable { cursor: pointer; }
-        .clickable:active { background: #252525; }
-        .btn-excluir { color: #888; transition: 0.2s; padding: 5px; }
-        .btn-excluir:active { color: #e63946; }
+        .btn-excluir { color: #888; cursor: pointer; padding: 5px; }
+        .btn-excluir:hover { color: #e63946; }
+        .btn-edit { color: #3498db; cursor: pointer; padding: 5px; margin-right: 10px; }
     </style>
 </head>
 <body>
@@ -41,16 +27,13 @@
         <div class="card" style="margin-bottom: 15px;">
             <div class="input-group">
                 <label style="color: #888; font-size: 0.7rem; text-transform: uppercase;">Pesquisar Viatura</label>
-                <input type="text" id="filtroFrota" class="modern-input" placeholder="Placa ou modelo..." onkeyup="filtrarTabelaLocal()">
+                <input type="text" id="filtroFrota" class="modern-input" placeholder="Placa ou modelo...">
             </div>
-            <button class="btn-primary" style="background: #34495e; margin-top: 10px; padding: 12px;" onclick="gerarRelatorioFrotaPDF()">
-                <i class="fas fa-file-pdf"></i> RELATÓRIO DE FROTA
-            </button>
         </div>
 
         <div class="card" style="margin-bottom: 20px;">
             <div id="formTitle" style="color: #e63946; font-size: 0.85rem; font-weight: bold; margin-bottom: 15px; text-transform: uppercase;">
-                <i class="fas fa-plus-circle"></i> Novo Veículo
+                <i class="fas fa-plus-circle"></i> Gerenciar Veículo
             </div>
             
             <input type="hidden" id="veiculoId">
@@ -75,7 +58,7 @@
                     </div>
                 </div>
                 
-                <button class="btn-primary" onclick="salvarVeiculo()">
+                <button class="btn-primary" id="btnSalvarVeiculo" style="background: #e63946;">
                     <i class="fas fa-save"></i> SALVAR VEÍCULO
                 </button>
             </div>
@@ -87,33 +70,100 @@
                     <tr>
                         <th>Modelo</th>
                         <th>Placa</th>
-                        <th>Ano</th>
                         <th>KM</th>
-                        <th style="text-align: right;"><i class="fas fa-cog"></i></th>
+                        <th style="text-align: right;">Ações</th>
                     </tr>
                 </thead>
-                <tbody id="tabelaVeiculos">
-                    </tbody>
+                <tbody id="tabelaVeiculos"></tbody>
             </table>
         </div>
-
     </main>
 
-    <script>
-        // Função de filtro para busca rápida na tabela de frota
-        function filtrarTabelaLocal() {
-            const input = document.getElementById('filtroFrota');
-            const filter = input.value.toUpperCase();
-            const tr = document.querySelectorAll("#tabelaVeiculos tr");
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, query, where, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-            tr.forEach(row => {
-                const text = row.textContent || row.innerText;
-                row.style.display = text.toUpperCase().includes(filter) ? "" : "none";
+        const firebaseConfig = {
+            apiKey: "AIzaSyDczjdNxa2TZP07iiwTAkOLFbKcOPx1POo",
+            authDomain: "japan-security-car-1a7d8.firebaseapp.com",
+            projectId: "japan-security-car-1a7d8",
+            storageBucket: "japan-security-car-1a7d8.firebasestorage.app",
+            messagingSenderId: "616009365036",
+            appId: "1:616009365036:web:f644dd6106818566900389"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                listarVeiculos();
+            } else {
+                window.location.href = "login.html";
+            }
+        });
+
+        // Salvar ou Atualizar
+        document.getElementById('btnSalvarVeiculo').onclick = async () => {
+            const id = document.getElementById('veiculoId').value;
+            const dados = {
+                nome: document.getElementById('nome').value.toUpperCase(),
+                placa: document.getElementById('placa').value.toUpperCase(),
+                ano: document.getElementById('ano').value,
+                km: document.getElementById('kmAtual').value,
+                usuario: auth.currentUser.email
+            };
+
+            if (id) {
+                await updateDoc(doc(db, "veiculos", id), dados);
+                alert("Veículo atualizado!");
+            } else {
+                await addDoc(collection(db, "veiculos"), dados);
+                alert("Veículo cadastrado!");
+            }
+            location.reload();
+        };
+
+        // Listar Veículos
+        async function listarVeiculos() {
+            const q = query(collection(db, "veiculos"), where("usuario", "==", auth.currentUser.email));
+            const snap = await getDocs(q);
+            const corpo = document.getElementById('tabelaVeiculos');
+            corpo.innerHTML = "";
+
+            snap.forEach(documento => {
+                const v = documento.data();
+                const id = documento.id;
+                corpo.innerHTML += `
+                    <tr>
+                        <td>${v.nome}</td>
+                        <td><b>${v.placa}</b></td>
+                        <td>${v.km}</td>
+                        <td style="text-align: right;">
+                            <i class="fas fa-trash btn-excluir" onclick="excluirVeiculo('${id}')"></i>
+                        </td>
+                    </tr>`;
             });
         }
-    </script>
 
-    <script src="js/db.js"></script>
-    <script src="js/vehicles.js"></script>
+        // Função global para excluir (precisa estar no window para o onclick do HTML achar)
+        window.excluirVeiculo = async (id) => {
+            if (confirm("Deseja realmente remover este veículo?")) {
+                await deleteDoc(doc(db, "veiculos", id));
+                location.reload();
+            }
+        };
+
+        // Filtro Local
+        document.getElementById('filtroFrota').onkeyup = function() {
+            const filter = this.value.toUpperCase();
+            const tr = document.querySelectorAll("#tabelaVeiculos tr");
+            tr.forEach(row => {
+                row.style.display = row.innerText.toUpperCase().includes(filter) ? "" : "none";
+            });
+        };
+    </script>
 </body>
 </html>
