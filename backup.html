@@ -6,14 +6,12 @@
     <title>Japan Security | Backup Nuvem</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
-
     <style>
         .backup-icon { font-size: 3rem; color: #e63946; margin: 20px 0; display: block; text-align: center; }
         .info-text { color: #888; font-size: 0.85rem; text-align: center; margin-bottom: 25px; line-height: 1.4; }
-        .section-title { color: white; font-size: 1rem; font-weight: bold; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
         .status-sync { color: #ffb703; font-size: 0.8rem; text-align: center; margin-top: 15px; display: none; font-weight: bold; }
-        .progress-container { width: 100%; background: #333; height: 10px; border-radius: 5px; margin-top: 10px; display: none; overflow: hidden; }
-        .progress-bar { width: 0%; height: 100%; background: #e63946; border-radius: 5px; transition: 0.3s; }
+        .progress-container { width: 100%; background: #333; height: 12px; border-radius: 6px; margin-top: 10px; display: none; overflow: hidden; border: 1px solid #444; }
+        .progress-bar { width: 0%; height: 100%; background: linear-gradient(90deg, #e63946, #ffb703); border-radius: 6px; transition: 0.2s; }
     </style>
 </head>
 <body>
@@ -27,37 +25,30 @@
     </header>
 
     <main class="main-content" style="padding: 15px;">
-        
         <i class="fas fa-cloud-upload-alt backup-icon"></i>
-        <p class="info-text">
-            Importe o seu backup JSON para sincronizar com o Firebase. <br>
-            Usuário: <b><span id="userEmail">...</span></b>
-        </p>
+        <p class="info-text">Sincronizando backup para: <b><span id="userEmail">...</span></b></p>
 
         <div class="card">
-            <div class="section-title" style="color: #27ae60;">
-                <i class="fas fa-sync"></i> Sincronização Inteligente
+            <div class="section-title" style="color: #27ae60; font-weight: bold; margin-bottom:10px;">
+                <i class="fas fa-check-double"></i> Sincronização Sem Duplicados
             </div>
             
-            <div class="input-group">
-                <input type="file" id="fileBackup" accept=".json" class="modern-input" style="padding: 10px; font-size: 0.8rem;">
-            </div>
+            <input type="file" id="fileBackup" accept=".json" class="modern-input" style="padding: 10px; font-size: 0.8rem; width: 100%;">
 
-            <button id="btnImport" class="btn-primary" style="background: #27ae60; margin-top: 15px;">
+            <button id="btnImport" class="btn-primary" style="background: #27ae60; margin-top: 15px; width: 100%;">
                 <i class="fas fa-cloud-upload-alt"></i> INICIAR IMPORTAÇÃO
             </button>
 
-            <div id="syncStatus" class="status-sync">Processando arquivo...</div>
+            <div id="syncStatus" class="status-sync">Validando dados...</div>
             <div class="progress-container" id="progContainer">
                 <div class="progress-bar" id="progBar"></div>
             </div>
         </div>
-
     </main>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, query } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
@@ -84,10 +75,7 @@
             const progBar = document.getElementById('progBar');
             const progContainer = document.getElementById('progContainer');
             
-            if (!fileInput.files[0]) {
-                alert("Selecione o arquivo de backup!");
-                return;
-            }
+            if (!fileInput.files[0]) { alert("Selecione o arquivo!"); return; }
 
             const reader = new FileReader();
             reader.onload = async (e) => {
@@ -95,103 +83,73 @@
                     const dados = JSON.parse(e.target.result);
                     const emailAtual = auth.currentUser.email;
 
-                    // Proteção contra campos nulos no JSON (Evita o erro de length)
-                    const listaVeiculos = dados.vehicles || [];
-                    const listaLogs = dados.logs || [];
-                    const listaVistorias = dados.vistorias || [];
-                    const listaManutencoes = dados.manutencoes || [];
-
-                    const totalGeral = listaVeiculos.length + listaLogs.length + listaVistorias.length + listaManutencoes.length;
-                    
-                    if (totalGeral === 0) {
-                        alert("Arquivo vazio ou formato não reconhecido.");
-                        return;
-                    }
+                    const vtrs = dados.vehicles || [];
+                    const logs = dados.logs || [];
+                    const vists = dados.vistorias || [];
+                    const total = vtrs.length + logs.length + vists.length;
 
                     status.style.display = "block";
                     progContainer.style.display = "block";
-                    let processados = 0;
+                    let cont = 0;
 
-                    const atualizarProgresso = (nome) => {
-                        processados++;
-                        let porc = (processados / totalGeral) * 100;
-                        progBar.style.width = porc + "%";
-                        status.innerText = `Sincronizando ${nome}: ${processados} de ${totalGeral}...`;
-                    };
+                    // --- PASSO 1: LIMPAR DUPLICADOS DE VEÍCULOS ---
+                    // Buscamos TODOS os veículos do banco para comparar placa
+                    status.innerText = "Verificando veículos já cadastrados...";
+                    const snapGeral = await getDocs(collection(db, "veiculos"));
+                    const placasNoBanco = snapGeral.docs.map(d => d.data().placa.toUpperCase().trim());
 
-                    // 1. VEÍCULOS (Evita duplicar placa)
-                    const snapExistentes = await getDocs(query(collection(db, "veiculos"), where("usuario", "==", emailAtual)));
-                    const placasExistentes = snapExistentes.docs.map(doc => doc.data().placa.toUpperCase());
-
-                    for (let v of listaVeiculos) {
-                        const placaFmt = v.placa.toUpperCase().trim();
-                        if (!placasExistentes.includes(placaFmt)) {
+                    for (let v of vtrs) {
+                        const pFmt = v.placa.toUpperCase().trim();
+                        // SÓ ADICIONA SE A PLACA NÃO EXISTIR EM NENHUM REGISTRO
+                        if (!placasNoBanco.includes(pFmt)) {
                             await addDoc(collection(db, "veiculos"), {
-                                placa: placaFmt,
+                                placa: pFmt,
                                 nome: v.nome.toUpperCase(),
-                                ano: v.ano || "N/A",
+                                ano: v.ano || "",
                                 kmAtual: v.kmAtual || 0,
                                 usuario: emailAtual
                             });
-                            placasExistentes.push(placaFmt);
+                            placasNoBanco.push(pFmt); // Adiciona na lista local para não repetir no mesmo loop
                         }
-                        atualizarProgresso("Veículos");
+                        cont++; updateUI(cont, total);
                     }
 
-                    // 2. MOVIMENTAÇÕES (logs -> movimentacoes)
-                    for (let log of listaLogs) {
-                        const dataObj = new Date(log.timestamp || Date.now());
-                        await addDoc(collection(db, "movimentacoes"), {
-                            veiculo: (log.viatura || log.veiculo || "DESCONHECIDO").toUpperCase(),
-                            km: log.km || 0,
-                            motorista: (log.motorista || "SISTEMA").toUpperCase(),
-                            tipo: log.tipo || "N/A",
-                            dataExibicao: log.data || dataObj.toLocaleString('pt-BR'),
-                            dataISO: dataObj.toISOString().split('T')[0],
-                            timestamp: log.timestamp || dataObj.getTime(),
+                    // --- PASSO 2: LOGS E VISTORIAS ---
+                    for (let l of logs) {
+                        const d = new Date(l.timestamp || Date.now());
+                        const payload = {
+                            veiculo: (l.viatura || l.veiculo || "VTR").toUpperCase(),
+                            km: l.km || 0,
+                            motorista: (l.motorista || "SISTEMA").toUpperCase(),
+                            tipo: l.tipo || "SAÍDA",
+                            dataExibicao: l.data || d.toLocaleString('pt-BR'),
+                            dataISO: d.toISOString().split('T')[0],
+                            timestamp: l.timestamp || d.getTime(),
                             usuario: emailAtual
-                        });
-                        atualizarProgresso("Movimentações");
+                        };
+
+                        if (l.tipo === "VISTORIA") {
+                            await addDoc(collection(db, "vistorias"), {
+                                ...payload, vigilante: payload.motorista, checkList: "Backup", obs: ""
+                            });
+                        } else {
+                            await addDoc(collection(db, "movimentacoes"), payload);
+                        }
+                        cont++; updateUI(cont, total);
                     }
 
-                    // 3. VISTORIAS
-                    for (let vis of listaVistorias) {
-                        const dVis = new Date(vis.timestamp || Date.now());
-                        await addDoc(collection(db, "vistorias"), {
-                            veiculo: (vis.veiculo || vis.viatura || "DESCONHECIDO").toUpperCase(),
-                            km: vis.km || 0,
-                            vigilante: (vis.vigilante || vis.motorista || "SISTEMA").toUpperCase(),
-                            checkList: vis.checkList || "OK",
-                            obs: vis.obs || "",
-                            dataExibicao: vis.data || dVis.toLocaleString('pt-BR'),
-                            dataISO: dVis.toISOString().split('T')[0],
-                            timestamp: vis.timestamp || dVis.getTime(),
-                            usuario: emailAtual
-                        });
-                        atualizarProgresso("Vistorias");
-                    }
+                    alert("Sincronização concluída com sucesso!");
+                    window.location.href = "index.html";
 
-                    // 4. MANUTENÇÕES
-                    for (let m of listaManutencoes) {
-                        const dM = new Date(m.timestamp || Date.now());
-                        await addDoc(collection(db, "manutencoes"), {
-                            ...m,
-                            veiculo: (m.veiculo || m.viatura || "DESCONHECIDO").toUpperCase(),
-                            dataExibicao: m.data || dM.toLocaleString('pt-BR'),
-                            dataISO: dM.toISOString().split('T')[0],
-                            usuario: emailAtual
-                        });
-                        atualizarProgresso("Manutenções");
-                    }
-
-                    alert("✅ Tudo pronto! Os dados foram vinculados ao seu usuário.");
-                    location.reload();
-
-                } catch (err) {
-                    console.error(err);
-                    alert("Erro crítico: " + err.message);
-                }
+                } catch (err) { alert("Erro: " + err.message); }
             };
+
+            function updateUI(c, t) {
+                const p = (c / t) * 100;
+                progBar.style.width = p + "%";
+                status.innerText = `Sincronizando: ${c} de ${t}`;
+            }
+
             reader.readAsText(fileInput.files[0]);
         });
     </script>
