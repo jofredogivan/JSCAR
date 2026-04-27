@@ -12,7 +12,7 @@
         .info-text { color: #888; font-size: 0.85rem; text-align: center; margin-bottom: 25px; line-height: 1.4; }
         .section-title { color: white; font-size: 1rem; font-weight: bold; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
         .status-sync { color: #ffb703; font-size: 0.8rem; text-align: center; margin-top: 15px; display: none; font-weight: bold; }
-        .progress-container { width: 100%; background: #333; height: 10px; border-radius: 5px; margin-top: 10px; display: none; }
+        .progress-container { width: 100%; background: #333; height: 10px; border-radius: 5px; margin-top: 10px; display: none; overflow: hidden; }
         .progress-bar { width: 0%; height: 100%; background: #e63946; border-radius: 5px; transition: 0.3s; }
     </style>
 </head>
@@ -30,26 +30,24 @@
         
         <i class="fas fa-cloud-upload-alt backup-icon"></i>
         <p class="info-text">
-            Esta função irá "carimbar" seus dados antigos com seu e-mail (<b><span id="userEmail">...</span></b>) e subir para o novo servidor.
+            Sincronize os dados do seu backup JSON com o servidor. <br>
+            Utilizador atual: <b><span id="userEmail">...</span></b>
         </p>
 
         <div class="card">
             <div class="section-title" style="color: #27ae60;">
-                <i class="fas fa-sync"></i> Migrar Dados para Firebase
+                <i class="fas fa-sync"></i> Migrar Dados (JSON -> Firebase)
             </div>
-            <p style="color: #666; font-size: 0.75rem; margin-bottom: 15px;">
-                Selecione o arquivo <b>.JSON</b> gerado pelo backup do sistema anterior.
-            </p>
             
             <div class="input-group">
                 <input type="file" id="fileBackup" accept=".json" class="modern-input" style="padding: 10px; font-size: 0.8rem;">
             </div>
 
             <button id="btnImport" class="btn-primary" style="background: #27ae60; margin-top: 15px;">
-                <i class="fas fa-cloud-upload-alt"></i> INICIAR MIGRAÇÃO AGORA
+                <i class="fas fa-cloud-upload-alt"></i> INICIAR SINCRONIZAÇÃO
             </button>
 
-            <div id="syncStatus" class="status-sync">Preparando envio...</div>
+            <div id="syncStatus" class="status-sync">A processar ficheiro...</div>
             <div class="progress-container" id="progContainer">
                 <div class="progress-bar" id="progBar"></div>
             </div>
@@ -59,7 +57,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
@@ -76,11 +74,8 @@
         const auth = getAuth(app);
 
         onAuthStateChanged(auth, (user) => {
-            if (!user) {
-                window.location.href = "login.html";
-            } else {
-                document.getElementById('userEmail').innerText = user.email;
-            }
+            if (!user) window.location.href = "login.html";
+            else document.getElementById('userEmail').innerText = user.email;
         });
 
         document.getElementById('btnImport').addEventListener('click', async () => {
@@ -90,7 +85,7 @@
             const progContainer = document.getElementById('progContainer');
             
             if (!fileInput.files[0]) {
-                alert("Selecione o arquivo de backup primeiro!");
+                alert("Por favor, selecione o ficheiro JSON!");
                 return;
             }
 
@@ -101,41 +96,55 @@
                 try {
                     const dados = JSON.parse(e.target.result);
                     const emailAtual = auth.currentUser.email;
+                    
                     status.style.display = "block";
                     progContainer.style.display = "block";
                     
-                    let totalItens = (dados.vehicles?.length || 0) + (dados.logs?.length || 0) + (dados.manutencoes?.length || 0);
+                    // Cálculo do total de tarefas
+                    const totalVehicles = dados.vehicles ? dados.vehicles.length : 0;
+                    const totalLogs = dados.logs ? dados.logs.length : 0;
+                    const totalVistorias = dados.vistorias ? dados.vistorias.length : 0;
+                    const totalGeral = totalVehicles + totalLogs + totalVistorias;
+                    
                     let processados = 0;
+                    let veiculosNovos = 0;
 
-                    const atualizarProgresso = () => {
+                    const updateProgress = () => {
                         processados++;
-                        let porc = (processados / totalItens) * 100;
+                        const porc = (processados / totalGeral) * 100;
                         progBar.style.width = porc + "%";
-                        status.innerText = `Sincronizando: ${processados} de ${totalItens}...`;
+                        status.innerText = `A processar: ${processados} de ${totalGeral}...`;
                     };
 
-                    // 1. MIGRAÇÃO DE VEÍCULOS (vehicles no JSON antigo)
-                    if (dados.vehicles) {
+                    // 1. SINCRONIZAR VEÍCULOS (Evitando duplicados por Placa)
+                    if (totalVehicles > 0) {
+                        const snapExistentes = await getDocs(query(collection(db, "veiculos"), where("usuario", "==", emailAtual)));
+                        const placasExistentes = snapExistentes.docs.map(doc => doc.data().placa.toUpperCase());
+
                         for (let v of dados.vehicles) {
-                            await addDoc(collection(db, "veiculos"), {
-                                placa: v.placa.toUpperCase(),
-                                nome: v.nome.toUpperCase(),
-                                ano: v.ano || "N/A",
-                                kmAtual: v.kmAtual || 0,
-                                usuario: emailAtual
-                            });
-                            atualizarProgresso();
+                            const placaFmt = v.placa.toUpperCase().trim();
+                            if (!placasExistentes.includes(placaFmt)) {
+                                await addDoc(collection(db, "veiculos"), {
+                                    placa: placaFmt,
+                                    nome: v.nome.toUpperCase(),
+                                    ano: v.ano || "N/A",
+                                    kmAtual: v.kmAtual || 0,
+                                    usuario: emailAtual
+                                });
+                                placasExistentes.push(placaFmt);
+                                veiculosNovos++;
+                            }
+                            updateProgress();
                         }
                     }
 
-                    // 2. MIGRAÇÃO DE MOVIMENTAÇÕES (logs no JSON antigo)
-                    if (dados.logs) {
+                    // 2. SINCRONIZAR MOVIMENTAÇÕES (logs)
+                    if (totalLogs > 0) {
                         for (let log of dados.logs) {
-                            // Gera campos de data compatíveis com os novos filtros
                             const dataObj = new Date(log.timestamp || Date.now());
                             await addDoc(collection(db, "movimentacoes"), {
-                                veiculo: log.viatura.toUpperCase(),
-                                km: log.km,
+                                veiculo: log.viatura.toUpperCase(), // Converte 'viatura' para 'veiculo'
+                                km: log.km || 0,
                                 motorista: log.motorista.toUpperCase(),
                                 tipo: log.tipo,
                                 dataExibicao: log.data || dataObj.toLocaleString('pt-BR'),
@@ -143,31 +152,35 @@
                                 timestamp: log.timestamp || dataObj.getTime(),
                                 usuario: emailAtual
                             });
-                            atualizarProgresso();
+                            updateProgress();
                         }
                     }
 
-                    // 3. MIGRAÇÃO DE MANUTENÇÕES (se houver)
-                    if (dados.manutencoes) {
-                        for (let m of dados.manutencoes) {
-                            const dataObjM = new Date(m.timestamp || Date.now());
-                            await addDoc(collection(db, "manutencoes"), {
-                                ...m,
-                                dataExibicao: m.data || dataObjM.toLocaleString('pt-BR'),
-                                dataISO: dataObjM.toISOString(),
+                    // 3. SINCRONIZAR VISTORIAS
+                    if (totalVistorias > 0) {
+                        for (let vis of dados.vistorias) {
+                            const dataObjV = new Date(vis.timestamp || Date.now());
+                            await addDoc(collection(db, "vistorias"), {
+                                veiculo: (vis.veiculo || vis.viatura).toUpperCase(),
+                                km: vis.km || 0,
+                                vigilante: (vis.vigilante || vis.motorista || "SISTEMA").toUpperCase(),
+                                checkList: vis.checkList || "N/A",
+                                obs: vis.obs || "",
+                                dataExibicao: vis.data || dataObjV.toLocaleString('pt-BR'),
+                                dataISO: dataObjV.toISOString(),
+                                timestamp: vis.timestamp || dataObjV.getTime(),
                                 usuario: emailAtual
                             });
-                            atualizarProgresso();
+                            updateProgress();
                         }
                     }
 
-                    alert("✅ " + processados + " registros migrados com sucesso para o seu usuário!");
-                    status.innerText = "Sincronização concluída!";
-                    status.style.color = "#27ae60";
-                    
+                    alert(`Sincronização Finalizada!\n\n- Veículos novos: ${veiculosNovos}\n- Movimentações/Vistorias: ${totalLogs + totalVistorias}`);
+                    location.reload();
+
                 } catch (err) {
                     console.error(err);
-                    alert("Erro crítico na migração: " + err.message);
+                    alert("Erro ao importar: " + err.message);
                 }
             };
 
