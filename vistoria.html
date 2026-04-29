@@ -18,19 +18,11 @@
         label { font-size: 0.7rem; color: var(--red); font-weight: bold; text-transform: uppercase; display: block; margin-bottom: 5px; }
         .modern-input { width: 100%; padding: 12px; background: #222; border: 1px solid #444; color: #fff; border-radius: 8px; box-sizing: border-box; font-size: 1rem; margin-bottom: 10px; }
         
-        /* Lista de Sugestões (Padrão Entrada/Saída) */
         #lista_vtr { 
-            display: none; 
-            position: absolute; 
-            width: calc(100% - 36px); 
-            background: #222; 
-            border: 2px solid var(--red); 
-            z-index: 9999; 
-            max-height: 250px; 
-            overflow-y: auto; 
-            border-radius: 0 0 10px 10px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.8);
-            top: 75px; 
+            display: none; position: absolute; width: calc(100% - 36px); 
+            background: #222; border: 2px solid var(--red); z-index: 9999; 
+            max-height: 250px; overflow-y: auto; border-radius: 0 0 10px 10px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.8); top: 75px; 
         }
         #lista_vtr div { padding: 14px; border-bottom: 1px solid #333; cursor: pointer; font-size: 0.95rem; color: #ccc; }
         #lista_vtr div:hover { background: var(--red); color: #fff; }
@@ -177,7 +169,6 @@
             boxVtr.innerHTML = "";
             const filtro = texto.toUpperCase();
             const encontrados = vtrCache.filter(v => v.placa.includes(filtro) || v.nome.includes(filtro));
-            
             if (encontrados.length > 0) {
                 encontrados.forEach(v => {
                     const d = document.createElement('div');
@@ -245,10 +236,15 @@
         document.getElementById('btnFiltrar').onclick = renderizar;
 
         document.getElementById('btnSalvarVistoria').onclick = async () => {
+            const btn = document.getElementById('btnSalvarVistoria');
             const inputVal = inputVtr.value.toUpperCase();
             const km = document.getElementById('v_km').value;
             const vig = document.getElementById('v_vigilante').value.toUpperCase();
             if(!inputVal || !km || !vig) return alert("Preencha os campos!");
+            
+            btn.disabled = true;
+            btn.innerHTML = "<i class='fas fa-spinner fa-spin'></i> SALVANDO...";
+
             const vEncontrado = vtrCache.find(v => inputVal.includes(v.placa));
             const placaFinal = vEncontrado ? vEncontrado.placa : inputVal;
             const nomeFinal = vEncontrado ? vEncontrado.nome : "AVULSO";
@@ -270,19 +266,28 @@
                 });
                 if(vEncontrado) await updateDoc(doc(db, "veiculos", vEncontrado.id), { kmAtual: Number(km) });
                 alert("Vistoria salva!"); location.reload();
-            } catch (e) { alert("Erro ao salvar."); }
+            } catch (e) { alert("Erro ao salvar."); btn.disabled = false; }
         };
 
-        // LÓGICA DE PDF ATUALIZADA PARA MOSTRAR FOTOS
+        // --- PDF COM PADRÃO JAPAN SECURITY (CORES CORRIGIDAS) ---
         document.getElementById('btnExportarPDF').onclick = () => {
-            if(historicoLocal.length === 0) return alert("Não há vistorias para exportar.");
-            const { jsPDF } = window.jspdf;
-            const docPdf = new jsPDF('l', 'mm', 'a4');
+            if(historicoLocal.length === 0) return alert("Não há dados para exportar.");
             
-            docPdf.setFontSize(18);
-            docPdf.setTextColor(230, 57, 70);
-            docPdf.text("JAPAN SECURITY - RELATÓRIO DE VISTORIAS", 14, 20);
+            const { jsPDF } = window.jspdf;
+            const docPdf = new jsPDF('l', 'mm', 'a4'); // Modo Paisagem
+            
+            const redColor = [230, 57, 70]; // #e63946
 
+            // Cabeçalho do Documento
+            docPdf.setFontSize(20);
+            docPdf.setTextColor(redColor[0], redColor[1], redColor[2]);
+            docPdf.text("JAPAN SECURITY - RELATÓRIO DE VISTORIA", 14, 20);
+
+            docPdf.setFontSize(10);
+            docPdf.setTextColor(100);
+            docPdf.text(`Relatório gerado em: ${new Date().toLocaleString()}`, 14, 27);
+
+            // Filtros de Data
             const ini = document.getElementById('f_ini').value ? new Date(document.getElementById('f_ini').value).getTime() : 0;
             const fim = document.getElementById('f_fim').value ? new Date(document.getElementById('f_fim').value).getTime() : Infinity;
             const filtrados = historicoLocal.filter(i => i.timestamp >= ini && i.timestamp <= fim).sort((a,b) => b.timestamp - a.timestamp);
@@ -291,32 +296,53 @@
                 i.dataExibicao,
                 `${i.veiculo}\n${i.nomeVeiculo}`,
                 i.vigilante,
-                i.km,
+                i.km + " KM",
                 i.checkList,
                 i.obs,
-                "" // Espaço para a foto
+                "" // Foto
             ]);
 
             docPdf.autoTable({
-                head: [["DATA", "VTR", "VIGILANTE", "KM", "CHECKLIST", "OBS", "FOTO"]],
+                head: [["DATA/HORA", "VIATURA", "VIGILANTE", "KM", "CHECKLIST", "OBSERVAÇÕES", "FOTO"]],
                 body: rows,
-                startY: 30,
+                startY: 35,
                 theme: 'grid',
-                styles: { fontSize: 7, valign: 'middle', minCellHeight: 22 },
-                columnStyles: { 6: { cellWidth: 35 } },
+                headStyles: { 
+                    fillColor: redColor, 
+                    textColor: [255, 255, 255], 
+                    fontSize: 8, 
+                    halign: 'center' 
+                },
+                styles: { 
+                    fontSize: 7, 
+                    valign: 'middle', 
+                    minCellHeight: 25 // Altura para a foto não ficar pequena
+                },
+                columnStyles: {
+                    6: { cellWidth: 35 } // Largura da coluna da foto
+                },
                 didDrawCell: (data) => {
+                    // Se for a coluna da foto e houver imagem no dado correspondente
                     if (data.column.index === 6 && data.cell.section === 'body') {
-                        const foto = filtrados[data.row.index].foto;
-                        if (foto) {
+                        const item = filtrados[data.row.index];
+                        if (item && item.foto) {
                             try {
-                                docPdf.addImage(foto, 'JPEG', data.cell.x + 2, data.cell.y + 2, 31, 18);
-                            } catch (e) {}
+                                docPdf.addImage(
+                                    item.foto, 
+                                    'JPEG', 
+                                    data.cell.x + 2, 
+                                    data.cell.y + 2, 
+                                    31, 21 // Dimensões da miniatura
+                                );
+                            } catch (e) {
+                                console.log("Erro imagem:", e);
+                            }
                         }
                     }
                 }
             });
 
-            docPdf.save(`Vistorias_Japan_${new Date().getTime()}.pdf`);
+            docPdf.save(`Relatorio_Vistoria_Japan_${new Date().getTime()}.pdf`);
         };
     </script>
 </body>
