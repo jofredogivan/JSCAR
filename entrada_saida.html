@@ -134,7 +134,7 @@
     let filtradosPDF = [];
 
     onAuthStateChanged(auth, (user) => {
-        if (user) { carregarVtr(); carregarHistorico(); }
+        if (user) { carregarVtr().then(() => carregarHistorico()); }
         else { window.location.href = "login.html"; }
     });
 
@@ -143,8 +143,16 @@
         vtrCache = [];
         snap.forEach(d => {
             const i = d.data();
-            if(i.placa && i.nome) {
-                vtrCache.push({ id: d.id, placa: i.placa.toUpperCase(), nome: i.nome.toUpperCase(), km: i.kmAtual || 0 });
+            // Verificação dupla de campos (minúsculo ou maiúsculo conforme o Firestore)
+            const placa = i.placa || i.Placa;
+            const nome = i.nome || i.Nome;
+            if(placa && nome) {
+                vtrCache.push({ 
+                    id: d.id, 
+                    placa: placa.toUpperCase(), 
+                    nome: nome.toUpperCase(), 
+                    km: i.kmAtual || 0 
+                });
             }
         });
     }
@@ -179,7 +187,14 @@
         historicoLocal = [];
         snap.forEach(d => {
             const info = d.data();
-            if(info.usuario === auth.currentUser.email) { historicoLocal.push({ id: d.id, ...info }); }
+            if(info.usuario === auth.currentUser.email) { 
+                // Se nomeVeiculo for N/D, busca no cache pela placa
+                if (!info.nomeVeiculo || info.nomeVeiculo === "MODELO N/D") {
+                    const find = vtrCache.find(v => v.placa === info.veiculo);
+                    info.nomeVeiculo = find ? find.nome : "NÃO CADASTRADO";
+                }
+                historicoLocal.push({ id: d.id, ...info }); 
+            }
         });
         renderizar();
     }
@@ -194,7 +209,7 @@
         filtradosPDF = historicoLocal.filter(i => i.timestamp >= tsIni && i.timestamp <= tsFim).sort((a,b) => b.timestamp - a.timestamp);
         filtradosPDF.forEach(i => {
             const cor = i.tipo === "SAIDA" ? "#e63946" : "#2ecc71";
-            corpo.innerHTML += `<tr><td style="color:#777; font-size:0.65rem;">${i.dataExibicao}</td><td><b>${i.veiculo}</b><br><small style="color:var(--red)">${i.nomeVeiculo || ''}</small></td><td>${i.vigilante}</td><td>${i.km}</td><td style="color:${cor}; font-weight:bold">${i.tipo}</td><td><button onclick="apagarRegistro('${i.id}')" style="background:none; border:none; color:#444;"><i class="fas fa-trash"></i></button></td></tr>`;
+            corpo.innerHTML += `<tr><td style="color:#777; font-size:0.65rem;">${i.dataExibicao}</td><td><b>${i.veiculo}</b><br><small style="color:var(--red)">${i.nomeVeiculo}</small></td><td>${i.vigilante}</td><td>${i.km}</td><td style="color:${cor}; font-weight:bold">${i.tipo}</td><td><button onclick="apagarRegistro('${i.id}')" style="background:none; border:none; color:#444;"><i class="fas fa-trash"></i></button></td></tr>`;
         });
     }
 
@@ -203,11 +218,22 @@
         const km = document.getElementById('es_km').value;
         const vig = document.getElementById('es_vig').value.toUpperCase();
         if(!valorInput || !km || !vig) return alert("Preencha tudo!");
+        
         const vEncontrado = vtrCache.find(v => valorInput.includes(v.placa));
         const placaFinal = vEncontrado ? vEncontrado.placa : valorInput;
         const nomeFinal = vEncontrado ? vEncontrado.nome : "Modelo Avulso";
+        
         try {
-            await addDoc(collection(db, "movimentacoes"), { veiculo: placaFinal, nomeVeiculo: nomeFinal, km: Number(km), vigilante: vig, tipo: document.getElementById('es_tipo').value, timestamp: new Date().getTime(), dataExibicao: new Date().toLocaleString('pt-BR'), usuario: auth.currentUser.email });
+            await addDoc(collection(db, "movimentacoes"), { 
+                veiculo: placaFinal, 
+                nomeVeiculo: nomeFinal, 
+                km: Number(km), 
+                vigilante: vig, 
+                tipo: document.getElementById('es_tipo').value, 
+                timestamp: new Date().getTime(), 
+                dataExibicao: new Date().toLocaleString('pt-BR'), 
+                usuario: auth.currentUser.email 
+            });
             if(vEncontrado) await updateDoc(doc(db, "veiculos", vEncontrado.id), { kmAtual: Number(km) });
             alert("✓ Salvo!"); location.reload();
         } catch (e) { alert("Erro ao salvar."); }
@@ -220,15 +246,19 @@
         const { jsPDF } = window.jspdf;
         const docPdf = new jsPDF('l', 'mm', 'a4');
         const grupos = {};
+        
         filtradosPDF.forEach(item => {
-            const chave = `${item.veiculo} - ${item.nomeVeiculo || 'MODELO N/D'}`;
+            const nomeExibicao = item.nomeVeiculo || "NÃO INFORMADO";
+            const chave = `${item.veiculo} - ${nomeExibicao}`;
             if (!grupos[chave]) grupos[chave] = [];
             grupos[chave].push(item);
         });
+
         let yPos = 20;
         docPdf.setFontSize(22); docPdf.setTextColor(230, 57, 70); docPdf.text("JAPAN SECURITY", 14, yPos);
         docPdf.setFontSize(10); docPdf.setTextColor(100); docPdf.text("RELATÓRIO CONSOLIDADO DE MOVIMENTAÇÃO DE FROTA", 14, yPos + 7);
         yPos += 20;
+
         Object.keys(grupos).sort().forEach(veiculo => {
             if (yPos > 170) { docPdf.addPage(); yPos = 20; }
             docPdf.setFillColor(245, 245, 245); docPdf.rect(14, yPos, 269, 8, 'F');
