@@ -12,30 +12,33 @@
     <style>
         :root { --red: #e63946; --green: #2ecc71; --dark: #121212; }
         body { background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; padding-bottom: 50px; }
-        header { background: #1a1a1a; padding: 20px; text-align: center; border-bottom: 4px solid var(--red); }
+        
+        /* Cabeçalho Ajustado com Botão Voltar */
+        header { 
+            background: #1a1a1a; padding: 15px; text-align: center; 
+            border-bottom: 4px solid var(--red); display: flex; align-items: center; justify-content: space-between;
+        }
+        .btn-voltar { color: white; text-decoration: none; font-size: 0.8rem; font-weight: bold; transition: 0.1s; display: flex; align-items: center; gap: 5px; }
+        .btn-voltar:active { transform: scale(0.9); opacity: 0.7; }
+
         .container { padding: 15px; max-width: 750px; margin: auto; }
         .card { background: var(--dark); padding: 18px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #333; position: relative; }
         label { font-size: 0.7rem; color: var(--red); font-weight: bold; text-transform: uppercase; display: block; margin-bottom: 5px; }
         .modern-input { width: 100%; padding: 12px; background: #222; border: 1px solid #444; color: #fff; border-radius: 8px; box-sizing: border-box; font-size: 1rem; margin-bottom: 10px; }
         
+        /* Melhoria nos Botões */
         .btn { border: none; border-radius: 8px; cursor: pointer; font-weight: 800; transition: 0.1s; display: flex; align-items: center; justify-content: center; gap: 8px; text-transform: uppercase; }
         .btn:active { transform: scale(0.95); opacity: 0.8; }
+        
         .btn-save { background: var(--green); color: #000; height: 55px; width: 100%; font-size: 1.1rem; box-shadow: 0 4px 0 #27ae60; }
         .btn-filter { background: #333; color: #fff; height: 42px; width: 100%; border: 1px solid #555; }
         .btn-pdf { background: var(--red); color: #fff; height: 42px; width: 100%; }
 
         #lista_vtr { 
-            display: none; 
-            position: absolute; 
-            width: calc(100% - 36px); 
-            background: #222; 
-            border: 2px solid var(--red); 
-            z-index: 9999; 
-            max-height: 250px; 
-            overflow-y: auto; 
-            border-radius: 0 0 10px 10px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.8);
-            top: 75px; 
+            display: none; position: absolute; width: calc(100% - 36px); 
+            background: #222; border: 2px solid var(--red); z-index: 9999; 
+            max-height: 250px; overflow-y: auto; border-radius: 0 0 10px 10px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.8); top: 75px; 
         }
         #lista_vtr div { padding: 14px; border-bottom: 1px solid #333; cursor: pointer; font-size: 0.95rem; color: #ccc; }
         #lista_vtr div:hover { background: var(--red); color: #fff; }
@@ -48,8 +51,13 @@
 <body>
 
 <header>
-    <div style="font-size: 1.4rem; font-weight: 900; color: var(--red);">JAPAN SECURITY</div>
-    <div style="font-size: 0.6rem; color: #888; font-weight: bold; letter-spacing: 2px;">MOVIMENTAÇÃO DE FROTA</div>
+    <a href="index.html" class="btn-voltar">
+        <i class="fas fa-chevron-left" style="color: var(--red);"></i> VOLTAR
+    </a>
+    <div style="flex-grow: 1; text-align: center; margin-right: 60px;">
+        <div style="font-size: 1.4rem; font-weight: 900; color: var(--red);">JAPAN SECURITY</div>
+        <div style="font-size: 0.6rem; color: #888; font-weight: bold; letter-spacing: 2px;">MOVIMENTAÇÃO DE FROTA</div>
+    </div>
 </header>
 
 <div class="container">
@@ -143,7 +151,6 @@
         vtrCache = [];
         snap.forEach(d => {
             const i = d.data();
-            // Verificação dupla de campos (minúsculo ou maiúsculo conforme o Firestore)
             const placa = i.placa || i.Placa;
             const nome = i.nome || i.Nome;
             if(placa && nome) {
@@ -188,7 +195,6 @@
         snap.forEach(d => {
             const info = d.data();
             if(info.usuario === auth.currentUser.email) { 
-                // Se nomeVeiculo for N/D, busca no cache pela placa
                 if (!info.nomeVeiculo || info.nomeVeiculo === "MODELO N/D") {
                     const find = vtrCache.find(v => v.placa === info.veiculo);
                     info.nomeVeiculo = find ? find.nome : "NÃO CADASTRADO";
