@@ -24,17 +24,16 @@
             color: #fff; border-radius: 8px; box-sizing: border-box; font-size: 1rem; margin-bottom: 10px; 
         }
 
-        /* Botões com Feedback de Clique */
+        /* Botões com Feedback de Clique Melhorado */
         .btn-primary { 
             border: none; border-radius: 8px; cursor: pointer; font-weight: 800; 
             display: flex; align-items: center; justify-content: center; gap: 8px; 
-            text-transform: uppercase; width: 100%; padding: 15px; transition: all 0.1s active;
+            text-transform: uppercase; width: 100%; padding: 15px; transition: 0.1s;
         }
-        .btn-primary:active { transform: scale(0.96); opacity: 0.8; box-shadow: inset 0 3px 5px rgba(0,0,0,0.5); }
+        .btn-primary:active { transform: scale(0.95); opacity: 0.8; }
         
         .btn-foto { background: #333; color: white; border: 1px dashed var(--red); margin-bottom: 10px; padding: 10px; }
         
-        /* Lista de Sugestões */
         #lista_vtr { 
             display: none; position: absolute; width: calc(100% - 36px); 
             background: #222; border: 2px solid var(--red); z-index: 9999; 
@@ -52,13 +51,16 @@
         table { width: 100%; border-collapse: collapse; background: #111; font-size: 0.75rem; margin-top: 10px; }
         th { background: #222; color: var(--red); padding: 10px; text-align: left; border-bottom: 2px solid var(--red); }
         td { padding: 10px; border-bottom: 1px solid #222; }
+
+        .btn-delete { background: none; border: none; color: #555; cursor: pointer; transition: 0.2s; font-size: 1rem; }
+        .btn-delete:hover { color: var(--red); }
     </style>
 </head>
 <body>
 
     <header>
         <div style="display: flex; align-items: center; justify-content: space-between;">
-            <a href="index.html" style="color: white; text-decoration: none; font-size: 0.8rem;"><i class="fas fa-chevron-left"></i> VOLTAR</a>
+            <a href="index.html" style="color: white; text-decoration: none; font-size: 0.8rem; font-weight: bold;"><i class="fas fa-chevron-left"></i> VOLTAR</a>
             <div style="color: var(--red); font-weight: 900; letter-spacing: 2px;">VISTORIA TÉCNICA</div>
             <div style="width: 50px;"></div>
         </div>
@@ -122,22 +124,25 @@
             </button>
         </div>
 
-        <table>
-            <thead>
-                <tr>
-                    <th>Data/Hora</th>
-                    <th>Viatura</th>
-                    <th>Vigilante</th>
-                    <th>KM</th>
-                </tr>
-            </thead>
-            <tbody id="tabelaVistoria"></tbody>
-        </table>
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Data/Hora</th>
+                        <th>Viatura</th>
+                        <th>Vigilante</th>
+                        <th>KM</th>
+                        <th style="text-align: center;">AÇÃO</th>
+                    </tr>
+                </thead>
+                <tbody id="tabelaVistoria"></tbody>
+            </table>
+        </div>
     </main>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
@@ -220,11 +225,30 @@
             corpo.innerHTML = "";
             const ini = document.getElementById('f_ini').value ? new Date(document.getElementById('f_ini').value).getTime() : 0;
             const fim = document.getElementById('f_fim').value ? new Date(document.getElementById('f_fim').value).getTime() : Infinity;
+            
             historicoLocal.filter(i => i.timestamp >= ini && i.timestamp <= fim)
                 .sort((a,b) => b.timestamp - a.timestamp)
                 .forEach(i => {
-                    corpo.innerHTML += `<tr><td>${i.dataExibicao}</td><td><b>${i.veiculo}</b></td><td>${i.vigilante}</td><td>${i.km}</td></tr>`;
+                    corpo.innerHTML += `
+                    <tr>
+                        <td>${i.dataExibicao}</td>
+                        <td><b>${i.veiculo}</b></td>
+                        <td>${i.vigilante}</td>
+                        <td>${i.km}</td>
+                        <td style="text-align:center;">
+                            <button class="btn-delete" onclick="excluirVistoria('${i.id}')">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </td>
+                    </tr>`;
                 });
+        }
+
+        window.excluirVistoria = async (id) => {
+            if(confirm("Deseja excluir esta vistoria?")) {
+                await deleteDoc(doc(db, "vistorias", id));
+                carregarHistorico();
+            }
         }
 
         document.getElementById('btnFiltrar').onclick = renderizar;
@@ -258,61 +282,64 @@
             } catch (e) { alert("Erro ao salvar."); }
         };
 
-        // --- PDF LIMPO IGUAL À IMAGEM ---
         document.getElementById('btnExportarPDF').onclick = () => {
+            if (historicoLocal.length === 0) return alert("Sem dados para o PDF!");
             const { jsPDF } = window.jspdf;
             const docPdf = new jsPDF('p', 'mm', 'a4');
             
             const ini = document.getElementById('f_ini').value || "Início";
             const fim = document.getElementById('f_fim').value || "Fim";
-            const filtrados = historicoLocal.filter(i => {
-                const t = i.timestamp;
-                const dIni = document.getElementById('f_ini').value ? new Date(document.getElementById('f_ini').value).getTime() : 0;
-                const dFim = document.getElementById('f_fim').value ? new Date(document.getElementById('f_fim').value).getTime() : Infinity;
-                return t >= dIni && t <= dFim;
-            }).sort((a,b) => b.timestamp - a.timestamp);
+            
+            const dIni = document.getElementById('f_ini').value ? new Date(document.getElementById('f_ini').value).getTime() : 0;
+            const dFim = document.getElementById('f_fim').value ? new Date(document.getElementById('f_fim').value).getTime() : Infinity;
+            
+            const filtrados = historicoLocal.filter(i => i.timestamp >= dIni && i.timestamp <= dFim).sort((a,b) => b.timestamp - a.timestamp);
 
-            // Cabeçalho Vermelho Sólido
+            // Cabeçalho Vermelho Japan Security
             docPdf.setFillColor(230, 57, 70);
             docPdf.rect(0, 0, 210, 35, 'F');
             docPdf.setTextColor(255, 255, 255);
             docPdf.setFontSize(16);
-            docPdf.text("JAPAN SECURITY - RELATÓRIO TÉCNICO DE VISTORIA", 10, 18);
+            docPdf.text("JAPAN SECURITY - RELATÓRIO DE VISTORIA", 10, 18);
             docPdf.setFontSize(10);
-            docPdf.text(`Período: ${ini} até ${fim}`, 10, 26);
+            docPdf.text(`Gerado em: ${new Date().toLocaleString()} | Período: ${ini} a ${fim}`, 10, 26);
 
             let y = 50;
 
             filtrados.forEach((i, index) => {
-                if (y > 240) { docPdf.addPage(); y = 20; }
+                if (y > 230) { docPdf.addPage(); y = 20; }
 
                 docPdf.setTextColor(0, 0, 0);
                 docPdf.setFont("helvetica", "bold");
-                docPdf.setFontSize(12);
-                docPdf.text(`VTR: ${i.veiculo}`, 10, y);
-                docPdf.text(`DATA: ${i.dataExibicao}`, 130, y);
+                docPdf.setFontSize(11);
+                docPdf.text(`VTR: ${i.veiculo} | DATA: ${i.dataExibicao}`, 10, y);
                 
                 y += 6;
                 docPdf.setFont("helvetica", "normal");
                 docPdf.setFontSize(9);
-                docPdf.text(`KM: ${i.km} | Vigilante: ${i.vigilante} | ${i.checkList}`, 10, y, { maxWidth: 190 });
+                docPdf.text(`KM: ${i.km} | Vigilante: ${i.vigilante}`, 10, y);
+                
+                y += 5;
+                docPdf.text(`ITENS: ${i.checkList}`, 10, y, { maxWidth: 190 });
 
                 y += 10;
                 if(i.foto) {
-                    docPdf.addImage(i.foto, 'JPEG', 10, y, 60, 40);
-                    y += 45;
+                    try {
+                        docPdf.addImage(i.foto, 'JPEG', 10, y, 50, 35);
+                        y += 40;
+                    } catch(e) { y += 5; }
                 }
 
                 docPdf.setFont("helvetica", "italic");
-                docPdf.text(`Observações: ${i.obs}`, 10, y);
+                docPdf.text(`OBS: ${i.obs}`, 10, y, { maxWidth: 190 });
                 
-                y += 10;
+                y += 12;
                 docPdf.setDrawColor(200);
-                docPdf.line(10, y, 200, y); // Linha separadora
-                y += 15;
+                docPdf.line(10, y, 200, y);
+                y += 10;
             });
 
-            docPdf.save("Relatorio_Vistoria_Limp.pdf");
+            docPdf.save("Relatorio_Vistoria_Japan.pdf");
         };
     </script>
 </body>
