@@ -1,329 +1,637 @@
 <!DOCTYPE html>
+
 <html lang="pt-BR">
+
 <head>
+
     <meta charset="UTF-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
     <title>Japan Security | Vistoria</title>
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
+
+
     <style>
+
         :root { --red: #e63946; --red-dark: #b91c1c; --dark: #121212; }
+
         body { background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; padding-bottom: 50px; }
+
         
+
         header { background: #1a1a1a; padding: 15px; text-align: center; border-bottom: 2px solid var(--red); position: sticky; top: 0; z-index: 1000; }
+
         .container { padding: 15px; max-width: 800px; margin: auto; }
+
         
+
         .card { background: #1a1a1a; padding: 18px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #333; }
+
         label { font-size: 0.7rem; color: var(--red); font-weight: bold; text-transform: uppercase; display: block; margin-bottom: 5px; }
+
         
+
         .modern-input { 
+
             width: 100%; padding: 12px; background: #222; border: 1px solid #444; 
+
             color: #fff; border-radius: 8px; box-sizing: border-box; font-size: 1rem; margin-bottom: 10px; 
+
         }
+
+
+
+        /* Botões com Feedback de Clique */
 
         .btn-primary { 
+
             border: none; border-radius: 8px; cursor: pointer; font-weight: 800; 
+
             display: flex; align-items: center; justify-content: center; gap: 8px; 
+
             text-transform: uppercase; width: 100%; padding: 15px; transition: all 0.1s active;
+
         }
+
         .btn-primary:active { transform: scale(0.96); opacity: 0.8; box-shadow: inset 0 3px 5px rgba(0,0,0,0.5); }
+
         
+
         .btn-foto { background: #333; color: white; border: 1px dashed var(--red); margin-bottom: 10px; padding: 10px; }
+
         
+
+        /* Lista de Sugestões */
+
         #lista_vtr { 
+
             display: none; position: absolute; width: calc(100% - 36px); 
+
             background: #222; border: 2px solid var(--red); z-index: 9999; 
+
             max-height: 250px; overflow-y: auto; border-radius: 0 0 10px 10px; top: 75px; 
+
         }
+
         #lista_vtr div { padding: 14px; border-bottom: 1px solid #333; cursor: pointer; color: #ccc; }
+
         #lista_vtr div:hover { background: var(--red); color: #fff; }
 
+
+
         .checklist-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #222; padding: 15px; border-radius: 10px; }
+
         .check-container { display: flex; align-items: center; gap: 8px; color: #ccc; font-size: 0.85rem; cursor: pointer; background: #2a2a2a; padding: 8px; border-radius: 5px; }
+
         .check-container input { width: 18px; height: 18px; accent-color: var(--red); }
+
+
 
         #preview-foto { width: 100%; max-height: 250px; object-fit: cover; border-radius: 8px; margin-bottom: 15px; display: none; border: 2px solid var(--red); }
 
+
+
         table { width: 100%; border-collapse: collapse; background: #111; font-size: 0.75rem; margin-top: 10px; }
+
         th { background: #222; color: var(--red); padding: 10px; text-align: left; border-bottom: 2px solid var(--red); }
+
         td { padding: 10px; border-bottom: 1px solid #222; }
 
-        /* Lixo ajustado para não ocupar espaço extra */
-        .btn-del { color: #555; background: none; border: none; padding: 0 5px; cursor: pointer; font-size: 0.9rem; }
     </style>
+
 </head>
+
 <body>
 
+
+
     <header>
+
         <div style="display: flex; align-items: center; justify-content: space-between;">
+
             <a href="index.html" style="color: white; text-decoration: none; font-size: 0.8rem;"><i class="fas fa-chevron-left"></i> VOLTAR</a>
+
             <div style="color: var(--red); font-weight: 900; letter-spacing: 2px;">VISTORIA TÉCNICA</div>
+
             <div style="width: 50px;"></div>
+
         </div>
+
     </header>
 
+
+
     <main class="container">
+
         <div class="card" style="border-color: var(--red);">
+
             <label><i class="fas fa-filter"></i> Período do Relatório</label>
+
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+
                 <input type="datetime-local" id="f_ini" class="modern-input">
+
                 <input type="datetime-local" id="f_fim" class="modern-input">
+
             </div>
+
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+
                 <button id="btnFiltrar" class="btn-primary" style="background: #333; padding: 10px; color: #fff;">FILTRAR</button>
+
                 <button id="btnExportarPDF" class="btn-primary" style="background: #34495e; padding: 10px; color: #fff;"><i class="fas fa-file-pdf"></i> GERAR PDF</button>
+
             </div>
+
         </div>
+
+
 
         <div class="card">
+
             <div style="position: relative;">
+
                 <label>Viatura</label>
+
                 <input type="text" id="v_veiculo" class="modern-input" placeholder="Buscar placa..." autocomplete="off">
+
                 <div id="lista_vtr"></div>
+
             </div>
+
+
 
             <div style="display: flex; gap: 10px;">
+
                 <div style="flex: 1;">
+
                     <label>KM Atual</label>
+
                     <input type="number" id="v_km" class="modern-input">
+
                 </div>
+
                 <div style="flex: 1;">
+
                     <label>Vigilante</label>
+
                     <input type="text" id="v_vigilante" class="modern-input">
+
                 </div>
+
             </div>
+
+
 
             <label>Checklist de Itens</label>
+
             <div class="checklist-grid">
+
                 <label class="check-container"><input type="checkbox" class="v_chk" data-label="Água"> Água</label>
+
                 <label class="check-container"><input type="checkbox" class="v_chk" data-label="Óleo"> Óleo</label>
+
                 <label class="check-container"><input type="checkbox" class="v_chk" data-label="Macaco"> Macaco</label>
+
                 <label class="check-container"><input type="checkbox" class="v_chk" data-label="Triângulo"> Triângulo</label>
+
                 <label class="check-container"><input type="checkbox" class="v_chk" data-label="Farol Esq."> Farol Esq.</label>
+
                 <label class="check-container"><input type="checkbox" class="v_chk" data-label="Farol Dir."> Farol Dir.</label>
+
                 <label class="check-container"><input type="checkbox" class="v_chk" data-label="Lanterna Esq."> Lant. Esq.</label>
+
                 <label class="check-container"><input type="checkbox" class="v_chk" data-label="Lanterna Dir."> Lant. Dir.</label>
+
                 <label class="check-container"><input type="checkbox" class="v_chk" data-label="Pneus"> Pneus</label>
+
                 <label class="check-container"><input type="checkbox" class="v_chk" data-label="Limpeza"> Limpeza</label>
+
             </div>
 
+
+
             <label style="margin-top: 15px;">Observações</label>
+
             <textarea id="v_obs" class="modern-input" rows="2" placeholder="Descreva problemas..."></textarea>
 
+
+
             <label>Foto da Viatura/Avaria</label>
+
             <button class="btn-primary btn-foto" id="btnCâmera"><i class="fas fa-camera"></i> TIRAR FOTO</button>
+
             <input type="file" id="input_foto" accept="image/*" capture="camera" style="display: none;">
+
             <img id="preview-foto">
 
+
+
             <button class="btn-primary" id="btnSalvarVistoria" style="background: var(--red); color: white; margin-top: 10px;">
+
                 <i class="fas fa-save"></i> FINALIZAR VISTORIA
+
             </button>
+
         </div>
 
+
+
         <table>
+
             <thead>
+
                 <tr>
+
                     <th>Data/Hora</th>
+
                     <th>Viatura</th>
+
                     <th>Vigilante</th>
+
                     <th>KM</th>
+
                 </tr>
+
             </thead>
+
             <tbody id="tabelaVistoria"></tbody>
+
         </table>
+
     </main>
 
+
+
     <script type="module">
+
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        import { getFirestore, collection, addDoc, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
+
+
         const firebaseConfig = {
+
             apiKey: "AIzaSyDczjdNxa2TZP07iiwTAkOLFbKcOPx1POo",
+
             authDomain: "japan-security-car-1a7d8.firebaseapp.com",
+
             projectId: "japan-security-car-1a7d8",
+
             storageBucket: "japan-security-car-1a7d8.firebasestorage.app",
+
             messagingSenderId: "616009365036",
+
             appId: "1:616009365036:web:f644dd6106818566900389"
+
         };
+
+
 
         const app = initializeApp(firebaseConfig);
+
         const db = getFirestore(app);
+
         const auth = getAuth(app);
 
+
+
         let vtrCache = [];
+
         let historicoLocal = [];
+
         let fotoBase64 = "";
 
+
+
         onAuthStateChanged(auth, (user) => {
+
             if (user) { carregarVeiculos().then(() => carregarHistorico()); }
+
             else { window.location.href = "login.html"; }
+
         });
 
+
+
         async function carregarVeiculos() {
+
             const snap = await getDocs(collection(db, "veiculos"));
+
             vtrCache = [];
+
             snap.forEach(d => {
+
                 const i = d.data();
+
                 vtrCache.push({ id: d.id, placa: (i.placa || "").toUpperCase(), nome: (i.nome || "").toUpperCase(), km: i.kmAtual || 0 });
+
             });
+
         }
+
+
 
         const inputVtr = document.getElementById('v_veiculo');
+
         const boxVtr = document.getElementById('lista_vtr');
 
+
+
         inputVtr.oninput = (e) => {
+
             const val = e.target.value.toUpperCase();
+
             boxVtr.innerHTML = "";
+
             const enc = vtrCache.filter(v => v.placa.includes(val) || v.nome.includes(val));
+
             if(val && enc.length){
+
                 enc.forEach(v => {
+
                     const d = document.createElement('div');
+
                     d.innerHTML = `<b>${v.placa}</b> - ${v.nome}`;
+
                     d.onmousedown = () => {
+
                         inputVtr.value = `${v.placa} - ${v.nome}`;
+
                         document.getElementById('v_km').value = v.km;
+
                         boxVtr.style.display = 'none';
+
                     };
+
                     boxVtr.appendChild(d);
+
                 });
+
                 boxVtr.style.display = 'block';
+
             } else { boxVtr.style.display = 'none'; }
+
         };
+
+
 
         document.getElementById('btnCâmera').onclick = () => document.getElementById('input_foto').click();
+
         document.getElementById('input_foto').onchange = (e) => {
+
             const file = e.target.files[0];
+
             const reader = new FileReader();
+
             reader.onload = () => {
+
                 fotoBase64 = reader.result;
+
                 document.getElementById('preview-foto').src = fotoBase64;
+
                 document.getElementById('preview-foto').style.display = 'block';
+
             };
+
             reader.readAsDataURL(file);
+
         };
 
+
+
         async function carregarHistorico() {
+
             const snap = await getDocs(collection(db, "vistorias"));
+
             historicoLocal = [];
+
             snap.forEach(doc => {
+
                 const item = doc.data();
+
                 if(item.usuario === auth.currentUser.email) historicoLocal.push({ id: doc.id, ...item });
+
             });
+
             renderizar();
+
         }
 
-        // Função Global de Excluir vinculada ao lixo
-        window.excluirReg = async (id) => {
-            if(confirm("Excluir esta vistoria?")){
-                await deleteDoc(doc(db, "vistorias", id));
-                carregarHistorico();
-            }
-        }
+
 
         function renderizar() {
+
             const corpo = document.getElementById('tabelaVistoria');
+
             corpo.innerHTML = "";
+
             const ini = document.getElementById('f_ini').value ? new Date(document.getElementById('f_ini').value).getTime() : 0;
+
             const fim = document.getElementById('f_fim').value ? new Date(document.getElementById('f_fim').value).getTime() : Infinity;
-            
+
             historicoLocal.filter(i => i.timestamp >= ini && i.timestamp <= fim)
+
                 .sort((a,b) => b.timestamp - a.timestamp)
+
                 .forEach(i => {
-                    corpo.innerHTML += `
-                    <tr>
-                        <td>${i.dataExibicao}</td>
-                        <td><b>${i.veiculo}</b></td>
-                        <td>${i.vigilante}</td>
-                        <td style="display: flex; justify-content: space-between; align-items: center;">
-                            ${i.km} 
-                            <button class="btn-del" onclick="excluirReg('${i.id}')"><i class="fas fa-trash-alt"></i></button>
-                        </td>
-                    </tr>`;
+
+                    corpo.innerHTML += `<tr><td>${i.dataExibicao}</td><td><b>${i.veiculo}</b></td><td>${i.vigilante}</td><td>${i.km}</td></tr>`;
+
                 });
+
         }
+
+
 
         document.getElementById('btnFiltrar').onclick = renderizar;
 
+
+
         document.getElementById('btnSalvarVistoria').onclick = async () => {
+
             const vtrVal = inputVtr.value.toUpperCase();
+
             const km = document.getElementById('v_km').value;
+
             const vig = document.getElementById('v_vigilante').value.toUpperCase();
+
             if(!vtrVal || !km || !vig) return alert("Preencha tudo!");
 
+
+
             const vEncontrado = vtrCache.find(v => vtrVal.includes(v.placa));
+
             const checksArr = [];
+
             document.querySelectorAll('.v_chk').forEach(c => {
+
                 checksArr.push(`${c.getAttribute('data-label')}: ${c.checked ? 'OK' : 'X'}`);
+
             });
+
+
 
             try {
+
                 await addDoc(collection(db, "vistorias"), {
+
                     veiculo: vEncontrado ? `${vEncontrado.placa} - ${vEncontrado.nome}` : vtrVal,
+
                     km: Number(km),
+
                     vigilante: vig,
+
                     checkList: checksArr.join(" | "),
+
                     obs: document.getElementById('v_obs').value.toUpperCase() || "SEM OBSERVAÇÕES",
+
                     foto: fotoBase64,
+
                     timestamp: new Date().getTime(),
+
                     dataExibicao: new Date().toLocaleString('pt-BR'),
+
                     usuario: auth.currentUser.email
+
                 });
+
                 if(vEncontrado) await updateDoc(doc(db, "veiculos", vEncontrado.id), { kmAtual: Number(km) });
+
                 alert("Vistoria Salva!"); location.reload();
+
             } catch (e) { alert("Erro ao salvar."); }
+
         };
 
-        // PDF ORIGINAL
+
+
+        // --- PDF LIMPO IGUAL À IMAGEM ---
+
         document.getElementById('btnExportarPDF').onclick = () => {
+
             const { jsPDF } = window.jspdf;
+
             const docPdf = new jsPDF('p', 'mm', 'a4');
+
+            
+
             const ini = document.getElementById('f_ini').value || "Início";
+
             const fim = document.getElementById('f_fim').value || "Fim";
+
             const filtrados = historicoLocal.filter(i => {
+
                 const t = i.timestamp;
+
                 const dIni = document.getElementById('f_ini').value ? new Date(document.getElementById('f_ini').value).getTime() : 0;
+
                 const dFim = document.getElementById('f_fim').value ? new Date(document.getElementById('f_fim').value).getTime() : Infinity;
+
                 return t >= dIni && t <= dFim;
+
             }).sort((a,b) => b.timestamp - a.timestamp);
 
+
+
+            // Cabeçalho Vermelho Sólido
+
             docPdf.setFillColor(230, 57, 70);
+
             docPdf.rect(0, 0, 210, 35, 'F');
+
             docPdf.setTextColor(255, 255, 255);
+
             docPdf.setFontSize(16);
+
             docPdf.text("JAPAN SECURITY - RELATÓRIO TÉCNICO DE VISTORIA", 10, 18);
+
             docPdf.setFontSize(10);
+
             docPdf.text(`Período: ${ini} até ${fim}`, 10, 26);
 
+
+
             let y = 50;
-            filtrados.forEach((i) => {
+
+
+
+            filtrados.forEach((i, index) => {
+
                 if (y > 240) { docPdf.addPage(); y = 20; }
+
+
+
                 docPdf.setTextColor(0, 0, 0);
+
                 docPdf.setFont("helvetica", "bold");
+
                 docPdf.setFontSize(12);
+
                 docPdf.text(`VTR: ${i.veiculo}`, 10, y);
+
                 docPdf.text(`DATA: ${i.dataExibicao}`, 130, y);
+
+                
+
                 y += 6;
+
                 docPdf.setFont("helvetica", "normal");
+
                 docPdf.setFontSize(9);
+
                 docPdf.text(`KM: ${i.km} | Vigilante: ${i.vigilante} | ${i.checkList}`, 10, y, { maxWidth: 190 });
+
+
+
                 y += 10;
+
                 if(i.foto) {
+
                     docPdf.addImage(i.foto, 'JPEG', 10, y, 60, 40);
+
                     y += 45;
+
                 }
+
+
+
                 docPdf.setFont("helvetica", "italic");
+
                 docPdf.text(`Observações: ${i.obs}`, 10, y);
+
+                
+
                 y += 10;
+
                 docPdf.setDrawColor(200);
-                docPdf.line(10, y, 200, y);
+
+                docPdf.line(10, y, 200, y); // Linha separadora
+
                 y += 15;
+
             });
+
+
+
             docPdf.save("Relatorio_Vistoria_Limp.pdf");
+
         };
+
     </script>
+
 </body>
+
 </html>
