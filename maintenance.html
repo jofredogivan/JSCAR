@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Japan Security | Manutenção</title>
+    
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512x512.png">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#121212">
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
     
@@ -12,63 +18,63 @@
 </head>
 <body>
 
-    <header style="background: #1a1a1a; padding: 15px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 1000;">
-        <a href="index.html" style="color: white; text-decoration: none; font-size: 0.9rem; font-weight: bold; display: flex; align-items: center; gap: 8px;">
-            <i class="fas fa-chevron-left"></i> INÍCIO
+    <header style="background: #1a1a1a; padding: 15px; display: flex; align-items: center; justify-content: space-between; border-bottom: 4px solid #e63946; position: sticky; top: 0; z-index: 1000;">
+        <a href="dashboard.html" style="color: white; text-decoration: none; font-size: 0.9rem; font-weight: bold; display: flex; align-items: center; gap: 8px;">
+            <i class="fas fa-chevron-left" style="color: #e63946;"></i> VOLTAR
         </a>
-        <div style="color: #e63946; font-weight: 900; font-size: 0.8rem; letter-spacing: 2px;">MANUTENÇÃO</div>
+        <div style="color: #e63946; font-weight: 900; font-size: 0.8rem; letter-spacing: 2px;">GESTÃO DE MANUTENÇÃO</div>
         <div style="width: 50px;"></div>
     </header>
 
     <main class="main-content" style="padding: 15px;">
         
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
-            <div class="card" style="text-align: center; border-bottom: 3px solid #e63946; padding: 10px;">
+            <div class="card" style="text-align: center; border-bottom: 3px solid #e63946; padding: 10px; background: #1a1a1a; border-radius: 8px;">
                 <small style="color: #888; font-size: 0.6rem; text-transform: uppercase;">Investimento Filtrado</small>
                 <div id="totalGasto" style="font-size: 1.1rem; font-weight: bold; color: #fff;">R$ 0,00</div>
             </div>
-            <div class="card" style="text-align: center; border-bottom: 3px solid #3498db; padding: 10px;">
+            <div class="card" style="text-align: center; border-bottom: 3px solid #3498db; padding: 10px; background: #1a1a1a; border-radius: 8px;">
                 <small style="color: #888; font-size: 0.6rem; text-transform: uppercase;">Qtd. Serviços</small>
                 <div id="totalRegistros" style="font-size: 1.1rem; font-weight: bold; color: #fff;">0</div>
             </div>
         </div>
 
-        <div class="card" style="margin-bottom: 15px; border: 1px solid #e63946; background: #1a1a1a;">
+        <div class="card" style="margin-bottom: 15px; border: 1px solid #333; background: #1a1a1a; padding: 15px; border-radius: 12px;">
             <div style="display: flex; flex-direction: column; gap: 10px;">
                 <label style="color: #e63946; font-size: 0.7rem; font-weight: bold;">FILTRAR E GERAR RELATÓRIO</label>
-                <input list="listaVeiculos" id="f_placa" class="modern-input" placeholder="Todas as Placas">
+                <input list="listaVeiculos" id="f_placa" class="modern-input" placeholder="Todas as Placas" style="width: 100%; padding: 10px; background: #222; border: 1px solid #444; color: white; border-radius: 5px;">
                 <div style="display: flex; gap: 10px;">
-                    <input type="date" id="f_data_ini" class="modern-input">
-                    <input type="date" id="f_data_fim" class="modern-input">
+                    <input type="date" id="f_data_ini" class="modern-input" style="flex: 1; padding: 10px; background: #222; border: 1px solid #444; color: white;">
+                    <input type="date" id="f_data_fim" class="modern-input" style="flex: 1; padding: 10px; background: #222; border: 1px solid #444; color: white;">
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                    <button class="btn-primary" id="btnFiltrar" style="background: #333;">
+                    <button class="btn-primary" id="btnFiltrar" style="background: #333; color: white; border: none; padding: 12px; border-radius: 5px; cursor: pointer;">
                         <i class="fas fa-search"></i> FILTRAR
                     </button>
-                    <button class="btn-primary" id="btnExportarPDF" style="background: #34495e;">
+                    <button class="btn-primary" id="btnExportarPDF" style="background: #e63946; color: white; border: none; padding: 12px; border-radius: 5px; cursor: pointer;">
                         <i class="fas fa-file-pdf"></i> GERAR PDF
                     </button>
                 </div>
             </div>
         </div>
 
-        <div class="card" style="margin-bottom: 20px;">
+        <div class="card" style="margin-bottom: 20px; background: #1a1a1a; padding: 15px; border-radius: 12px; border: 1px solid #333;">
             <div style="display: flex; flex-direction: column; gap: 12px;">
                 <div class="input-group">
                     <label style="font-size: 0.7rem; color: #888;">VIATURA</label>
-                    <input list="listaVeiculos" id="m_veiculo" class="modern-input" placeholder="Selecione a placa...">
+                    <input list="listaVeiculos" id="m_veiculo" class="modern-input" placeholder="Selecione a placa..." style="width: 100%; padding: 12px; background: #252525; border: 1px solid #444; color: white; border-radius: 8px;">
                     <datalist id="listaVeiculos"></datalist>
                 </div>
 
                 <div class="input-group" style="background: #252525; padding: 10px; border-radius: 8px; border: 1px solid #333;">
                     <label style="font-size: 0.65rem; color: #e63946; font-weight: bold;">DATA/HORA DO SERVIÇO</label>
-                    <input type="datetime-local" id="m_data_retroativa" class="modern-input">
+                    <input type="datetime-local" id="m_data_retroativa" class="modern-input" style="width: 100%; background: transparent; border: none; color: white; padding-top: 5px;">
                 </div>
 
                 <div style="display: flex; gap: 10px;">
                     <div style="flex: 1;">
                         <label style="font-size: 0.7rem; color: #888;">TIPO</label>
-                        <select id="m_tipo" class="modern-input">
+                        <select id="m_tipo" class="modern-input" style="width: 100%; padding: 12px; background: #252525; border: 1px solid #444; color: white; border-radius: 8px;">
                             <option value="PREVENTIVA">PREVENTIVA</option>
                             <option value="CORRETIVA">CORRETIVA</option>
                             <option value="PNEUS">PNEUS</option>
@@ -77,39 +83,39 @@
                     </div>
                     <div style="flex: 1;">
                         <label style="font-size: 0.7rem; color: #888;">VALOR (R$)</label>
-                        <input type="number" id="m_valor" class="modern-input" placeholder="0.00">
+                        <input type="number" id="m_valor" class="modern-input" placeholder="0.00" style="width: 100%; padding: 12px; background: #252525; border: 1px solid #444; color: white; border-radius: 8px;">
                     </div>
                 </div>
 
                 <div class="input-group">
                     <label style="font-size: 0.7rem; color: #888;">DESCRIÇÃO DO SERVIÇO</label>
-                    <input type="text" id="m_servico" class="modern-input" placeholder="O que foi feito?">
+                    <input type="text" id="m_servico" class="modern-input" placeholder="O que foi feito?" style="width: 100%; padding: 12px; background: #252525; border: 1px solid #444; color: white; border-radius: 8px;">
                 </div>
 
                 <div style="display: flex; gap: 10px;">
                     <div style="flex: 1;">
                         <label style="font-size: 0.7rem; color: #888;">KM ATUAL</label>
-                        <input type="number" id="m_km" class="modern-input">
+                        <input type="number" id="m_km" class="modern-input" style="width: 100%; padding: 12px; background: #252525; border: 1px solid #444; color: white; border-radius: 8px;">
                     </div>
                     <div style="flex: 1;">
                         <label style="font-size: 0.7rem; color: #888;">PRÓXIMA (KM)</label>
-                        <input type="number" id="m_proxima" class="modern-input">
+                        <input type="number" id="m_proxima" class="modern-input" style="width: 100%; padding: 12px; background: #252525; border: 1px solid #444; color: white; border-radius: 8px;">
                     </div>
                 </div>
 
-                <button class="btn-primary" id="btnSalvar" style="background: #e63946; padding: 15px; font-weight: bold;">
-                    <i class="fas fa-save"></i> SALVAR NA NUVEM
+                <button class="btn-primary" id="btnSalvar" style="background: #e63946; color: white; padding: 18px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px;">
+                    <i class="fas fa-save"></i> SALVAR REGISTRO
                 </button>
             </div>
         </div>
 
-        <div class="table-responsive">
-            <table class="modern-table">
+        <div class="table-responsive" style="overflow-x: auto;">
+            <table class="modern-table" style="width: 100%; border-collapse: collapse; background: #1a1a1a; color: white; font-size: 0.85rem;">
                 <thead>
-                    <tr>
-                        <th>Data</th>
-                        <th>VTR / Serviço</th>
-                        <th>Valor</th>
+                    <tr style="background: #222; border-bottom: 2px solid #e63946;">
+                        <th style="padding: 12px; text-align: left;">Data</th>
+                        <th style="padding: 12px; text-align: left;">VTR / Serviço</th>
+                        <th style="padding: 12px; text-align: left;">Valor</th>
                     </tr>
                 </thead>
                 <tbody id="tabelaManutencao"></tbody>
@@ -151,34 +157,38 @@
             const dIni = document.getElementById('f_data_ini').value;
             const dFim = document.getElementById('f_data_fim').value;
 
-            const q = query(collection(db, "manutencoes"), where("usuario", "==", auth.currentUser.email), orderBy("timestamp", "desc"));
-            const snap = await getDocs(q);
-            
-            const corpo = document.getElementById('tabelaManutencao');
-            corpo.innerHTML = "";
-            dadosFiltrados = [];
-            let totalSoma = 0;
-
-            snap.forEach(doc => {
-                const item = doc.data();
-                const dataItem = item.dataISO ? item.dataISO.split('T')[0] : "";
+            try {
+                const q = query(collection(db, "manutencoes"), where("usuario", "==", auth.currentUser.email), orderBy("timestamp", "desc"));
+                const snap = await getDocs(q);
                 
-                const batePlaca = placa === "" || item.veiculo.includes(placa);
-                const bateData = (!dIni || dataItem >= dIni) && (!dFim || dataItem <= dFim);
+                const corpo = document.getElementById('tabelaManutencao');
+                corpo.innerHTML = "";
+                dadosFiltrados = [];
+                let totalSoma = 0;
 
-                if (batePlaca && bateData) {
-                    dadosFiltrados.push(item);
-                    totalSoma += item.valor;
-                    corpo.innerHTML += `<tr>
-                        <td style="font-size:0.7rem">${item.dataExibicao}</td>
-                        <td><b>${item.veiculo}</b><br><small>${item.servico}</small></td>
-                        <td>R$ ${item.valor.toFixed(2)}</td>
-                    </tr>`;
-                }
-            });
+                snap.forEach(doc => {
+                    const item = doc.data();
+                    const dataItem = item.dataISO ? item.dataISO.split('T')[0] : "";
+                    
+                    const batePlaca = placa === "" || item.veiculo.includes(placa);
+                    const bateData = (!dIni || dataItem >= dIni) && (!dFim || dataItem <= dFim);
 
-            document.getElementById('totalGasto').innerText = `R$ ${totalSoma.toFixed(2)}`;
-            document.getElementById('totalRegistros').innerText = dadosFiltrados.length;
+                    if (batePlaca && bateData) {
+                        dadosFiltrados.push(item);
+                        totalSoma += item.valor;
+                        corpo.innerHTML += `<tr style="border-bottom: 1px solid #333;">
+                            <td style="padding: 12px; font-size:0.7rem; color: #888;">${item.dataExibicao}</td>
+                            <td style="padding: 12px;"><b>${item.veiculo}</b><br><small style="color: #e63946">${item.servico}</small></td>
+                            <td style="padding: 12px; font-weight: bold;">R$ ${item.valor.toFixed(2)}</td>
+                        </tr>`;
+                    }
+                });
+
+                document.getElementById('totalGasto').innerText = `R$ ${totalSoma.toFixed(2)}`;
+                document.getElementById('totalRegistros').innerText = dadosFiltrados.length;
+            } catch (e) {
+                console.error("Erro ao buscar dados: ", e);
+            }
         }
 
         document.getElementById('btnFiltrar').onclick = buscarManutencoes;
@@ -187,6 +197,11 @@
             const btn = document.getElementById('btnSalvar');
             const dataRetro = document.getElementById('m_data_retroativa').value;
             const dataObj = dataRetro ? new Date(dataRetro) : new Date();
+
+            if(!document.getElementById('m_veiculo').value || !document.getElementById('m_valor').value) {
+                alert("Por favor, preencha a Viatura e o Valor.");
+                return;
+            }
 
             btn.disabled = true;
             btn.innerText = "SALVANDO...";
@@ -206,15 +221,17 @@
 
             try {
                 await addDoc(collection(db, "manutencoes"), dados);
-                alert("Manutenção salva!");
+                alert("✓ Manutenção salva com sucesso!");
                 location.reload();
             } catch (e) {
-                alert("Erro: " + e);
+                alert("Erro ao salvar: " + e);
                 btn.disabled = false;
+                btn.innerText = "SALVAR REGISTRO";
             }
         };
 
         document.getElementById('btnExportarPDF').onclick = () => {
+            if (dadosFiltrados.length === 0) return alert("Não há dados para exportar.");
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             
@@ -225,7 +242,7 @@
             doc.text("JAPAN SECURITY", 14, 18);
             doc.setTextColor(255, 255, 255);
             doc.setFontSize(10);
-            doc.text("RELATÓRIO TÉCNICO DE MANUTENÇÃO", 14, 28);
+            doc.text("RELATÓRIO TÉCNICO DE MANUTENÇÃO VEICULAR", 14, 28);
 
             const colunas = ["Data", "VTR", "Serviço", "Tipo", "KM", "Valor"];
             const linhas = dadosFiltrados.map(i => [
@@ -241,14 +258,20 @@
                 styles: { fontSize: 7 }
             });
 
-            doc.save(`manutencao_${new Date().getTime()}.pdf`);
+            doc.save(`Relatorio_Manutencao_Japan_${new Date().getTime()}.pdf`);
         };
 
         async function carregarVeiculos() {
-            const q = query(collection(db, "veiculos"), where("usuario", "==", auth.currentUser.email));
-            const snap = await getDocs(q);
-            const list = document.getElementById('listaVeiculos');
-            snap.forEach(doc => { list.innerHTML += `<option value="${doc.data().placa}">`; });
+            try {
+                const snap = await getDocs(collection(db, "veiculos"));
+                const list = document.getElementById('listaVeiculos');
+                list.innerHTML = "";
+                snap.forEach(doc => { 
+                    list.innerHTML += `<option value="${doc.data().placa}">`; 
+                });
+            } catch (e) {
+                console.error("Erro ao carregar veículos: ", e);
+            }
         }
     </script>
 </body>
