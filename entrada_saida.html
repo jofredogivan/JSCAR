@@ -32,13 +32,13 @@
             background: #222; 
             border: 2px solid var(--red); 
             z-index: 9999; 
-            max-height: 200px; 
+            max-height: 250px; 
             overflow-y: auto; 
             border-radius: 0 0 10px 10px;
             box-shadow: 0 10px 20px rgba(0,0,0,0.8);
-            top: 75px; /* Ajuste conforme a posição do input */
+            top: 75px; 
         }
-        #lista_vtr div { padding: 12px; border-bottom: 1px solid #333; cursor: pointer; font-size: 0.9rem; }
+        #lista_vtr div { padding: 14px; border-bottom: 1px solid #333; cursor: pointer; font-size: 0.95rem; color: #ccc; }
         #lista_vtr div:hover { background: var(--red); color: #fff; }
 
         table { width: 100%; border-collapse: collapse; background: #111; margin-top: 10px; font-size: 0.8rem; }
@@ -69,7 +69,7 @@
     <div class="card" style="border-left: 5px solid var(--red);">
         <div style="position: relative;">
             <label>Viatura (Placa ou Nome)</label>
-            <input type="text" id="es_vtr" class="modern-input" placeholder="Digite para buscar..." autocomplete="off">
+            <input type="text" id="es_vtr" class="modern-input" placeholder="Clique para ver as opções..." autocomplete="off">
             <div id="lista_vtr"></div>
         </div>
 
@@ -143,7 +143,6 @@
         }
     });
 
-    // BUSCA VEÍCULOS (Coleção: veiculos | Campos: placa, nome)
     async function carregarVtr() {
         const snap = await getDocs(collection(db, "veiculos"));
         vtrCache = [];
@@ -163,25 +162,19 @@
     const inputVtr = document.getElementById('es_vtr');
     const boxVtr = document.getElementById('lista_vtr');
 
-    // LÓGICA DO AUTOCOMPLETAR
-    inputVtr.addEventListener('input', () => {
-        const digitado = inputVtr.value.toUpperCase();
+    // FUNÇÃO PARA MOSTRAR A LISTA
+    function mostrarOpcoes(filtro = "") {
         boxVtr.innerHTML = "";
         
-        if (digitado.length < 1) { 
-            boxVtr.style.display = 'none'; 
-            return; 
-        }
-
         const encontrados = vtrCache.filter(v => 
-            v.placa.includes(digitado) || v.nome.includes(digitado)
+            filtro === "" || v.placa.includes(filtro) || v.nome.includes(filtro)
         );
 
         if (encontrados.length > 0) {
             encontrados.forEach(v => {
                 const d = document.createElement('div');
-                d.innerHTML = `<i class="fas fa-car" style="color:var(--red); margin-right:8px;"></i> <b>${v.placa}</b> - ${v.nome}`;
-                d.onclick = () => {
+                d.innerHTML = `<i class="fas fa-car" style="color:var(--red); margin-right:10px;"></i> <b>${v.placa}</b> - ${v.nome}`;
+                d.onmousedown = (e) => { // Usamos onmousedown para disparar antes do blur
                     inputVtr.value = `${v.placa} - ${v.nome}`;
                     document.getElementById('es_km').value = v.km;
                     boxVtr.style.display = 'none';
@@ -192,6 +185,13 @@
         } else {
             boxVtr.style.display = 'none';
         }
+    }
+
+    // EVENTOS: Clique (focus), Digitação (input) e Perda de foco (blur)
+    inputVtr.addEventListener('focus', () => mostrarOpcoes(inputVtr.value.toUpperCase()));
+    inputVtr.addEventListener('input', () => mostrarOpcoes(inputVtr.value.toUpperCase()));
+    inputVtr.addEventListener('blur', () => {
+        setTimeout(() => { boxVtr.style.display = 'none'; }, 200); 
     });
 
     async function carregarHistorico() {
@@ -287,11 +287,6 @@
             carregarHistorico();
         }
     };
-
-    // Fecha a lista ao clicar fora
-    document.addEventListener('click', (e) => {
-        if (e.target !== inputVtr) boxVtr.style.display = 'none';
-    });
 </script>
 </body>
 </html>
