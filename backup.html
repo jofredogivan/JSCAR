@@ -2,86 +2,228 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sincronização de Histórico</title>
-    <link rel="stylesheet" href="css/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Japan Security | Inteligência</title>
+    
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#121212">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
+    <style>
+        :root { --red: #e63946; --dark: #121212; --card: #1a1a1a; }
+        body { background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; padding-bottom: 50px; }
+        
+        header { 
+            background: #1a1a1a; padding: 15px; border-bottom: 4px solid var(--red); 
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .btn-voltar { color: #fff; text-decoration: none; font-size: 0.8rem; font-weight: bold; display: flex; align-items: center; gap: 8px; }
+
+        .container { padding: 20px; max-width: 600px; margin: auto; }
+        
+        .hero-card {
+            background: linear-gradient(145deg, #1a1a1a, #111);
+            padding: 30px; border-radius: 20px; border: 1px solid #333;
+            text-align: center; margin-bottom: 25px;
+        }
+
+        h2 { color: var(--red); margin: 10px 0; letter-spacing: 2px; text-transform: uppercase; }
+        p { color: #888; font-size: 0.9rem; margin-bottom: 25px; }
+
+        .option-card {
+            background: #151515; border-radius: 12px; padding: 20px;
+            margin-bottom: 15px; border-left: 4px solid #333;
+            display: flex; align-items: center; gap: 15px; transition: 0.3s;
+        }
+        .option-card:hover { border-left-color: var(--red); background: #1a1a1a; }
+        
+        .icon-box { 
+            width: 50px; height: 50px; background: #222; 
+            border-radius: 10px; display: flex; align-items: center; 
+            justify-content: center; font-size: 1.5rem; color: var(--red);
+        }
+
+        .text-box { flex-grow: 1; text-align: left; }
+        .text-box div { font-weight: bold; font-size: 1rem; }
+        .text-box small { color: #666; font-size: 0.75rem; }
+
+        .btn-action {
+            background: var(--red); color: white; border: none;
+            padding: 10px 15px; border-radius: 6px; font-weight: bold;
+            cursor: pointer; font-size: 0.7rem; text-transform: uppercase;
+        }
+        .btn-action:active { transform: scale(0.95); }
+
+        #statusBox {
+            margin-top: 20px; padding: 15px; border-radius: 8px;
+            background: #0a0a0a; font-family: monospace; font-size: 0.75rem;
+            color: #2ecc71; border: 1px solid #222; display: none;
+        }
+    </style>
 </head>
-<body style="background: #121212; color: white; font-family: sans-serif; padding: 20px;">
+<body>
 
-    <div class="card" style="max-width: 500px; margin: auto; text-align: center; border: 1px solid #333; padding: 20px; border-radius: 10px;">
-        <h2 style="color: #27ae60;">Histórico e Vistorias</h2>
-        <p style="font-size: 0.8rem; color: #888;">Este script vai converter "viatura" para "veiculo" para que apareça nas listas.</p>
-        
-        <input type="file" id="fileBackup" accept=".json" style="margin: 20px 0; width: 100%;">
-        
-        <button id="btnImport" style="background: #27ae60; color: white; border: none; padding: 15px; width: 100%; border-radius: 5px; font-weight: bold; cursor: pointer;">
-            SINCRONIZAR MOVIMENTAÇÕES
-        </button>
+<header>
+    <a href="dashboard.html" class="btn-voltar">
+        <i class="fas fa-arrow-left" style="color: var(--red);"></i> DASHBOARD
+    </a>
+    <div style="color: var(--red); font-weight: 900; font-size: 1rem; letter-spacing: 2px;">INTELIGÊNCIA</div>
+    <div style="width: 50px;"></div>
+</header>
 
-        <div id="status" style="margin-top: 20px; color: #ffb703; font-weight: bold;"></div>
+<div class="container">
+    <div class="hero-card">
+        <i class="fas fa-file-invoice-dollar" style="font-size: 3rem; color: var(--red);"></i>
+        <h2>Fechamento Mensal</h2>
+        <p>Gere apresentações para diretoria ou baixe cópias de segurança de todos os seus dados operacionais.</p>
+        
+        <div style="margin-top: 10px;">
+            <label style="font-size: 0.7rem; color: #555; display: block; margin-bottom: 5px;">MÊS DE REFERÊNCIA</label>
+            <input type="month" id="mesReferencia" class="btn-action" style="background: #222; width: 200px; font-size: 1rem;">
+        </div>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    <div class="option-card">
+        <div class="icon-box"><i class="fas fa-file-pdf"></i></div>
+        <div class="text-box">
+            <div>Relatório Executivo</div>
+            <small>Apresentação profissional em PDF para envio.</small>
+        </div>
+        <button class="btn-action" onclick="gerarRelatorioPDF()">Gerar</button>
+    </div>
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDczjdNxa2TZP07iiwTAkOLFbKcOPx1POo",
-            authDomain: "japan-security-car-1a7d8.firebaseapp.com",
-            projectId: "japan-security-car-1a7d8",
-            storageBucket: "japan-security-car-1a7d8.firebasestorage.app",
-            messagingSenderId: "616009365036",
-            appId: "1:616009365036:web:f644dd6106818566900389"
-        };
+    <div class="option-card">
+        <div class="icon-box"><i class="fas fa-database"></i></div>
+        <div class="text-box">
+            <div>Cópia de Segurança</div>
+            <small>Arquivo JSON com todos os dados brutos.</small>
+        </div>
+        <button class="btn-action" style="background: #333;" onclick="gerarBackupJSON()">Baixar</button>
+    </div>
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
+    <div id="statusBox"></div>
+</div>
 
-        document.getElementById('btnImport').addEventListener('click', async () => {
-            const fileInput = document.getElementById('fileBackup');
-            const statusDiv = document.getElementById('status');
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyDczjdNxa2TZP07iiwTAkOLFbKcOPx1POo",
+        authDomain: "japan-security-car-1a7d8.firebaseapp.com",
+        projectId: "japan-security-car-1a7d8",
+        storageBucket: "japan-security-car-1a7d8.firebasestorage.app",
+        messagingSenderId: "616009365036",
+        appId: "1:616009365036:web:f644dd6106818566900389"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    // Definir mês atual no input
+    const inputMes = document.getElementById('mesReferencia');
+    const agora = new Date();
+    inputMes.value = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, '0')}`;
+
+    onAuthStateChanged(auth, (user) => {
+        if (!user) window.location.href = "login.html";
+    });
+
+    // FUNÇÃO: BUSCAR TUDO DO MÊS
+    async function coletarDados() {
+        const status = document.getElementById('statusBox');
+        status.style.display = "block";
+        status.innerText = "> Iniciando coleta de dados...";
+        
+        const mesSel = inputMes.value; // Formato "YYYY-MM"
+        const colecoes = ["movimentacoes", "vistorias", "manutencoes", "veiculos"];
+        let dataFull = {};
+
+        for(const col of colecoes) {
+            status.innerText += `\n> Lendo ${col}...`;
+            const q = query(collection(db, col), where("usuario", "==", auth.currentUser.email));
+            const snap = await getDocs(q);
             
-            if (!fileInput.files[0]) return alert("Selecione o arquivo!");
+            // Filtro de mês para as coleções que possuem dataISO
+            dataFull[col] = snap.docs.map(d => ({id: d.id, ...d.data()}))
+                .filter(item => {
+                    if(col === "veiculos") return true; // Veículos pega todos
+                    return item.dataISO ? item.dataISO.includes(mesSel) : true;
+                });
+        }
+        
+        status.innerText += "\n> Sucesso! Processando arquivo...";
+        return dataFull;
+    }
 
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-                const dados = JSON.parse(e.target.result);
-                const email = auth.currentUser.email;
-                const logs = dados.logs || [];
-                
-                statusDiv.innerText = "Iniciando envio de " + logs.length + " registros...";
-                let enviados = 0;
+    // FUNÇÃO: PDF EXECUTIVO
+    window.gerarRelatorioPDF = async () => {
+        const dados = await coletarDados();
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        const mesAno = inputMes.value.split('-').reverse().join('/');
 
-                for (let l of logs) {
-                    try {
-                        const dataObj = new Date(l.timestamp || Date.now());
-                        
-                        // O SEGREDO ESTÁ AQUI: Convertendo 'viatura' para 'veiculo'
-                        await addDoc(collection(db, "movimentacoes"), {
-                            veiculo: l.viatura.toUpperCase().trim(), 
-                            km: Number(l.km) || 0,
-                            motorista: l.motorista.toUpperCase(),
-                            tipo: l.tipo,
-                            dataISO: dataObj.toISOString().split('T')[0], // Para o filtro de data
-                            dataExibicao: l.data || dataObj.toLocaleString('pt-BR'),
-                            timestamp: l.timestamp || dataObj.getTime(),
-                            usuario: email
-                        });
+        // CAPA
+        doc.setFillColor(18, 18, 18);
+        doc.rect(0, 0, 210, 297, 'F');
+        doc.setTextColor(230, 57, 70);
+        doc.setFontSize(30);
+        doc.text("JAPAN SECURITY", 105, 100, { align: "center" });
+        doc.setTextColor(255);
+        doc.setFontSize(14);
+        doc.text("RELATÓRIO MENSAL DE GESTÃO DE FROTA", 105, 115, { align: "center" });
+        doc.setFontSize(10);
+        doc.text(`REFERÊNCIA: ${mesAno}`, 105, 125, { align: "center" });
 
-                        enviados++;
-                        statusDiv.innerText = `Enviado: ${enviados} de ${logs.length}`;
-                    } catch (err) {
-                        console.error("Erro no item:", err);
-                    }
-                }
-
-                alert("Sucesso! " + enviados + " movimentações sincronizadas.");
-                window.location.href = "index.html";
-            };
-            reader.readAsText(fileInput.files[0]);
+        // PÁGINA 1: MOVIMENTAÇÕES
+        doc.addPage();
+        doc.setTextColor(230, 57, 70);
+        doc.setFontSize(16);
+        doc.text("HISTÓRICO DE MOVIMENTAÇÕES", 14, 20);
+        
+        const movBody = dados.movimentacoes.map(m => [m.dataExibicao, m.veiculo, m.tipo, m.km + " KM", m.vigilante || m.motorista]);
+        doc.autoTable({
+            startY: 25,
+            head: [['Data', 'VTR', 'Tipo', 'KM', 'Responsável']],
+            body: movBody,
+            headStyles: { fillColor: [230, 57, 70] },
+            theme: 'grid'
         });
-    </script>
+
+        // PÁGINA 2: MANUTENÇÕES E CUSTOS
+        doc.addPage();
+        doc.text("MANUTENÇÕES E INVESTIMENTOS", 14, 20);
+        const manBody = dados.manutencoes.map(m => [m.dataExibicao, m.veiculo, m.servico, "R$ " + m.valor.toFixed(2)]);
+        doc.autoTable({
+            startY: 25,
+            head: [['Data', 'VTR', 'Serviço', 'Valor']],
+            body: manBody,
+            headStyles: { fillColor: [52, 152, 219] },
+            theme: 'striped'
+        });
+
+        doc.save(`Japan_Security_Relatorio_${inputMes.value}.pdf`);
+        document.getElementById('statusBox').innerText = "> PDF Gerado com sucesso!";
+    };
+
+    // FUNÇÃO: BACKUP JSON
+    window.gerarBackupJSON = async () => {
+        const dados = await coletarDados();
+        const blob = new Blob([JSON.stringify(dados, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `backup_japan_full_${inputMes.value}.json`;
+        a.click();
+        document.getElementById('statusBox').innerText = "> Backup JSON baixado!";
+    };
+</script>
 </body>
 </html>
