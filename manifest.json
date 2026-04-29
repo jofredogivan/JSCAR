@@ -1,20 +1,24 @@
 {
-  "name": "Japan Security",
-  "short_name": "Japan",
-  "start_url": "vistoria.html",
+  "name": "Japan Security | Gestão",
+  "short_name": "Japan Security",
+  "description": "Sistema de Vistoria e Frota Japan Security",
+  "start_url": "index.html",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#000000",
-  "theme_color": "#ff0000",
+  "theme_color": "#e63946",
   "icons": [
     {
       "src": "icons/icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
       "src": "icons/icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
