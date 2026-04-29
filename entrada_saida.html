@@ -13,7 +13,7 @@
         :root { --red: #e63946; --green: #2ecc71; --dark: #121212; }
         body { background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; padding-bottom: 50px; }
         header { background: #1a1a1a; padding: 20px; text-align: center; border-bottom: 4px solid var(--red); }
-        .container { padding: 15px; max-width: 700px; margin: auto; }
+        .container { padding: 15px; max-width: 750px; margin: auto; }
         .card { background: var(--dark); padding: 18px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #333; position: relative; }
         label { font-size: 0.7rem; color: var(--red); font-weight: bold; text-transform: uppercase; display: block; margin-bottom: 5px; }
         .modern-input { width: 100%; padding: 12px; background: #222; border: 1px solid #444; color: #fff; border-radius: 8px; box-sizing: border-box; font-size: 1rem; margin-bottom: 10px; }
@@ -24,7 +24,6 @@
         .btn-filter { background: #333; color: #fff; height: 42px; width: 100%; border: 1px solid #555; }
         .btn-pdf { background: var(--red); color: #fff; height: 42px; width: 100%; }
 
-        /* LISTA DE SUGESTÕES CORRIGIDA */
         #lista_vtr { 
             display: none; 
             position: absolute; 
@@ -62,14 +61,14 @@
         </div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
             <button id="btnFiltrar" class="btn btn-filter">Filtrar</button>
-            <button id="btnPDF" class="btn btn-pdf">Gerar PDF</button>
+            <button id="btnPDF" class="btn btn-pdf"><i class="fas fa-file-pdf"></i> PDF Profissional</button>
         </div>
     </div>
 
     <div class="card" style="border-left: 5px solid var(--red);">
         <div style="position: relative;">
             <label>Viatura (Placa ou Nome)</label>
-            <input type="text" id="es_vtr" class="modern-input" placeholder="Clique para ver as opções..." autocomplete="off">
+            <input type="text" id="es_vtr" class="modern-input" placeholder="Clique para selecionar..." autocomplete="off">
             <div id="lista_vtr"></div>
         </div>
 
@@ -92,7 +91,7 @@
             <input type="text" id="es_vig" class="modern-input" placeholder="Nome Completo">
         </div>
 
-        <button id="btnSalvar" class="btn btn-save"><i class="fas fa-save"></i> Salvar Registro</button>
+        <button id="btnSalvar" class="btn btn-save"><i class="fas fa-save"></i> Confirmar Registro</button>
     </div>
 
     <div style="overflow-x: auto;">
@@ -135,12 +134,8 @@
     let filtradosPDF = [];
 
     onAuthStateChanged(auth, (user) => {
-        if (user) { 
-            carregarVtr(); 
-            carregarHistorico(); 
-        } else { 
-            window.location.href = "login.html"; 
-        }
+        if (user) { carregarVtr(); carregarHistorico(); }
+        else { window.location.href = "login.html"; }
     });
 
     async function carregarVtr() {
@@ -149,12 +144,7 @@
         snap.forEach(d => {
             const i = d.data();
             if(i.placa && i.nome) {
-                vtrCache.push({ 
-                    id: d.id, 
-                    placa: i.placa.toUpperCase(), 
-                    nome: i.nome.toUpperCase(), 
-                    km: i.kmAtual || 0 
-                });
+                vtrCache.push({ id: d.id, placa: i.placa.toUpperCase(), nome: i.nome.toUpperCase(), km: i.kmAtual || 0 });
             }
         });
     }
@@ -162,19 +152,14 @@
     const inputVtr = document.getElementById('es_vtr');
     const boxVtr = document.getElementById('lista_vtr');
 
-    // FUNÇÃO PARA MOSTRAR A LISTA
     function mostrarOpcoes(filtro = "") {
         boxVtr.innerHTML = "";
-        
-        const encontrados = vtrCache.filter(v => 
-            filtro === "" || v.placa.includes(filtro) || v.nome.includes(filtro)
-        );
-
+        const encontrados = vtrCache.filter(v => filtro === "" || v.placa.includes(filtro) || v.nome.includes(filtro));
         if (encontrados.length > 0) {
             encontrados.forEach(v => {
                 const d = document.createElement('div');
                 d.innerHTML = `<i class="fas fa-car" style="color:var(--red); margin-right:10px;"></i> <b>${v.placa}</b> - ${v.nome}`;
-                d.onmousedown = (e) => { // Usamos onmousedown para disparar antes do blur
+                d.onmousedown = () => {
                     inputVtr.value = `${v.placa} - ${v.nome}`;
                     document.getElementById('es_km').value = v.km;
                     boxVtr.style.display = 'none';
@@ -182,26 +167,19 @@
                 boxVtr.appendChild(d);
             });
             boxVtr.style.display = 'block';
-        } else {
-            boxVtr.style.display = 'none';
-        }
+        } else { boxVtr.style.display = 'none'; }
     }
 
-    // EVENTOS: Clique (focus), Digitação (input) e Perda de foco (blur)
     inputVtr.addEventListener('focus', () => mostrarOpcoes(inputVtr.value.toUpperCase()));
     inputVtr.addEventListener('input', () => mostrarOpcoes(inputVtr.value.toUpperCase()));
-    inputVtr.addEventListener('blur', () => {
-        setTimeout(() => { boxVtr.style.display = 'none'; }, 200); 
-    });
+    inputVtr.addEventListener('blur', () => { setTimeout(() => { boxVtr.style.display = 'none'; }, 200); });
 
     async function carregarHistorico() {
         const snap = await getDocs(collection(db, "movimentacoes"));
         historicoLocal = [];
         snap.forEach(d => {
             const info = d.data();
-            if(info.usuario === auth.currentUser.email) {
-                historicoLocal.push({ id: d.id, ...info });
-            }
+            if(info.usuario === auth.currentUser.email) { historicoLocal.push({ id: d.id, ...info }); }
         });
         renderizar();
     }
@@ -211,25 +189,12 @@
         const fim = document.getElementById('f_fim').value;
         const tsIni = ini ? new Date(ini).getTime() : 0;
         const tsFim = fim ? new Date(fim).getTime() : Infinity;
-
         const corpo = document.getElementById('tabelaES');
         corpo.innerHTML = "";
-        
-        filtradosPDF = historicoLocal
-            .filter(i => i.timestamp >= tsIni && i.timestamp <= tsFim)
-            .sort((a,b) => b.timestamp - a.timestamp);
-
+        filtradosPDF = historicoLocal.filter(i => i.timestamp >= tsIni && i.timestamp <= tsFim).sort((a,b) => b.timestamp - a.timestamp);
         filtradosPDF.forEach(i => {
             const cor = i.tipo === "SAIDA" ? "#e63946" : "#2ecc71";
-            corpo.innerHTML += `
-                <tr>
-                    <td style="color:#777; font-size:0.65rem;">${i.dataExibicao}</td>
-                    <td><b>${i.veiculo}</b><br><small style="color:var(--red)">${i.nomeVeiculo || ''}</small></td>
-                    <td>${i.vigilante}</td>
-                    <td>${i.km}</td>
-                    <td style="color:${cor}; font-weight:bold">${i.tipo}</td>
-                    <td><button onclick="apagarRegistro('${i.id}')" style="background:none; border:none; color:#444;"><i class="fas fa-trash"></i></button></td>
-                </tr>`;
+            corpo.innerHTML += `<tr><td style="color:#777; font-size:0.65rem;">${i.dataExibicao}</td><td><b>${i.veiculo}</b><br><small style="color:var(--red)">${i.nomeVeiculo || ''}</small></td><td>${i.vigilante}</td><td>${i.km}</td><td style="color:${cor}; font-weight:bold">${i.tipo}</td><td><button onclick="apagarRegistro('${i.id}')" style="background:none; border:none; color:#444;"><i class="fas fa-trash"></i></button></td></tr>`;
         });
     }
 
@@ -237,56 +202,46 @@
         const valorInput = inputVtr.value.toUpperCase();
         const km = document.getElementById('es_km').value;
         const vig = document.getElementById('es_vig').value.toUpperCase();
-
-        if(!valorInput || !km || !vig) return alert("Preencha todos os campos!");
-
-        const veiculoEncontrado = vtrCache.find(v => valorInput.includes(v.placa));
-        
-        const placaFinal = veiculoEncontrado ? veiculoEncontrado.placa : valorInput;
-        const nomeFinal = veiculoEncontrado ? veiculoEncontrado.nome : "Modelo Avulso";
-
+        if(!valorInput || !km || !vig) return alert("Preencha tudo!");
+        const vEncontrado = vtrCache.find(v => valorInput.includes(v.placa));
+        const placaFinal = vEncontrado ? vEncontrado.placa : valorInput;
+        const nomeFinal = vEncontrado ? vEncontrado.nome : "Modelo Avulso";
         try {
-            await addDoc(collection(db, "movimentacoes"), {
-                veiculo: placaFinal,
-                nomeVeiculo: nomeFinal,
-                km: Number(km),
-                vigilante: vig,
-                tipo: document.getElementById('es_tipo').value,
-                timestamp: new Date().getTime(),
-                dataExibicao: new Date().toLocaleString('pt-BR'),
-                usuario: auth.currentUser.email
-            });
-
-            if(veiculoEncontrado) {
-                await updateDoc(doc(db, "veiculos", veiculoEncontrado.id), { kmAtual: Number(km) });
-            }
-
-            alert("✓ Sucesso!");
-            location.reload();
+            await addDoc(collection(db, "movimentacoes"), { veiculo: placaFinal, nomeVeiculo: nomeFinal, km: Number(km), vigilante: vig, tipo: document.getElementById('es_tipo').value, timestamp: new Date().getTime(), dataExibicao: new Date().toLocaleString('pt-BR'), usuario: auth.currentUser.email });
+            if(vEncontrado) await updateDoc(doc(db, "veiculos", vEncontrado.id), { kmAtual: Number(km) });
+            alert("✓ Salvo!"); location.reload();
         } catch (e) { alert("Erro ao salvar."); }
     };
 
     document.getElementById('btnFiltrar').onclick = renderizar;
 
     document.getElementById('btnPDF').onclick = () => {
-        if(filtradosPDF.length === 0) return alert("Nada para exportar!");
+        if (filtradosPDF.length === 0) return alert("Sem dados!");
         const { jsPDF } = window.jspdf;
         const docPdf = new jsPDF('l', 'mm', 'a4');
-        docPdf.text("JAPAN SECURITY - RELATORIO DE FROTA", 148, 15, { align: "center" });
-        const dados = filtradosPDF.map(i => [i.dataExibicao, i.veiculo, i.nomeVeiculo, i.vigilante, i.km, i.tipo]);
-        docPdf.autoTable({
-            head: [["DATA/HORA", "PLACA", "MODELO", "MOTORISTA", "KM", "TIPO"]],
-            body: dados, startY: 25, headStyles: { fillColor: [230, 57, 70] }
+        const grupos = {};
+        filtradosPDF.forEach(item => {
+            const chave = `${item.veiculo} - ${item.nomeVeiculo || 'MODELO N/D'}`;
+            if (!grupos[chave]) grupos[chave] = [];
+            grupos[chave].push(item);
         });
-        docPdf.save("Relatorio_Japan.pdf");
+        let yPos = 20;
+        docPdf.setFontSize(22); docPdf.setTextColor(230, 57, 70); docPdf.text("JAPAN SECURITY", 14, yPos);
+        docPdf.setFontSize(10); docPdf.setTextColor(100); docPdf.text("RELATÓRIO CONSOLIDADO DE MOVIMENTAÇÃO DE FROTA", 14, yPos + 7);
+        yPos += 20;
+        Object.keys(grupos).sort().forEach(veiculo => {
+            if (yPos > 170) { docPdf.addPage(); yPos = 20; }
+            docPdf.setFillColor(245, 245, 245); docPdf.rect(14, yPos, 269, 8, 'F');
+            docPdf.setFontSize(12); docPdf.setTextColor(0); docPdf.setFont("helvetica", "bold"); docPdf.text(`VEÍCULO: ${veiculo}`, 18, yPos + 6);
+            yPos += 10;
+            const movs = grupos[veiculo].sort((a, b) => a.timestamp - b.timestamp);
+            const rows = movs.map(m => [m.dataExibicao, m.vigilante, m.km + " KM", { content: m.tipo, styles: { textColor: m.tipo === 'SAIDA' ? [230, 57, 70] : [46, 204, 113], fontStyle: 'bold' } }, m.usuario.split('@')[0].toUpperCase()]);
+            docPdf.autoTable({ head: [["DATA/HORA", "MOTORISTA", "KM", "EVENTO", "OPERADOR"]], body: rows, startY: yPos, theme: 'striped', headStyles: { fillColor: [230, 57, 70] }, margin: { left: 14 }, didDrawPage: (data) => { yPos = data.cursor.y + 15; } });
+        });
+        docPdf.save("Relatorio_Japan_Security.pdf");
     };
 
-    window.apagarRegistro = async (id) => {
-        if(confirm("Excluir?")) {
-            await deleteDoc(doc(db, "movimentacoes", id));
-            carregarHistorico();
-        }
-    };
+    window.apagarRegistro = async (id) => { if(confirm("Excluir?")) { await deleteDoc(doc(db, "movimentacoes", id)); carregarHistorico(); } };
 </script>
 </body>
 </html>
