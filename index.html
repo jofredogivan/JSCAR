@@ -4,96 +4,114 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Japan Security | Home</title>
-    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png">
-    <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512x512.png">
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#1a1a1a">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="css/style.css">
-    
     <style>
-        .footer-container {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            padding: 20px;
-            width: 100%;
-            max-width: 400px;
-            margin: 0 auto;
+        :root { --red-japan: #e63946; --bg-dark: #121212; --card-bg: #1a1a1a; }
+        
+        body { 
+            background-color: var(--bg-dark); 
+            color: white; 
+            margin: 0; 
+            font-family: 'Segoe UI', sans-serif; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            min-height: 100vh;
         }
-        .btn-footer {
+
+        .home-card {
+            width: 90%;
+            max-width: 400px;
+            background: var(--card-bg);
+            padding: 40px 20px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            border-bottom: 5px solid var(--red-japan);
+        }
+
+        .logo-box i {
+            font-size: 4rem;
+            color: var(--red-japan);
+            margin-bottom: 15px;
+        }
+
+        h1 { margin: 0; font-size: 2.2rem; letter-spacing: 5px; font-weight: 900; }
+        .subtitle { color: #888; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 30px; }
+
+        .welcome-text {
+            font-size: 1rem;
+            color: #ccc;
+            line-height: 1.6;
+            margin-bottom: 35px;
+        }
+
+        .btn-main {
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 12px;
+            background: var(--red-japan);
+            color: white;
+            text-decoration: none;
             padding: 18px;
             border-radius: 12px;
-            text-decoration: none;
             font-weight: bold;
-            font-size: 0.9rem;
-            transition: 0.2s;
-            width: 100%;
-            border: 1px solid transparent;
+            font-size: 1rem;
+            transition: 0.3s;
+            box-shadow: 0 5px 15px rgba(230, 57, 70, 0.3);
         }
-        .btn-dash { background: rgba(230, 57, 70, 0.15); color: #e63946; border-color: #e63946; }
-        .btn-backup { background: #252525; color: #bbb; border-color: #444; }
-        .btn-footer:active { transform: scale(0.96); }
+        .btn-main:active { transform: scale(0.95); }
+
+        .btn-logout {
+            margin-top: 25px;
+            background: transparent;
+            border: 1px solid #333;
+            color: #666;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: auto;
+            margin-right: auto;
+        }
         
         #userBadge {
-            color: #888;
-            font-size: 0.65rem;
-            text-align: center;
-            margin-top: 10px;
-            text-transform: lowercase;
+            font-size: 0.7rem;
+            color: #555;
+            margin-top: 15px;
         }
     </style>
 </head>
 <body>
 
-    <div style="position: absolute; top: 15px; right: 15px;">
-        <button id="btnLogout" style="background: none; border: none; color: #555; font-size: 1.2rem;">
+    <div class="home-card">
+        <div class="logo-box">
+            <i class="fas fa-shield-alt"></i>
+        </div>
+        <h1>JAPAN</h1>
+        <div class="subtitle">Security Car Management</div>
+
+        <div class="welcome-text">
+            Olá, <strong>Jofre</strong>.<br>
+            O sistema de gestão de frota está pronto para operação.
+        </div>
+
+        <a href="dashboard.html" class="btn-main">
+            <i class="fas fa-chart-pie"></i>
+            ACESSAR DASHBOARD
+        </a>
+
+        <button id="btnLogout" class="btn-logout">
             <i class="fas fa-sign-out-alt"></i>
+            Encerrar Sessão
         </button>
-    </div>
 
-    <header style="text-align: center; padding: 40px 20px 10px;">
-        <i class="fas fa-shield-alt" style="font-size: 3.5rem; color: #e63946;"></i>
-        <h1 style="margin: 0; font-size: 2.5rem; letter-spacing: 5px; font-weight: 900; color: white;">JAPAN</h1>
-        <p style="color: #888; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px;">Security Car Management</p>
-        <div id="userBadge">Verificando acesso...</div>
-    </header>
-
-    <nav style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding: 20px; width: 100%; max-width: 400px; margin: 0 auto;">
-        <a href="entrada_saida.html" class="card" style="text-decoration: none; display: flex; flex-direction: column; align-items: center; padding: 25px 10px; background: #1e1e1e; border: 1px solid #333; border-radius: 15px;">
-            <i class="fas fa-exchange-alt" style="font-size: 2rem; color: #e63946; margin-bottom: 10px;"></i>
-            <span style="color: white; font-weight: bold; font-size: 0.85rem;">Movimentação</span>
-        </a>
-        <a href="vistoria.html" class="card" style="text-decoration: none; display: flex; flex-direction: column; align-items: center; padding: 25px 10px; background: #1e1e1e; border: 1px solid #333; border-radius: 15px;">
-            <i class="fas fa-clipboard-check" style="font-size: 2rem; color: #e63946; margin-bottom: 10px;"></i>
-            <span style="color: white; font-weight: bold; font-size: 0.85rem;">Vistoria</span>
-        </a>
-        <a href="maintenance.html" class="card" style="text-decoration: none; display: flex; flex-direction: column; align-items: center; padding: 25px 10px; background: #1e1e1e; border: 1px solid #333; border-radius: 15px;">
-            <i class="fas fa-tools" style="font-size: 2rem; color: #e63946; margin-bottom: 10px;"></i>
-            <span style="color: white; font-weight: bold; font-size: 0.85rem;">Manutenção</span>
-        </a>
-        <a href="vehicles.html" class="card" style="text-decoration: none; display: flex; flex-direction: column; align-items: center; padding: 25px 10px; background: #1e1e1e; border: 1px solid #333; border-radius: 15px;">
-            <i class="fas fa-car" style="font-size: 2rem; color: #e63946; margin-bottom: 10px;"></i>
-            <span style="color: white; font-weight: bold; font-size: 0.85rem;">Frota</span>
-        </a>
-    </nav>
-
-    <div class="footer-container">
-        <a href="dashboard.html" class="btn-footer btn-dash">
-            <i class="fas fa-chart-line"></i>
-            DASHBOARD OPERACIONAL
-        </a>
-
-        <a href="backup.html" class="btn-footer btn-backup">
-            <i class="fas fa-cloud-upload-alt"></i>
-            SINCRONIZAR NUVEM
-        </a>
+        <div id="userBadge">Verificando...</div>
     </div>
 
     <script type="module">
@@ -112,16 +130,14 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
-        // Verifica se está logado
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                document.getElementById('userBadge').innerText = "conectado: " + user.email;
+                document.getElementById('userBadge').innerText = user.email;
             } else {
                 window.location.href = "login.html";
             }
         });
 
-        // Função de Sair
         document.getElementById('btnLogout').onclick = () => {
             signOut(auth).then(() => {
                 window.location.href = "login.html";
