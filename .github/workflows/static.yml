@@ -1,13 +1,18 @@
-name: Deploy static content to Pages
+name: Deploy Pages
 
 on:
   push:
-    branches: ["main"] # Ou "master", dependendo do nome da sua branch
+    branches: ["main"]
+  workflow_dispatch:
 
 permissions:
   contents: read
   pages: write
   id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
   deploy:
@@ -23,7 +28,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: '.' # Aqui ele pega todos os arquivos da raiz
+          path: '.'
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
