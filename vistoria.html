@@ -20,7 +20,8 @@
         .btn-primary { border: none; border-radius: 8px; cursor: pointer; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 8px; text-transform: uppercase; width: 100%; padding: 15px; transition: all 0.1s; }
         .btn-primary:active { transform: scale(0.96); opacity: 0.8; }
         
-        #lista_vtr { display: none; position: absolute; width: 100%; background: #222; border: 2px solid var(--red); z-index: 9999; max-height: 250px; overflow-y: auto; border-radius: 8px; top: 70px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+        /* Sugestão de Viaturas */
+        #lista_vtr { display: none; position: absolute; width: 100%; background: #222; border: 2px solid var(--red); z-index: 9999; max-height: 250px; overflow-y: auto; border-radius: 8px; top: 70px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
         #lista_vtr div { padding: 14px; border-bottom: 1px solid #333; cursor: pointer; color: #ccc; }
         #lista_vtr div:hover { background: var(--red); color: #fff; }
 
@@ -32,16 +33,13 @@
         th { background: #222; color: var(--red); padding: 10px; text-align: left; border-bottom: 2px solid var(--red); }
         td { padding: 10px; border-bottom: 1px solid #222; }
         .btn-excluir { color: #444; background: none; border: none; cursor: pointer; float: right; padding: 5px; }
-        .btn-excluir:hover { color: var(--red); }
     </style>
 </head>
 <body>
 
     <header>
         <div style="display: flex; align-items: center; justify-content: space-between;">
-            <a href="dashboard.html" style="color: white; text-decoration: none; font-size: 0.8rem; font-weight: bold;">
-                <i class="fas fa-arrow-left" style="color: var(--red);"></i> DASHBOARD
-            </a>
+            <a href="dashboard.html" style="color: white; text-decoration: none; font-size: 0.8rem;"><i class="fas fa-chevron-left"></i> VOLTAR</a>
             <div style="color: var(--red); font-weight: 900; letter-spacing: 2px;">VISTORIA TÉCNICA</div>
             <div style="width: 50px;"></div>
         </div>
@@ -73,7 +71,7 @@
             </div>
 
             <label>Checklist Completo</label>
-            <div class="checklist-grid" id="containerCheck">
+            <div class="checklist-grid">
                 <label class="check-container"><input type="checkbox" class="v_chk" data-label="Água"> Água</label>
                 <label class="check-container"><input type="checkbox" class="v_chk" data-label="Óleo"> Óleo</label>
                 <label class="check-container"><input type="checkbox" class="v_chk" data-label="Macaco"> Macaco</label>
@@ -126,27 +124,40 @@
         let historicoLocal = [];
         let fotoBase64 = "";
 
-        onAuthStateChanged(auth, (u) => { 
-            if(u) { carregarVeiculos(); carregarHistorico(); } 
-            else { window.location.href="login.html"; }
-        });
+        onAuthStateChanged(auth, (u) => { if(u) { carregarVeiculos(); carregarHistorico(); } else { window.location.href="login.html"; }});
 
         async function carregarVeiculos() {
             const snap = await getDocs(collection(db, "veiculos"));
             vtrCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         }
 
+        async function carregarHistorico() {
+            const q = query(collection(db, "vistorias"), orderBy("timestamp", "desc"));
+            const snap = await getDocs(q);
+            historicoLocal = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(i => i.usuario === auth.currentUser.email);
+            renderizar();
+        }
+
+        function formatarNomeVeiculo(vtrTexto) {
+            if (!vtrTexto) return "---";
+            if (vtrTexto.includes(" - ")) return vtrTexto;
+            const busca = vtrCache.find(v => v.placa === vtrTexto.trim());
+            return busca ? `${busca.placa} - ${busca.nome}` : vtrTexto;
+        }
+
         const inputVtr = document.getElementById('v_veiculo');
         const boxVtr = document.getElementById('lista_vtr');
+        
+        inputVtr.onfocus = () => exibirSugestoes(inputVtr.value.toUpperCase());
+        inputVtr.oninput = (e) => exibirSugestoes(e.target.value.toUpperCase());
 
-        // FUNÇÃO DE SUGESTÃO CORRIGIDA
         function exibirSugestoes(val) {
             boxVtr.innerHTML = "";
             const filtrados = vtrCache.filter(v => v.placa.includes(val) || v.nome.toUpperCase().includes(val));
-            
             filtrados.forEach(v => {
                 const d = document.createElement('div');
                 d.innerHTML = `<b>${v.placa}</b> - ${v.nome}`;
+                // USAR MOUSEDOWN para evitar que o blur feche antes de clicar
                 d.onmousedown = (e) => {
                     e.preventDefault();
                     inputVtr.value = `${v.placa} - ${v.nome}`;
@@ -155,104 +166,13 @@
                 };
                 boxVtr.appendChild(d);
             });
-            boxVtr.style.display = (filtrados.length && val !== "") ? 'block' : 'none';
+            boxVtr.style.display = filtrados.length ? 'block' : 'none';
         }
 
-        inputVtr.onfocus = () => exibirSugestoes(inputVtr.value.toUpperCase());
-        inputVtr.oninput = (e) => exibirSugestoes(e.target.value.toUpperCase());
-        inputVtr.onblur = () => setTimeout(() => boxVtr.style.display = 'none', 200);
-
-        async function carregarHistorico() {
-            const q = query(collection(db, "vistorias"), orderBy("timestamp", "desc"));
-            const snap = await getDocs(q);
-            historicoLocal = snap.docs.map(d => ({ id: d.id, ...d.data() }))
-                                .filter(i => i.usuario === auth.currentUser.email);
-            renderizar(historicoLocal);
-        }
-
-        document.getElementById('btnFiltrar').onclick = () => {
-            const ini = new Date(document.getElementById('f_ini').value).getTime();
-            const fim = new Date(document.getElementById('f_fim').value).getTime();
-            if(!ini || !fim) return alert("Selecione o período!");
-            const filtrados = historicoLocal.filter(i => i.timestamp >= ini && i.timestamp <= fim);
-            renderizar(filtrados);
-        };
-
-        // SALVAMENTO GARANTINDO NOME COMPLETO
-        document.getElementById('btnSalvarVistoria').onclick = async () => {
-            const vtrVal = inputVtr.value.toUpperCase();
-            const km = document.getElementById('v_km').value;
-            const vig = document.getElementById('v_vigilante').value.toUpperCase();
-            
-            if(!vtrVal || !km || !vig) return alert("Preencha Viatura, KM e Vigilante!");
-
-            const checklistObj = {};
-            document.querySelectorAll('.v_chk').forEach(c => {
-                checklistObj[c.dataset.label] = c.checked ? 'OK' : 'X';
-            });
-
-            try {
-                await addDoc(collection(db, "vistorias"), {
-                    veiculo: vtrVal, // Aqui já vai "PLACA - NOME"
-                    km: Number(km),
-                    vigilante: vig,
-                    checklist: checklistObj,
-                    obs: document.getElementById('v_obs').value.toUpperCase() || "SEM OBS",
-                    foto: fotoBase64,
-                    timestamp: Date.now(),
-                    dataExibicao: new Date().toLocaleString('pt-BR'),
-                    usuario: auth.currentUser.email
-                });
-                alert("Vistoria Finalizada!");
-                location.reload();
-            } catch (e) { alert("Erro ao salvar!"); }
-        };
-
-        function renderizar(dados) {
-            const corpo = document.getElementById('tabelaVistoria');
-            corpo.innerHTML = "";
-            dados.forEach(i => {
-                corpo.innerHTML += `<tr>
-                    <td>${i.dataExibicao.split(' ')[0]}</td>
-                    <td><b>${i.veiculo}</b></td>
-                    <td>${i.vigilante}</td>
-                    <td>${i.km} <button class="btn-excluir" onclick="window.excluirVistoria('${i.id}')"><i class="fas fa-trash"></i></button></td>
-                </tr>`;
-            });
-        }
-
-        window.excluirVistoria = async (id) => {
-            if(confirm("Excluir registro?")) { await deleteDoc(doc(db, "vistorias", id)); carregarHistorico(); }
-        };
-
-        document.getElementById('btnExportarPDF').onclick = () => {
-            const { jsPDF } = window.jspdf;
-            const docPdf = new jsPDF();
-            
-            docPdf.setFillColor(230, 57, 70);
-            docPdf.rect(0, 0, 210, 20, 'F');
-            docPdf.setTextColor(255);
-            docPdf.text("JAPAN SECURITY - RELATÓRIO DE VISTORIA", 10, 13);
-            
-            let y = 30;
-            historicoLocal.forEach(i => {
-                if(y > 260) { docPdf.addPage(); y = 20; }
-                docPdf.setTextColor(0);
-                docPdf.setFontSize(10);
-                docPdf.setFont(undefined, 'bold');
-                docPdf.text(`VTR: ${i.veiculo}`, 10, y);
-                docPdf.setFont(undefined, 'normal');
-                y += 5;
-                docPdf.text(`Data: ${i.dataExibicao} | Vigilante: ${i.vigilante} | KM: ${i.km}`, 10, y);
-                y += 5;
-                const checkString = Object.entries(i.checklist || {}).map(([k,v]) => `${k}:${v}`).join(" | ");
-                docPdf.setFontSize(8);
-                docPdf.text(`Checklist: ${checkString}`, 10, y, {maxWidth: 180});
-                y += 12;
-                docPdf.line(10, y-2, 200, y-2);
-            });
-            docPdf.save("Relatorio_Vistorias.pdf");
-        };
+        // Fecha a lista se clicar fora
+        document.addEventListener('click', (e) => {
+            if (e.target !== inputVtr) boxVtr.style.display = 'none';
+        });
 
         document.getElementById('btnCâmera').onclick = () => document.getElementById('input_foto').click();
         document.getElementById('input_foto').onchange = (e) => {
@@ -263,6 +183,83 @@
                 document.getElementById('preview-foto').style.display = 'block';
             };
             reader.readAsDataURL(e.target.files[0]);
+        };
+
+        window.excluirVistoria = async (id) => {
+            if(confirm("Excluir vistoria?")) { await deleteDoc(doc(db, "vistorias", id)); carregarHistorico(); }
+        };
+
+        function renderizar() {
+            const corpo = document.getElementById('tabelaVistoria');
+            corpo.innerHTML = "";
+            historicoLocal.forEach(i => {
+                corpo.innerHTML += `<tr>
+                    <td>${i.dataExibicao ? i.dataExibicao.split(' ')[0] : '---'}</td>
+                    <td><b>${formatarNomeVeiculo(i.veiculo)}</b></td>
+                    <td>${i.vigilante}</td>
+                    <td>${i.km} <button class="btn-excluir" onclick="excluirVistoria('${i.id}')"><i class="fas fa-trash"></i></button></td>
+                </tr>`;
+            });
+        }
+
+        document.getElementById('btnSalvarVistoria').onclick = async () => {
+            const vtrVal = inputVtr.value.toUpperCase();
+            const km = document.getElementById('v_km').value;
+            const vig = document.getElementById('v_vigilante').value.toUpperCase();
+            if(!vtrVal || !km || !vig) return alert("Preencha Viatura, KM e Vigilante!");
+
+            const checks = [];
+            document.querySelectorAll('.v_chk').forEach(c => {
+                checks.push(`${c.dataset.label}: ${c.checked ? 'OK' : 'X'}`);
+            });
+
+            try {
+                await addDoc(collection(db, "vistorias"), {
+                    veiculo: vtrVal,
+                    km: Number(km),
+                    vigilante: vig,
+                    checkList: checks.join(" | "),
+                    obs: document.getElementById('v_obs').value.toUpperCase() || "SEM OBS",
+                    foto: fotoBase64,
+                    timestamp: Date.now(),
+                    dataExibicao: new Date().toLocaleString('pt-BR'),
+                    usuario: auth.currentUser.email
+                });
+                alert("Vistoria Finalizada!"); location.reload();
+            } catch (e) { alert("Erro ao salvar!"); }
+        };
+
+        document.getElementById('btnFiltrar').onclick = () => {
+            const ini = new Date(document.getElementById('f_ini').value).getTime();
+            const fim = new Date(document.getElementById('f_fim').value).getTime();
+            if(!ini || !fim) return alert("Selecione o período!");
+            const filtrados = historicoLocal.filter(i => i.timestamp >= ini && i.timestamp <= fim);
+            historicoLocal = filtrados;
+            renderizar();
+        };
+
+        document.getElementById('btnExportarPDF').onclick = () => {
+            const { jsPDF } = window.jspdf;
+            const docPdf = new jsPDF();
+            docPdf.setFillColor(230, 57, 70);
+            docPdf.rect(0, 0, 210, 25, 'F');
+            docPdf.setTextColor(255);
+            docPdf.text("JAPAN SECURITY - VISTORIAS", 10, 15);
+
+            let y = 35;
+            historicoLocal.forEach(i => {
+                if(y > 260) { docPdf.addPage(); y = 20; }
+                docPdf.setTextColor(0);
+                docPdf.setFontSize(10);
+                docPdf.text(`Data: ${i.dataExibicao} | VTR: ${formatarNomeVeiculo(i.veiculo)}`, 10, y);
+                y += 5;
+                docPdf.setFontSize(8);
+                docPdf.text(`Checklist: ${i.checkList}`, 10, y, { maxWidth: 180 });
+                y += 10;
+                docPdf.line(10, y, 200, y);
+                y += 8;
+            });
+            docPdf.save("Vistorias.pdf");
         };
     </script>
 </body>
