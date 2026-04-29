@@ -5,15 +5,61 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Japan Security | Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { --red-japan: #e63946; --bg-card: #1e1e1e; }
-        body { background-color: #121212; color: white; margin: 0; font-family: sans-serif; }
-        .stats-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 15px; }
+        :root { --red-japan: #e63946; --bg-card: #1e1e1e; --green: #2ecc71; }
+        body { background-color: #121212; color: white; margin: 0; font-family: sans-serif; padding-bottom: 30px; }
+        
+        /* --- STATUS PISCANDO --- */
+        .status-bar {
+            background: #000;
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid #333;
+        }
+        .blink-green {
+            color: var(--green);
+            font-weight: 900;
+            font-size: 1.1rem;
+            letter-spacing: 3px;
+            animation: pulse-green 2s infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        @keyframes pulse-green {
+            0% { opacity: 1; text-shadow: 0 0 5px var(--green); }
+            50% { opacity: 0.2; text-shadow: none; }
+            100% { opacity: 1; text-shadow: 0 0 5px var(--green); }
+        }
+
+        /* --- BOTÕES DE NAVEGAÇÃO --- */
+        .nav-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(85px, 1fr));
+            gap: 8px;
+            padding: 15px;
+        }
+        .nav-card {
+            background: var(--bg-card);
+            border: 1px solid #333;
+            padding: 12px 5px;
+            border-radius: 10px;
+            text-align: center;
+            text-decoration: none;
+            color: white;
+            transition: 0.2s;
+        }
+        .nav-card:active { transform: scale(0.95); background: #222; }
+        .nav-card i { color: var(--red-japan); font-size: 1.3rem; margin-bottom: 6px; display: block; }
+        .nav-card span { font-size: 0.6rem; font-weight: bold; text-transform: uppercase; }
+
+        .stats-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 0 15px 15px; }
         .stat-card { background: var(--bg-card); padding: 20px; border-radius: 15px; text-align: center; border-bottom: 4px solid var(--red-japan); }
         .stat-card span { font-size: 0.7rem; color: #888; text-transform: uppercase; display: block; }
         .stat-card strong { font-size: 1.8rem; display: block; margin-top: 5px; }
+        
         .chart-section { padding: 0 15px 20px; }
         .chart-card { background: var(--bg-card); border-radius: 15px; padding: 20px; margin-bottom: 20px; border: 1px solid #333; }
         .chart-title { font-size: 0.9rem; font-weight: bold; color: var(--red-japan); margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
@@ -23,12 +69,41 @@
 <body>
 
     <header style="background: #1a1a1a; padding: 15px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 1000;">
-        <a href="index.html" style="color: white; text-decoration: none; font-size: 0.9rem; font-weight: bold; display: flex; align-items: center; gap: 8px;">
-            <i class="fas fa-chevron-left"></i> VOLTAR
-        </a>
-        <div style="color: var(--red-japan); font-weight: 900; font-size: 0.8rem; letter-spacing: 2px;">DASHBOARD OPERACIONAL</div>
-        <div style="width: 50px;"></div>
+        <div style="color: white; font-size: 0.9rem; font-weight: bold; display: flex; align-items: center; gap: 8px;">
+            <i class="fas fa-user-shield"></i> JOFRE
+        </div>
+        <div style="color: var(--red-japan); font-weight: 900; font-size: 0.8rem; letter-spacing: 2px;">JAPAN SECURITY</div>
+        <a href="index.html" style="color: #666; text-decoration: none;"><i class="fas fa-sign-out-alt"></i></a>
     </header>
+
+    <div class="status-bar">
+        <div class="blink-green">
+            <i class="fas fa-microchip"></i> SISTEMA ATIVO
+        </div>
+    </div>
+
+    <nav class="nav-grid">
+        <a href="vistoria.html" class="nav-card">
+            <i class="fas fa-clipboard-check"></i>
+            <span>Vistoria</span>
+        </a>
+        <a href="veiculos.html" class="nav-card">
+            <i class="fas fa-car-side"></i>
+            <span>Frota</span>
+        </a>
+        <a href="entrada_saida.html" class="nav-card">
+            <i class="fas fa-exchange-alt"></i>
+            <span>Entr/Saída</span>
+        </a>
+        <a href="manutencao.html" class="nav-card">
+            <i class="fas fa-wrench"></i>
+            <span>Manut.</span>
+        </a>
+        <a href="backup.html" class="nav-card">
+            <i class="fas fa-database"></i>
+            <span>Backup</span>
+        </a>
+    </nav>
 
     <section class="stats-container">
         <div class="stat-card">
@@ -43,13 +118,13 @@
 
     <section class="chart-section">
         <div class="chart-card">
-            <div class="chart-title"><i class="fas fa-chart-pie"></i> STATUS DA FROTA</div>
+            <div class="chart-title"><i class="fas fa-chart-pie"></i> STATUS OPERACIONAL</div>
             <div class="canvas-container">
                 <canvas id="graficoPizza"></canvas>
             </div>
         </div>
         <div class="chart-card">
-            <div class="chart-title"><i class="fas fa-chart-line"></i> MOVIMENTAÇÃO SEMANAL</div>
+            <div class="chart-title"><i class="fas fa-chart-bar"></i> QUILOMETRAGEM POR VEÍCULO</div>
             <div class="canvas-container">
                 <canvas id="graficoLinha"></canvas>
             </div>
@@ -58,7 +133,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
@@ -76,56 +151,76 @@
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                renderizarDashboard(user.email);
+                carregarDados(user.email);
             } else {
                 window.location.href = "login.html";
             }
         });
 
-        async function renderizarDashboard(email) {
-            // 1. Frota Total
-            const qFrota = query(collection(db, "veiculos"), where("usuario", "==", email));
-            const snapFrota = await getDocs(qFrota);
-            document.getElementById('countFrotaTotal').innerText = snapFrota.size;
+        async function carregarDados(email) {
+            const snapFrota = await getDocs(collection(db, "veiculos"));
+            let totalVeiculos = 0;
+            const labelsPlacas = [];
+            const dadosKM = [];
 
-            // 2. Vistorias Hoje
-            const hoje = new Date().toISOString().split('T')[0];
-            const qVistorias = query(collection(db, "vistorias"), where("usuario", "==", email), where("data", "==", hoje));
-            const snapVistorias = await getDocs(qVistorias);
-            document.getElementById('countVistorias').innerText = snapVistorias.size;
+            snapFrota.forEach(doc => {
+                const data = doc.data();
+                if(data.usuario === email) {
+                    totalVeiculos++;
+                    labelsPlacas.push(data.placa);
+                    dadosKM.push(data.kmAtual || 0);
+                }
+            });
+            document.getElementById('countFrotaTotal').innerText = totalVeiculos;
 
-            // Aqui você chamaria as funções dos gráficos passando os dados do snapFrota
-            iniciarGraficos();
+            const snapVistorias = await getDocs(collection(db, "vistorias"));
+            const hoje = new Date().toLocaleDateString('pt-BR');
+            let vistoriasHoje = 0;
+            
+            snapVistorias.forEach(doc => {
+                const data = doc.data();
+                if(data.usuario === email && data.dataExibicao && data.dataExibicao.includes(hoje)) {
+                    vistoriasHoje++;
+                }
+            });
+            document.getElementById('countVistorias').innerText = vistoriasHoje;
+
+            iniciarGraficos(labelsPlacas, dadosKM);
         }
 
-        function iniciarGraficos() {
-            // Exemplo simples de gráfico de pizza (Status)
+        function iniciarGraficos(placas, kms) {
             new Chart(document.getElementById('graficoPizza'), {
                 type: 'doughnut',
                 data: {
-                    labels: ['Operacional', 'Manutenção'],
+                    labels: ['Em Operação', 'Manutenção'],
                     datasets: [{
-                        data: [12, 2], // Aqui você pode somar os status do Firebase
-                        backgroundColor: ['#27ae60', '#e63946'],
+                        data: [placas.length, 0], 
+                        backgroundColor: ['#2ecc71', '#e63946'],
                         borderWidth: 0
                     }]
                 },
                 options: { responsive: true, maintainAspectRatio: false }
             });
 
-            // Exemplo de gráfico de linha
             new Chart(document.getElementById('graficoLinha'), {
-                type: 'line',
+                type: 'bar',
                 data: {
-                    labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
+                    labels: placas,
                     datasets: [{
-                        label: 'Movimentações',
-                        data: [5, 8, 3, 10, 15, 4, 2],
-                        borderColor: '#e63946',
-                        tension: 0.4
+                        label: 'KM Atual',
+                        data: kms,
+                        backgroundColor: '#e63946',
+                        borderRadius: 5
                     }]
                 },
-                options: { responsive: true, maintainAspectRatio: false }
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false,
+                    scales: { 
+                        y: { beginAtZero: true, grid: { color: '#333' } },
+                        x: { grid: { display: false } }
+                    }
+                }
             });
         }
     </script>
