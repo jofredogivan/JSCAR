@@ -78,6 +78,12 @@
     </div>
 
     <div class="card" style="border-left: 5px solid var(--red);">
+        <label>Data e Hora do Lançamento</label>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 5px;">
+            <input type="date" id="es_data" class="modern-input">
+            <input type="time" id="es_hora" class="modern-input">
+        </div>
+
         <div style="position: relative;">
             <label>Viatura (Placa ou Nome)</label>
             <input type="text" id="es_vtr" class="modern-input" placeholder="Clique para selecionar..." autocomplete="off">
@@ -146,9 +152,19 @@
     let filtradosPDF = [];
 
     onAuthStateChanged(auth, (user) => {
-        if (user) { carregarVtr().then(() => carregarHistorico()); }
+        if (user) { 
+            configurarDataHora(); // Define data/hora atual por padrão
+            carregarVtr().then(() => carregarHistorico()); 
+        }
         else { window.location.href = "login.html"; }
     });
+
+    // Seta data e hora atual nos campos de lançamento
+    function configurarDataHora() {
+        const agora = new Date();
+        document.getElementById('es_data').value = agora.toISOString().split('T')[0];
+        document.getElementById('es_hora').value = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', hour12: false });
+    }
 
     async function carregarVtr() {
         const snap = await getDocs(collection(db, "veiculos"));
@@ -227,12 +243,20 @@
         const valorInput = inputVtr.value.toUpperCase();
         const km = document.getElementById('es_km').value;
         const vig = document.getElementById('es_vig').value.toUpperCase();
-        if(!valorInput || !km || !vig) return alert("Preencha todos os campos!");
+        
+        // Coleta data e hora do formulário
+        const dataL = document.getElementById('es_data').value;
+        const horaL = document.getElementById('es_hora').value;
+
+        if(!valorInput || !km || !vig || !dataL || !horaL) return alert("Preencha todos os campos!");
         
         const vEncontrado = vtrCache.find(v => valorInput.includes(v.placa));
         const placaFinal = vEncontrado ? vEncontrado.placa : valorInput;
         const nomeFinal = vEncontrado ? vEncontrado.nome : "Modelo Avulso";
         
+        // Cria o timestamp baseado na data/hora informada
+        const dataObjeto = new Date(`${dataL}T${horaL}`);
+
         try {
             await addDoc(collection(db, "movimentacoes"), { 
                 veiculo: placaFinal, 
@@ -240,13 +264,13 @@
                 km: Number(km), 
                 vigilante: vig, 
                 tipo: document.getElementById('es_tipo').value, 
-                timestamp: new Date().getTime(), 
-                dataExibicao: new Date().toLocaleString('pt-BR'), 
+                timestamp: dataObjeto.getTime(), 
+                dataExibicao: dataObjeto.toLocaleString('pt-BR'), 
                 usuario: auth.currentUser.email 
             });
             if(vEncontrado) await updateDoc(doc(db, "veiculos", vEncontrado.id), { kmAtual: Number(km) });
             alert("✓ Registro Salvo com Sucesso!"); 
-            location.reload(); // Recarrega para limpar formulário e atualizar lista
+            location.reload(); 
         } catch (e) { alert("Erro ao salvar no banco de dados."); }
     };
 
