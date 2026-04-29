@@ -10,11 +10,17 @@
     <meta name="theme-color" content="#121212">
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="css/style.css">
     <style>
+        :root { --red: #e63946; --dark-card: #1a1a1a; --input-bg: #252525; }
+        body { background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; }
         .btn-excluir { color: #888; cursor: pointer; padding: 10px; transition: 0.3s; }
-        .btn-excluir:hover { color: #e63946; }
-        .modern-input:focus { border-color: #e63946 !important; outline: none; }
+        .btn-excluir:hover { color: var(--red); }
+        .modern-input { width: 100%; padding: 12px; background: var(--input-bg); border: 1px solid #444; color: white; border-radius: 8px; box-sizing: border-box; }
+        .modern-input:focus { border-color: var(--red) !important; outline: none; }
+        .card { background: var(--dark-card); border-radius: 12px; border: 1px solid #333; padding: 15px; margin-bottom: 20px; }
+        .btn-primary { width: 100%; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.2s; }
+        .btn-primary:active { transform: scale(0.98); }
+        tr.selecionado { background: #2a1012 !important; border-left: 4px solid var(--red); }
     </style>
 </head>
 <body>
@@ -27,52 +33,51 @@
         <div style="width: 50px;"></div>
     </header>
 
-    <main class="main-content" style="padding: 15px;">
+    <main style="padding: 15px;">
         
-        <div class="card" style="margin-bottom: 15px; background: #1a1a1a; border-radius: 8px; border: 1px solid #333;">
-            <div class="input-group" style="padding: 10px;">
-                <label style="color: #e63946; font-size: 0.65rem; font-weight: bold; text-transform: uppercase;">Pesquisar na Frota</label>
-                <input type="text" id="filtroFrota" class="modern-input" placeholder="Placa ou modelo..." style="width: 100%; background: #222; border: 1px solid #444; color: white; padding: 12px; border-radius: 6px; margin-top: 5px;">
-            </div>
+        <div class="card">
+            <label style="color: #e63946; font-size: 0.65rem; font-weight: bold; text-transform: uppercase;">Pesquisar na Frota</label>
+            <input type="text" id="filtroFrota" class="modern-input" placeholder="Placa ou modelo..." style="margin-top: 5px;">
         </div>
 
-        <div class="card" style="margin-bottom: 20px; background: #1a1a1a; border-radius: 12px; border: 1px solid #333; padding: 15px;">
+        <div class="card" id="cardForm">
             <div id="formTitle" style="color: #e63946; font-size: 0.85rem; font-weight: bold; margin-bottom: 15px; text-transform: uppercase; display: flex; align-items: center; gap: 10px;">
-                <i class="fas fa-car-side"></i> CADASTRAR NOVA VIATURA
+                <i class="fas fa-car-side" id="iconTitle"></i> <span id="txtTitle">CADASTRAR NOVA VIATURA</span>
             </div>
             
             <input type="hidden" id="veiculoId">
 
             <div style="display: flex; flex-direction: column; gap: 12px;">
-                <div class="input-group">
+                <div>
                     <label style="font-size: 0.7rem; color: #888;">MODELO / NOME VTR</label>
-                    <input type="text" id="nome" class="modern-input" placeholder="Ex: GOL VTR 01" style="width: 100%; padding: 12px; background: #252525; border: 1px solid #444; color: white; border-radius: 8px;">
+                    <input type="text" id="nome" class="modern-input" placeholder="Ex: GOL VTR 01">
                 </div>
                 
-                <div class="input-group">
+                <div>
                     <label style="font-size: 0.7rem; color: #888;">PLACA</label>
-                    <input type="text" id="placa" class="modern-input" placeholder="ABC-1234" style="width: 100%; padding: 12px; background: #252525; border: 1px solid #444; color: white; border-radius: 8px;">
+                    <input type="text" id="placa" class="modern-input" placeholder="ABC-1234">
                 </div>
 
                 <div style="display: flex; gap: 10px;">
-                    <div class="input-group" style="flex: 1;">
+                    <div style="flex: 1;">
                         <label style="font-size: 0.7rem; color: #888;">ANO</label>
-                        <input type="text" id="ano" class="modern-input" placeholder="2024" style="width: 100%; padding: 12px; background: #252525; border: 1px solid #444; color: white; border-radius: 8px;">
+                        <input type="text" id="ano" class="modern-input" placeholder="2024">
                     </div>
-                    <div class="input-group" style="flex: 1;">
+                    <div style="flex: 1;">
                         <label style="font-size: 0.7rem; color: #888;">KM INICIAL</label>
-                        <input type="number" id="kmAtual" class="modern-input" placeholder="0" style="width: 100%; padding: 12px; background: #252525; border: 1px solid #444; color: white; border-radius: 8px;">
+                        <input type="number" id="kmAtual" class="modern-input" placeholder="0">
                     </div>
                 </div>
                 
-                <button class="btn-primary" id="btnSalvarVeiculo" style="background: #e63946; color: white; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px;">
-                    <i class="fas fa-save"></i> SALVAR NO SISTEMA
+                <button class="btn-primary" id="btnSalvarVeiculo" style="background: #e63946; color: white;">
+                    <i class="fas fa-save"></i> <span id="btnTxt">SALVAR NO SISTEMA</span>
                 </button>
+                <button id="btnCancelar" style="display:none; background: #333; color: #ccc; border: none; padding: 10px; border-radius: 8px; margin-top: 5px; cursor: pointer;">Cancelar Edição</button>
             </div>
         </div>
 
-        <div class="table-responsive" style="overflow-x: auto;">
-            <table class="modern-table" style="width: 100%; border-collapse: collapse; background: #1a1a1a; color: white; font-size: 0.85rem;">
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; background: #1a1a1a; color: white; font-size: 0.85rem;">
                 <thead>
                     <tr style="background: #222; border-bottom: 2px solid #e63946;">
                         <th style="padding: 12px; text-align: left;">Modelo</th>
@@ -105,17 +110,32 @@
         const auth = getAuth(app);
 
         onAuthStateChanged(auth, (user) => {
-            if (user) {
-                listarVeiculos();
-            } else {
-                window.location.href = "login.html";
-            }
+            if (user) { listarVeiculos(); } else { window.location.href = "login.html"; }
         });
+
+        // FUNÇÃO PARA PREPARAR EDIÇÃO
+        window.prepararEdicao = (id, nome, placa, ano, km) => {
+            document.getElementById('veiculoId').value = id;
+            document.getElementById('nome').value = nome;
+            document.getElementById('placa').value = placa;
+            document.getElementById('ano').value = ano || "";
+            document.getElementById('kmAtual').value = km || 0;
+
+            // Interface em modo edição
+            document.getElementById('txtTitle').innerText = "EDITAR VEÍCULO";
+            document.getElementById('btnTxt').innerText = "ATUALIZAR CADASTRO";
+            document.getElementById('btnSalvarVeiculo').style.background = "#2ebd59";
+            document.getElementById('btnCancelar').style.display = "block";
+            document.getElementById('cardForm').scrollIntoView({ behavior: 'smooth' });
+        };
+
+        document.getElementById('btnCancelar').onclick = () => {
+            location.reload(); // Forma mais rápida de limpar o estado
+        };
 
         document.getElementById('btnSalvarVeiculo').onclick = async () => {
             const btn = document.getElementById('btnSalvarVeiculo');
             const id = document.getElementById('veiculoId').value;
-            
             const nome = document.getElementById('nome').value.toUpperCase();
             const placa = document.getElementById('placa').value.toUpperCase();
 
@@ -138,13 +158,12 @@
                     alert("Veículo atualizado!");
                 } else {
                     await addDoc(collection(db, "veiculos"), dados);
-                    alert("Veículo cadastrado com sucesso!");
+                    alert("Veículo cadastrado!");
                 }
                 location.reload();
             } catch (e) {
                 alert("Erro: " + e);
                 btn.disabled = false;
-                btn.innerText = "SALVAR NO SISTEMA";
             }
         };
 
@@ -158,23 +177,22 @@
                 snap.forEach(documento => {
                     const v = documento.data();
                     const id = documento.id;
+                    // Linha agora tem um onclick para editar
                     corpo.innerHTML += `
-                        <tr style="border-bottom: 1px solid #333;">
+                        <tr style="border-bottom: 1px solid #333;" onclick="prepararEdicao('${id}', '${v.nome}', '${v.placa}', '${v.ano}', '${v.km}')">
                             <td style="padding: 12px;">${v.nome}</td>
                             <td style="padding: 12px;"><b style="color: #e63946;">${v.placa}</b></td>
                             <td style="padding: 12px;">${v.km}</td>
                             <td style="padding: 12px; text-align: right;">
-                                <i class="fas fa-trash-alt btn-excluir" onclick="excluirVeiculo('${id}')"></i>
+                                <i class="fas fa-trash-alt btn-excluir" onclick="event.stopPropagation(); excluirVeiculo('${id}')"></i>
                             </td>
                         </tr>`;
                 });
-            } catch (e) {
-                console.error(e);
-            }
+            } catch (e) { console.error(e); }
         }
 
         window.excluirVeiculo = async (id) => {
-            if (confirm("Deseja remover este veículo da frota?")) {
+            if (confirm("Deseja remover este veículo?")) {
                 await deleteDoc(doc(db, "veiculos", id));
                 location.reload();
             }
