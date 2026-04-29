@@ -3,8 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Japan Security | Fleet Control</title>
+    <title>Japan Security | Movimentação</title>
     
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512x512.png">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#121212">
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
@@ -13,7 +18,6 @@
         :root { --red: #e63946; --green: #2ecc71; --dark: #121212; }
         body { background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; padding-bottom: 50px; }
         
-        /* Cabeçalho Ajustado com Botão Voltar */
         header { 
             background: #1a1a1a; padding: 15px; text-align: center; 
             border-bottom: 4px solid var(--red); display: flex; align-items: center; justify-content: space-between;
@@ -24,9 +28,9 @@
         .container { padding: 15px; max-width: 750px; margin: auto; }
         .card { background: var(--dark); padding: 18px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #333; position: relative; }
         label { font-size: 0.7rem; color: var(--red); font-weight: bold; text-transform: uppercase; display: block; margin-bottom: 5px; }
-        .modern-input { width: 100%; padding: 12px; background: #222; border: 1px solid #444; color: #fff; border-radius: 8px; box-sizing: border-box; font-size: 1rem; margin-bottom: 10px; }
+        .modern-input { width: 100%; padding: 12px; background: #222; border: 1px solid #444; color: #fff; border-radius: 8px; box-sizing: border-box; font-size: 1rem; margin-bottom: 10px; outline: none; }
+        .modern-input:focus { border-color: var(--red); }
         
-        /* Melhoria nos Botões */
         .btn { border: none; border-radius: 8px; cursor: pointer; font-weight: 800; transition: 0.1s; display: flex; align-items: center; justify-content: center; gap: 8px; text-transform: uppercase; }
         .btn:active { transform: scale(0.95); opacity: 0.8; }
         
@@ -51,7 +55,7 @@
 <body>
 
 <header>
-    <a href="index.html" class="btn-voltar">
+    <a href="dashboard.html" class="btn-voltar">
         <i class="fas fa-chevron-left" style="color: var(--red);"></i> VOLTAR
     </a>
     <div style="flex-grow: 1; text-align: center; margin-right: 60px;">
@@ -223,7 +227,7 @@
         const valorInput = inputVtr.value.toUpperCase();
         const km = document.getElementById('es_km').value;
         const vig = document.getElementById('es_vig').value.toUpperCase();
-        if(!valorInput || !km || !vig) return alert("Preencha tudo!");
+        if(!valorInput || !km || !vig) return alert("Preencha todos os campos!");
         
         const vEncontrado = vtrCache.find(v => valorInput.includes(v.placa));
         const placaFinal = vEncontrado ? vEncontrado.placa : valorInput;
@@ -241,14 +245,15 @@
                 usuario: auth.currentUser.email 
             });
             if(vEncontrado) await updateDoc(doc(db, "veiculos", vEncontrado.id), { kmAtual: Number(km) });
-            alert("✓ Salvo!"); location.reload();
-        } catch (e) { alert("Erro ao salvar."); }
+            alert("✓ Registro Salvo com Sucesso!"); 
+            location.reload(); // Recarrega para limpar formulário e atualizar lista
+        } catch (e) { alert("Erro ao salvar no banco de dados."); }
     };
 
     document.getElementById('btnFiltrar').onclick = renderizar;
 
     document.getElementById('btnPDF').onclick = () => {
-        if (filtradosPDF.length === 0) return alert("Sem dados!");
+        if (filtradosPDF.length === 0) return alert("Sem dados para o período selecionado!");
         const { jsPDF } = window.jspdf;
         const docPdf = new jsPDF('l', 'mm', 'a4');
         const grupos = {};
@@ -274,10 +279,10 @@
             const rows = movs.map(m => [m.dataExibicao, m.vigilante, m.km + " KM", { content: m.tipo, styles: { textColor: m.tipo === 'SAIDA' ? [230, 57, 70] : [46, 204, 113], fontStyle: 'bold' } }, m.usuario.split('@')[0].toUpperCase()]);
             docPdf.autoTable({ head: [["DATA/HORA", "MOTORISTA", "KM", "EVENTO", "OPERADOR"]], body: rows, startY: yPos, theme: 'striped', headStyles: { fillColor: [230, 57, 70] }, margin: { left: 14 }, didDrawPage: (data) => { yPos = data.cursor.y + 15; } });
         });
-        docPdf.save("Relatorio_Japan_Security.pdf");
+        docPdf.save("Relatorio_Japan_Security_Frota.pdf");
     };
 
-    window.apagarRegistro = async (id) => { if(confirm("Excluir?")) { await deleteDoc(doc(db, "movimentacoes", id)); carregarHistorico(); } };
+    window.apagarRegistro = async (id) => { if(confirm("Deseja realmente excluir este registro?")) { await deleteDoc(doc(db, "movimentacoes", id)); carregarHistorico(); } };
 </script>
 </body>
 </html>
