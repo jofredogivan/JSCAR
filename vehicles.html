@@ -4,74 +4,81 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Japan Security | Frota</title>
+    
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#121212">
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
     <style>
-        .btn-excluir { color: #888; cursor: pointer; padding: 5px; }
+        .btn-excluir { color: #888; cursor: pointer; padding: 10px; transition: 0.3s; }
         .btn-excluir:hover { color: #e63946; }
-        .btn-edit { color: #3498db; cursor: pointer; padding: 5px; margin-right: 10px; }
+        .modern-input:focus { border-color: #e63946 !important; outline: none; }
     </style>
 </head>
 <body>
 
-    <header style="background: #1a1a1a; padding: 15px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 1000;">
-        <a href="index.html" style="color: white; text-decoration: none; font-size: 0.9rem; font-weight: bold; display: flex; align-items: center; gap: 8px;">
-            <i class="fas fa-chevron-left"></i> INÍCIO
+    <header style="background: #1a1a1a; padding: 15px; display: flex; align-items: center; justify-content: space-between; border-bottom: 4px solid #e63946; position: sticky; top: 0; z-index: 1000;">
+        <a href="dashboard.html" style="color: white; text-decoration: none; font-size: 0.9rem; font-weight: bold; display: flex; align-items: center; gap: 8px;">
+            <i class="fas fa-chevron-left" style="color: #e63946;"></i> VOLTAR
         </a>
-        <div style="color: #e63946; font-weight: 900; font-size: 0.8rem; letter-spacing: 2px;">FROTA</div>
+        <div style="color: #e63946; font-weight: 900; font-size: 0.8rem; letter-spacing: 2px;">GESTÃO DE FROTA</div>
         <div style="width: 50px;"></div>
     </header>
 
     <main class="main-content" style="padding: 15px;">
         
-        <div class="card" style="margin-bottom: 15px;">
-            <div class="input-group">
-                <label style="color: #888; font-size: 0.7rem; text-transform: uppercase;">Pesquisar Viatura</label>
-                <input type="text" id="filtroFrota" class="modern-input" placeholder="Placa ou modelo...">
+        <div class="card" style="margin-bottom: 15px; background: #1a1a1a; border-radius: 8px; border: 1px solid #333;">
+            <div class="input-group" style="padding: 10px;">
+                <label style="color: #e63946; font-size: 0.65rem; font-weight: bold; text-transform: uppercase;">Pesquisar na Frota</label>
+                <input type="text" id="filtroFrota" class="modern-input" placeholder="Placa ou modelo..." style="width: 100%; background: #222; border: 1px solid #444; color: white; padding: 12px; border-radius: 6px; margin-top: 5px;">
             </div>
         </div>
 
-        <div class="card" style="margin-bottom: 20px;">
-            <div id="formTitle" style="color: #e63946; font-size: 0.85rem; font-weight: bold; margin-bottom: 15px; text-transform: uppercase;">
-                <i class="fas fa-plus-circle"></i> Gerenciar Veículo
+        <div class="card" style="margin-bottom: 20px; background: #1a1a1a; border-radius: 12px; border: 1px solid #333; padding: 15px;">
+            <div id="formTitle" style="color: #e63946; font-size: 0.85rem; font-weight: bold; margin-bottom: 15px; text-transform: uppercase; display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-car-side"></i> CADASTRAR NOVA VIATURA
             </div>
             
             <input type="hidden" id="veiculoId">
 
             <div style="display: flex; flex-direction: column; gap: 12px;">
                 <div class="input-group">
-                    <label>Modelo / Nome VTR</label>
-                    <input type="text" id="nome" class="modern-input" placeholder="Ex: Gol VTR 01">
+                    <label style="font-size: 0.7rem; color: #888;">MODELO / NOME VTR</label>
+                    <input type="text" id="nome" class="modern-input" placeholder="Ex: GOL VTR 01" style="width: 100%; padding: 12px; background: #252525; border: 1px solid #444; color: white; border-radius: 8px;">
                 </div>
+                
                 <div class="input-group">
-                    <label>Placa</label>
-                    <input type="text" id="placa" class="modern-input" placeholder="ABC-1234">
+                    <label style="font-size: 0.7rem; color: #888;">PLACA</label>
+                    <input type="text" id="placa" class="modern-input" placeholder="ABC-1234" style="width: 100%; padding: 12px; background: #252525; border: 1px solid #444; color: white; border-radius: 8px;">
                 </div>
+
                 <div style="display: flex; gap: 10px;">
                     <div class="input-group" style="flex: 1;">
-                        <label>Ano</label>
-                        <input type="text" id="ano" class="modern-input" placeholder="2023">
+                        <label style="font-size: 0.7rem; color: #888;">ANO</label>
+                        <input type="text" id="ano" class="modern-input" placeholder="2024" style="width: 100%; padding: 12px; background: #252525; border: 1px solid #444; color: white; border-radius: 8px;">
                     </div>
                     <div class="input-group" style="flex: 1;">
-                        <label>KM Inicial</label>
-                        <input type="number" id="kmAtual" class="modern-input" placeholder="0">
+                        <label style="font-size: 0.7rem; color: #888;">KM INICIAL</label>
+                        <input type="number" id="kmAtual" class="modern-input" placeholder="0" style="width: 100%; padding: 12px; background: #252525; border: 1px solid #444; color: white; border-radius: 8px;">
                     </div>
                 </div>
                 
-                <button class="btn-primary" id="btnSalvarVeiculo" style="background: #e63946;">
-                    <i class="fas fa-save"></i> SALVAR VEÍCULO
+                <button class="btn-primary" id="btnSalvarVeiculo" style="background: #e63946; color: white; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px;">
+                    <i class="fas fa-save"></i> SALVAR NO SISTEMA
                 </button>
             </div>
         </div>
 
-        <div class="table-responsive">
-            <table class="modern-table">
+        <div class="table-responsive" style="overflow-x: auto;">
+            <table class="modern-table" style="width: 100%; border-collapse: collapse; background: #1a1a1a; color: white; font-size: 0.85rem;">
                 <thead>
-                    <tr>
-                        <th>Modelo</th>
-                        <th>Placa</th>
-                        <th>KM</th>
-                        <th style="text-align: right;">Ações</th>
+                    <tr style="background: #222; border-bottom: 2px solid #e63946;">
+                        <th style="padding: 12px; text-align: left;">Modelo</th>
+                        <th style="padding: 12px; text-align: left;">Placa</th>
+                        <th style="padding: 12px; text-align: left;">KM</th>
+                        <th style="padding: 12px; text-align: right;">Ações</th>
                     </tr>
                 </thead>
                 <tbody id="tabelaVeiculos"></tbody>
@@ -105,58 +112,74 @@
             }
         });
 
-        // Salvar ou Atualizar
         document.getElementById('btnSalvarVeiculo').onclick = async () => {
+            const btn = document.getElementById('btnSalvarVeiculo');
             const id = document.getElementById('veiculoId').value;
+            
+            const nome = document.getElementById('nome').value.toUpperCase();
+            const placa = document.getElementById('placa').value.toUpperCase();
+
+            if(!nome || !placa) return alert("Preencha Nome e Placa!");
+
+            btn.disabled = true;
+            btn.innerText = "PROCESSANDO...";
+
             const dados = {
-                nome: document.getElementById('nome').value.toUpperCase(),
-                placa: document.getElementById('placa').value.toUpperCase(),
+                nome: nome,
+                placa: placa,
                 ano: document.getElementById('ano').value,
                 km: document.getElementById('kmAtual').value,
                 usuario: auth.currentUser.email
             };
 
-            if (id) {
-                await updateDoc(doc(db, "veiculos", id), dados);
-                alert("Veículo atualizado!");
-            } else {
-                await addDoc(collection(db, "veiculos"), dados);
-                alert("Veículo cadastrado!");
+            try {
+                if (id) {
+                    await updateDoc(doc(db, "veiculos", id), dados);
+                    alert("Veículo atualizado!");
+                } else {
+                    await addDoc(collection(db, "veiculos"), dados);
+                    alert("Veículo cadastrado com sucesso!");
+                }
+                location.reload();
+            } catch (e) {
+                alert("Erro: " + e);
+                btn.disabled = false;
+                btn.innerText = "SALVAR NO SISTEMA";
             }
-            location.reload();
         };
 
-        // Listar Veículos
         async function listarVeiculos() {
-            const q = query(collection(db, "veiculos"), where("usuario", "==", auth.currentUser.email));
-            const snap = await getDocs(q);
-            const corpo = document.getElementById('tabelaVeiculos');
-            corpo.innerHTML = "";
+            try {
+                const q = query(collection(db, "veiculos"), where("usuario", "==", auth.currentUser.email));
+                const snap = await getDocs(q);
+                const corpo = document.getElementById('tabelaVeiculos');
+                corpo.innerHTML = "";
 
-            snap.forEach(documento => {
-                const v = documento.data();
-                const id = documento.id;
-                corpo.innerHTML += `
-                    <tr>
-                        <td>${v.nome}</td>
-                        <td><b>${v.placa}</b></td>
-                        <td>${v.km}</td>
-                        <td style="text-align: right;">
-                            <i class="fas fa-trash btn-excluir" onclick="excluirVeiculo('${id}')"></i>
-                        </td>
-                    </tr>`;
-            });
+                snap.forEach(documento => {
+                    const v = documento.data();
+                    const id = documento.id;
+                    corpo.innerHTML += `
+                        <tr style="border-bottom: 1px solid #333;">
+                            <td style="padding: 12px;">${v.nome}</td>
+                            <td style="padding: 12px;"><b style="color: #e63946;">${v.placa}</b></td>
+                            <td style="padding: 12px;">${v.km}</td>
+                            <td style="padding: 12px; text-align: right;">
+                                <i class="fas fa-trash-alt btn-excluir" onclick="excluirVeiculo('${id}')"></i>
+                            </td>
+                        </tr>`;
+                });
+            } catch (e) {
+                console.error(e);
+            }
         }
 
-        // Função global para excluir (precisa estar no window para o onclick do HTML achar)
         window.excluirVeiculo = async (id) => {
-            if (confirm("Deseja realmente remover este veículo?")) {
+            if (confirm("Deseja remover este veículo da frota?")) {
                 await deleteDoc(doc(db, "veiculos", id));
                 location.reload();
             }
         };
 
-        // Filtro Local
         document.getElementById('filtroFrota').onkeyup = function() {
             const filter = this.value.toUpperCase();
             const tr = document.querySelectorAll("#tabelaVeiculos tr");
