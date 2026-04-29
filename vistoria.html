@@ -20,7 +20,6 @@
         .btn-primary { border: none; border-radius: 8px; cursor: pointer; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 8px; text-transform: uppercase; width: 100%; padding: 15px; transition: all 0.1s; }
         .btn-primary:active { transform: scale(0.96); opacity: 0.8; }
         
-        /* Sugestão Automática de Veículos */
         #lista_vtr { display: none; position: absolute; width: 100%; background: #222; border: 2px solid var(--red); z-index: 9999; max-height: 250px; overflow-y: auto; border-radius: 8px; top: 70px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
         #lista_vtr div { padding: 14px; border-bottom: 1px solid #333; cursor: pointer; color: #ccc; }
         #lista_vtr div:hover { background: var(--red); color: #fff; }
@@ -74,7 +73,7 @@
             </div>
 
             <label>Checklist Completo</label>
-            <div class="checklist-grid">
+            <div class="checklist-grid" id="containerCheck">
                 <label class="check-container"><input type="checkbox" class="v_chk" data-label="Água"> Água</label>
                 <label class="check-container"><input type="checkbox" class="v_chk" data-label="Óleo"> Óleo</label>
                 <label class="check-container"><input type="checkbox" class="v_chk" data-label="Macaco"> Macaco</label>
@@ -132,7 +131,6 @@
             else { window.location.href="login.html"; }
         });
 
-        // --- CARREGAR VEÍCULOS E SUGESTÃO ---
         async function carregarVeiculos() {
             const snap = await getDocs(collection(db, "veiculos"));
             vtrCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -141,9 +139,7 @@
         const inputVtr = document.getElementById('v_veiculo');
         const boxVtr = document.getElementById('lista_vtr');
 
-        inputVtr.addEventListener('click', () => exibirSugestoes(inputVtr.value.toUpperCase()));
-        inputVtr.addEventListener('input', (e) => exibirSugestoes(e.target.value.toUpperCase()));
-
+        // FUNÇÃO DE SUGESTÃO CORRIGIDA
         function exibirSugestoes(val) {
             boxVtr.innerHTML = "";
             const filtrados = vtrCache.filter(v => v.placa.includes(val) || v.nome.toUpperCase().includes(val));
@@ -159,16 +155,13 @@
                 };
                 boxVtr.appendChild(d);
             });
-            boxVtr.style.display = filtrados.length ? 'block' : 'none';
+            boxVtr.style.display = (filtrados.length && val !== "") ? 'block' : 'none';
         }
 
-        document.addEventListener('click', (e) => {
-            if (!inputVtr.contains(e.target) && !boxVtr.contains(e.target)) {
-                boxVtr.style.display = 'none';
-            }
-        });
+        inputVtr.onfocus = () => exibirSugestoes(inputVtr.value.toUpperCase());
+        inputVtr.oninput = (e) => exibirSugestoes(e.target.value.toUpperCase());
+        inputVtr.onblur = () => setTimeout(() => boxVtr.style.display = 'none', 200);
 
-        // --- HISTÓRICO E FILTRO ---
         async function carregarHistorico() {
             const q = query(collection(db, "vistorias"), orderBy("timestamp", "desc"));
             const snap = await getDocs(q);
@@ -180,39 +173,37 @@
         document.getElementById('btnFiltrar').onclick = () => {
             const ini = new Date(document.getElementById('f_ini').value).getTime();
             const fim = new Date(document.getElementById('f_fim').value).getTime();
-            
             if(!ini || !fim) return alert("Selecione o período!");
-            
             const filtrados = historicoLocal.filter(i => i.timestamp >= ini && i.timestamp <= fim);
             renderizar(filtrados);
         };
 
-        // --- SALVAR VISTORIA ---
+        // SALVAMENTO GARANTINDO NOME COMPLETO
         document.getElementById('btnSalvarVistoria').onclick = async () => {
             const vtrVal = inputVtr.value.toUpperCase();
             const km = document.getElementById('v_km').value;
             const vig = document.getElementById('v_vigilante').value.toUpperCase();
             
-            if(!vtrVal || !km || !vig) return alert("Preencha os campos obrigatórios!");
+            if(!vtrVal || !km || !vig) return alert("Preencha Viatura, KM e Vigilante!");
 
-            const checklist = {};
+            const checklistObj = {};
             document.querySelectorAll('.v_chk').forEach(c => {
-                checklist[c.dataset.label] = c.checked ? 'OK' : 'X';
+                checklistObj[c.dataset.label] = c.checked ? 'OK' : 'X';
             });
 
             try {
                 await addDoc(collection(db, "vistorias"), {
-                    veiculo: vtrVal,
+                    veiculo: vtrVal, // Aqui já vai "PLACA - NOME"
                     km: Number(km),
                     vigilante: vig,
-                    checklist: checklist,
+                    checklist: checklistObj,
                     obs: document.getElementById('v_obs').value.toUpperCase() || "SEM OBS",
                     foto: fotoBase64,
                     timestamp: Date.now(),
                     dataExibicao: new Date().toLocaleString('pt-BR'),
                     usuario: auth.currentUser.email
                 });
-                alert("Vistoria Salva!");
+                alert("Vistoria Finalizada!");
                 location.reload();
             } catch (e) { alert("Erro ao salvar!"); }
         };
@@ -231,27 +222,36 @@
         }
 
         window.excluirVistoria = async (id) => {
-            if(confirm("Excluir?")) { await deleteDoc(doc(db, "vistorias", id)); carregarHistorico(); }
+            if(confirm("Excluir registro?")) { await deleteDoc(doc(db, "vistorias", id)); carregarHistorico(); }
         };
 
-        // --- PDF E CÂMERA ---
         document.getElementById('btnExportarPDF').onclick = () => {
             const { jsPDF } = window.jspdf;
             const docPdf = new jsPDF();
-            docPdf.text("JAPAN SECURITY - RELATÓRIO DE VISTORIA", 10, 10);
             
-            let y = 20;
+            docPdf.setFillColor(230, 57, 70);
+            docPdf.rect(0, 0, 210, 20, 'F');
+            docPdf.setTextColor(255);
+            docPdf.text("JAPAN SECURITY - RELATÓRIO DE VISTORIA", 10, 13);
+            
+            let y = 30;
             historicoLocal.forEach(i => {
-                if(y > 270) { docPdf.addPage(); y = 10; }
-                const txtCheck = Object.entries(i.checklist || {}).map(([k,v]) => `${k}:${v}`).join(" | ");
+                if(y > 260) { docPdf.addPage(); y = 20; }
+                docPdf.setTextColor(0);
                 docPdf.setFontSize(10);
-                docPdf.text(`${i.dataExibicao} - ${i.veiculo} (${i.km}KM)`, 10, y);
+                docPdf.setFont(undefined, 'bold');
+                docPdf.text(`VTR: ${i.veiculo}`, 10, y);
+                docPdf.setFont(undefined, 'normal');
                 y += 5;
+                docPdf.text(`Data: ${i.dataExibicao} | Vigilante: ${i.vigilante} | KM: ${i.km}`, 10, y);
+                y += 5;
+                const checkString = Object.entries(i.checklist || {}).map(([k,v]) => `${k}:${v}`).join(" | ");
                 docPdf.setFontSize(8);
-                docPdf.text(`Check: ${txtCheck}`, 10, y, {maxWidth: 180});
-                y += 10;
+                docPdf.text(`Checklist: ${checkString}`, 10, y, {maxWidth: 180});
+                y += 12;
+                docPdf.line(10, y-2, 200, y-2);
             });
-            docPdf.save("vistorias.pdf");
+            docPdf.save("Relatorio_Vistorias.pdf");
         };
 
         document.getElementById('btnCâmera').onclick = () => document.getElementById('input_foto').click();
