@@ -4,142 +4,105 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Japan Security | Vistoria</title>
-    
-    <link rel="icon" type="image/png" href="icons/icon-192x192.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
     <style>
-        :root { --red: #e63946; --red-dark: #b91c1c; --dark: #121212; --card-bg: #1a1a1a; }
-        body { background: #000; color: #fff; font-family: 'Segoe UI', Roboto, sans-serif; margin: 0; padding-bottom: 30px; }
-        
-        header { background: #1a1a1a; padding: 15px; border-bottom: 3px solid var(--red); position: sticky; top: 0; z-index: 1000; }
-        
+        :root { --red: #e63946; --red-dark: #b91c1c; --dark: #121212; }
+        body { background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; padding-bottom: 50px; }
+        header { background: #1a1a1a; padding: 15px; text-align: center; border-bottom: 2px solid var(--red); position: sticky; top: 0; z-index: 1000; }
         .container { padding: 15px; max-width: 800px; margin: auto; }
+        .card { background: #1a1a1a; padding: 18px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #333; }
+        label { font-size: 0.7rem; color: var(--red); font-weight: bold; text-transform: uppercase; display: block; margin-bottom: 5px; }
+        .modern-input { width: 100%; padding: 12px; background: #222; border: 1px solid #444; color: #fff; border-radius: 8px; box-sizing: border-box; font-size: 1rem; margin-bottom: 10px; }
+        .btn-primary { border: none; border-radius: 8px; cursor: pointer; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 8px; text-transform: uppercase; width: 100%; padding: 15px; transition: all 0.1s; }
+        .btn-primary:active { transform: scale(0.96); opacity: 0.8; }
         
-        .card { background: var(--card-bg); padding: 18px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #333; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-        
-        label { font-size: 0.7rem; color: var(--red); font-weight: bold; text-transform: uppercase; display: block; margin-bottom: 6px; letter-spacing: 1px; }
-        
-        .modern-input { 
-            width: 100%; padding: 12px; background: #222; border: 1px solid #444; 
-            color: #fff; border-radius: 8px; box-sizing: border-box; 
-            font-size: 1rem; margin-bottom: 15px; transition: 0.2s;
-        }
-        .modern-input:focus { border-color: var(--red); outline: none; background: #2a2a2a; }
-        
-        .btn-primary { 
-            border: none; border-radius: 8px; cursor: pointer; font-weight: 800; 
-            display: flex; align-items: center; justify-content: center; gap: 10px; 
-            text-transform: uppercase; width: 100%; padding: 16px; transition: 0.2s;
-            font-size: 0.9rem;
-        }
-        .btn-primary:active { transform: scale(0.98); }
-
-        /* Lista de sugestões VTR */
-        #lista_vtr { 
-            display: none; position: absolute; width: 100%; background: #252525; 
-            border: 1px solid var(--red); z-index: 9999; max-height: 200px; 
-            overflow-y: auto; border-radius: 0 0 8px 8px; margin-top: -15px;
-        }
-        #lista_vtr div { padding: 14px; border-bottom: 1px solid #333; cursor: pointer; font-size: 0.9rem; }
+        /* Sugestão Automática de Veículos */
+        #lista_vtr { display: none; position: absolute; width: 100%; background: #222; border: 2px solid var(--red); z-index: 9999; max-height: 250px; overflow-y: auto; border-radius: 8px; top: 70px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+        #lista_vtr div { padding: 14px; border-bottom: 1px solid #333; cursor: pointer; color: #ccc; }
         #lista_vtr div:hover { background: var(--red); color: #fff; }
 
-        .checklist-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; background: #222; padding: 12px; border-radius: 10px; }
-        .check-container { 
-            display: flex; align-items: center; gap: 10px; color: #ccc; 
-            font-size: 0.8rem; cursor: pointer; background: #2a2a2a; 
-            padding: 10px; border-radius: 6px; border: 1px solid #333;
-        }
+        .checklist-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #222; padding: 15px; border-radius: 10px; }
+        .check-container { display: flex; align-items: center; gap: 8px; color: #ccc; font-size: 0.85rem; cursor: pointer; background: #2a2a2a; padding: 8px; border-radius: 5px; }
         .check-container input { width: 18px; height: 18px; accent-color: var(--red); }
-
-        #preview-foto { 
-            width: 100%; border-radius: 8px; margin-top: 10px; margin-bottom: 15px; 
-            display: none; border: 2px solid var(--red); 
-        }
-
-        table { width: 100%; border-collapse: collapse; background: #111; font-size: 0.8rem; border-radius: 8px; overflow: hidden; }
-        th { background: #222; color: var(--red); padding: 12px; text-align: left; border-bottom: 2px solid var(--red); text-transform: uppercase; font-size: 0.7rem; }
-        td { padding: 12px; border-bottom: 1px solid #222; color: #eee; }
-        
-        .btn-excluir { color: #555; background: none; border: none; cursor: pointer; padding: 8px; transition: 0.2s; }
+        #preview-foto { width: 100%; max-height: 250px; object-fit: cover; border-radius: 8px; margin-bottom: 15px; display: none; border: 2px solid var(--red); }
+        table { width: 100%; border-collapse: collapse; background: #111; font-size: 0.75rem; margin-top: 10px; }
+        th { background: #222; color: var(--red); padding: 10px; text-align: left; border-bottom: 2px solid var(--red); }
+        td { padding: 10px; border-bottom: 1px solid #222; }
+        .btn-excluir { color: #444; background: none; border: none; cursor: pointer; float: right; padding: 5px; }
         .btn-excluir:hover { color: var(--red); }
     </style>
 </head>
 <body>
 
     <header>
-        <div style="display: flex; align-items: center; justify-content: space-between; max-width: 800px; margin: auto;">
-            <a href="index.html" style="color: #888; text-decoration: none; font-size: 0.85rem; font-weight: bold;">
-                <i class="fas fa-chevron-left" style="color: var(--red);"></i> INÍCIO
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+            <a href="dashboard.html" style="color: white; text-decoration: none; font-size: 0.8rem; font-weight: bold;">
+                <i class="fas fa-arrow-left" style="color: var(--red);"></i> DASHBOARD
             </a>
-            <div style="color: var(--red); font-weight: 900; letter-spacing: 2px; font-size: 0.9rem;">VISTORIA TÉCNICA</div>
+            <div style="color: var(--red); font-weight: 900; letter-spacing: 2px;">VISTORIA TÉCNICA</div>
             <div style="width: 50px;"></div>
         </div>
     </header>
 
     <main class="container">
-        
-        <div class="card" style="border-left: 4px solid var(--red);">
-            <label><i class="fas fa-calendar-alt"></i> Filtrar Período</label>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
-                <input type="date" id="f_ini" class="modern-input" style="margin-bottom: 0;">
-                <input type="date" id="f_fim" class="modern-input" style="margin-bottom: 0;">
+        <div class="card" style="border-color: var(--red);">
+            <label><i class="fas fa-filter"></i> Período do Relatório</label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <input type="datetime-local" id="f_ini" class="modern-input">
+                <input type="datetime-local" id="f_fim" class="modern-input">
             </div>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                <button id="btnFiltrar" class="btn-primary" style="background: #333; padding: 12px; font-size: 0.75rem;">FILTRAR</button>
-                <button id="btnExportarPDF" class="btn-primary" style="background: #2c3e50; padding: 12px; font-size: 0.75rem;">
-                    <i class="fas fa-file-pdf"></i> PDF
-                </button>
+                <button id="btnFiltrar" class="btn-primary" style="background: #333; padding: 10px; color: #fff;">FILTRAR</button>
+                <button id="btnExportarPDF" class="btn-primary" style="background: #34495e; padding: 10px; color: #fff;"><i class="fas fa-file-pdf"></i> GERAR PDF</button>
             </div>
         </div>
 
         <div class="card">
             <div style="position: relative;">
-                <label>Viatura / Placa</label>
-                <input type="text" id="v_veiculo" class="modern-input" placeholder="Digite a placa ou modelo..." autocomplete="off">
+                <label>Viatura</label>
+                <input type="text" id="v_veiculo" class="modern-input" placeholder="Selecione a viatura..." autocomplete="off">
                 <div id="lista_vtr"></div>
             </div>
 
             <div style="display: flex; gap: 10px;">
-                <div style="flex: 1;"><label>KM Atual</label><input type="number" id="v_km" class="modern-input" placeholder="00000"></div>
-                <div style="flex: 1;"><label>Vigilante</label><input type="text" id="v_vigilante" class="modern-input" placeholder="Nome"></div>
+                <div style="flex: 1;"><label>KM Atual</label><input type="number" id="v_km" class="modern-input"></div>
+                <div style="flex: 1;"><label>Vigilante</label><input type="text" id="v_vigilante" class="modern-input"></div>
             </div>
 
-            <label>Checklist de Segurança</label>
+            <label>Checklist Completo</label>
             <div class="checklist-grid">
                 <label class="check-container"><input type="checkbox" class="v_chk" data-label="Água"> Água</label>
                 <label class="check-container"><input type="checkbox" class="v_chk" data-label="Óleo"> Óleo</label>
                 <label class="check-container"><input type="checkbox" class="v_chk" data-label="Macaco"> Macaco</label>
                 <label class="check-container"><input type="checkbox" class="v_chk" data-label="Triângulo"> Triângulo</label>
-                <label class="check-container"><input type="checkbox" class="v_chk" data-label="Faróis"> Faróis</label>
-                <label class="check-container"><input type="checkbox" class="v_chk" data-label="Lanternas"> Lanternas</label>
+                <label class="check-container"><input type="checkbox" class="v_chk" data-label="Farol Esq."> Farol Esq.</label>
+                <label class="check-container"><input type="checkbox" class="v_chk" data-label="Farol Dir."> Farol Dir.</label>
+                <label class="check-container"><input type="checkbox" class="v_chk" data-label="Lant. Esq."> Lant. Esq.</label>
+                <label class="check-container"><input type="checkbox" class="v_chk" data-label="Lant. Dir."> Lant. Dir.</label>
                 <label class="check-container"><input type="checkbox" class="v_chk" data-label="Pneus"> Pneus</label>
                 <label class="check-container"><input type="checkbox" class="v_chk" data-label="Limpeza"> Limpeza</label>
             </div>
 
-            <label style="margin-top: 15px;">Observações Gerais</label>
-            <textarea id="v_obs" class="modern-input" rows="2" placeholder="Ex: Riscos na porta, luz de freio queimada..."></textarea>
+            <label style="margin-top: 15px;">Observações</label>
+            <textarea id="v_obs" class="modern-input" rows="2"></textarea>
 
-            <button class="btn-primary" id="btnCâmera" style="background: #333; margin-bottom: 12px; color: #fff;">
-                <i class="fas fa-camera" style="color: var(--red);"></i> REGISTRAR FOTO
-            </button>
+            <button class="btn-primary" id="btnCâmera" style="background: #333; margin-bottom: 10px;"><i class="fas fa-camera"></i> FOTO DA VTR</button>
             <input type="file" id="input_foto" accept="image/*" capture="camera" style="display: none;">
             <img id="preview-foto">
 
             <button class="btn-primary" id="btnSalvarVistoria" style="background: var(--red); color: white;">
-                <i class="fas fa-check-circle"></i> FINALIZAR VISTORIA
+                <i class="fas fa-save"></i> FINALIZAR VISTORIA
             </button>
         </div>
 
-        <div style="overflow-x: auto;">
-            <table id="minhaTabela">
-                <thead><tr><th>Data</th><th>Viatura</th><th>KM</th><th>Ação</th></tr></thead>
-                <tbody id="tabelaVistoria"></tbody>
-            </table>
-        </div>
+        <table id="minhaTabela">
+            <thead><tr><th>Data</th><th>Viatura</th><th>Vigilante</th><th>KM</th></tr></thead>
+            <tbody id="tabelaVistoria"></tbody>
+        </table>
     </main>
 
     <script type="module">
@@ -165,100 +128,76 @@
         let fotoBase64 = "";
 
         onAuthStateChanged(auth, (u) => { 
-            if(u) { 
-                carregarVeiculos(); 
-                carregarHistorico(); 
-            } else { 
-                window.location.href="login.html"; 
-            }
+            if(u) { carregarVeiculos(); carregarHistorico(); } 
+            else { window.location.href="login.html"; }
         });
 
-        // Carregar Veículos para Sugestão
+        // --- CARREGAR VEÍCULOS E SUGESTÃO ---
         async function carregarVeiculos() {
             const snap = await getDocs(collection(db, "veiculos"));
             vtrCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         }
 
-        // Carregar Histórico
-        async function carregarHistorico() {
-            const q = query(collection(db, "vistorias"), orderBy("timestamp", "desc"));
-            const snap = await getDocs(q);
-            historicoLocal = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(i => i.usuario === auth.currentUser.email);
-            renderizar();
-        }
-
-        // Input Sugestões VTR
         const inputVtr = document.getElementById('v_veiculo');
         const boxVtr = document.getElementById('lista_vtr');
 
-        inputVtr.oninput = (e) => {
-            const val = e.target.value.toUpperCase();
+        inputVtr.addEventListener('click', () => exibirSugestoes(inputVtr.value.toUpperCase()));
+        inputVtr.addEventListener('input', (e) => exibirSugestoes(e.target.value.toUpperCase()));
+
+        function exibirSugestoes(val) {
             boxVtr.innerHTML = "";
-            if(!val) { boxVtr.style.display = 'none'; return; }
-            
             const filtrados = vtrCache.filter(v => v.placa.includes(val) || v.nome.toUpperCase().includes(val));
+            
             filtrados.forEach(v => {
                 const d = document.createElement('div');
                 d.innerHTML = `<b>${v.placa}</b> - ${v.nome}`;
-                d.onmousedown = () => {
+                d.onmousedown = (e) => {
+                    e.preventDefault();
                     inputVtr.value = `${v.placa} - ${v.nome}`;
-                    document.getElementById('v_km').value = v.km || "";
+                    document.getElementById('v_km').value = v.kmAtual || 0;
                     boxVtr.style.display = 'none';
                 };
                 boxVtr.appendChild(d);
             });
             boxVtr.style.display = filtrados.length ? 'block' : 'none';
-        };
-
-        // Câmera
-        document.getElementById('btnCâmera').onclick = () => document.getElementById('input_foto').click();
-        document.getElementById('input_foto').onchange = (e) => {
-            const reader = new FileReader();
-            reader.onload = () => {
-                fotoBase64 = reader.result;
-                const img = document.getElementById('preview-foto');
-                img.src = fotoBase64;
-                img.style.display = 'block';
-            };
-            reader.readAsDataURL(e.target.files[0]);
-        };
-
-        // Renderizar Tabela
-        function renderizar() {
-            const corpo = document.getElementById('tabelaVistoria');
-            corpo.innerHTML = "";
-            historicoLocal.forEach(i => {
-                corpo.innerHTML += `<tr>
-                    <td>${i.dataExibicao.split(',')[0]}</td>
-                    <td><b>${i.veiculo.split(' - ')[0]}</b></td>
-                    <td>${i.km}</td>
-                    <td><button class="btn-excluir" onclick="excluirVistoria('${i.id}')"><i class="fas fa-trash"></i></button></td>
-                </tr>`;
-            });
         }
 
-        window.excluirVistoria = async (id) => {
-            if(confirm("Deseja apagar este registro de vistoria?")) {
-                await deleteDoc(doc(db, "vistorias", id));
-                carregarHistorico();
+        document.addEventListener('click', (e) => {
+            if (!inputVtr.contains(e.target) && !boxVtr.contains(e.target)) {
+                boxVtr.style.display = 'none';
             }
+        });
+
+        // --- HISTÓRICO E FILTRO ---
+        async function carregarHistorico() {
+            const q = query(collection(db, "vistorias"), orderBy("timestamp", "desc"));
+            const snap = await getDocs(q);
+            historicoLocal = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+                                .filter(i => i.usuario === auth.currentUser.email);
+            renderizar(historicoLocal);
+        }
+
+        document.getElementById('btnFiltrar').onclick = () => {
+            const ini = new Date(document.getElementById('f_ini').value).getTime();
+            const fim = new Date(document.getElementById('f_fim').value).getTime();
+            
+            if(!ini || !fim) return alert("Selecione o período!");
+            
+            const filtrados = historicoLocal.filter(i => i.timestamp >= ini && i.timestamp <= fim);
+            renderizar(filtrados);
         };
 
-        // Salvar Vistoria
+        // --- SALVAR VISTORIA ---
         document.getElementById('btnSalvarVistoria').onclick = async () => {
-            const btn = document.getElementById('btnSalvarVistoria');
             const vtrVal = inputVtr.value.toUpperCase();
             const km = document.getElementById('v_km').value;
             const vig = document.getElementById('v_vigilante').value.toUpperCase();
+            
+            if(!vtrVal || !km || !vig) return alert("Preencha os campos obrigatórios!");
 
-            if(!vtrVal || !km || !vig) return alert("Por favor, preencha Viatura, KM e Vigilante.");
-
-            btn.disabled = true;
-            btn.innerHTML = "<i class='fas fa-spinner fa-spin'></i> SALVANDO...";
-
-            const checks = [];
+            const checklist = {};
             document.querySelectorAll('.v_chk').forEach(c => {
-                checks.push(`${c.dataset.label}: ${c.checked ? 'OK' : 'PENDENTE'}`);
+                checklist[c.dataset.label] = c.checked ? 'OK' : 'X';
             });
 
             try {
@@ -266,62 +205,64 @@
                     veiculo: vtrVal,
                     km: Number(km),
                     vigilante: vig,
-                    checkList: checks.join(" | "),
-                    obs: document.getElementById('v_obs').value.toUpperCase() || "SEM OBSERVAÇÕES",
+                    checklist: checklist,
+                    obs: document.getElementById('v_obs').value.toUpperCase() || "SEM OBS",
                     foto: fotoBase64,
                     timestamp: Date.now(),
                     dataExibicao: new Date().toLocaleString('pt-BR'),
                     usuario: auth.currentUser.email
                 });
-                alert("Vistoria finalizada com sucesso!");
+                alert("Vistoria Salva!");
                 location.reload();
-            } catch (e) {
-                alert("Erro ao salvar: " + e.message);
-                btn.disabled = false;
-                btn.innerText = "FINALIZAR VISTORIA";
-            }
+            } catch (e) { alert("Erro ao salvar!"); }
         };
 
-        // Gerar PDF
+        function renderizar(dados) {
+            const corpo = document.getElementById('tabelaVistoria');
+            corpo.innerHTML = "";
+            dados.forEach(i => {
+                corpo.innerHTML += `<tr>
+                    <td>${i.dataExibicao.split(' ')[0]}</td>
+                    <td><b>${i.veiculo}</b></td>
+                    <td>${i.vigilante}</td>
+                    <td>${i.km} <button class="btn-excluir" onclick="window.excluirVistoria('${i.id}')"><i class="fas fa-trash"></i></button></td>
+                </tr>`;
+            });
+        }
+
+        window.excluirVistoria = async (id) => {
+            if(confirm("Excluir?")) { await deleteDoc(doc(db, "vistorias", id)); carregarHistorico(); }
+        };
+
+        // --- PDF E CÂMERA ---
         document.getElementById('btnExportarPDF').onclick = () => {
             const { jsPDF } = window.jspdf;
             const docPdf = new jsPDF();
+            docPdf.text("JAPAN SECURITY - RELATÓRIO DE VISTORIA", 10, 10);
             
-            // Header do PDF
-            docPdf.setFillColor(230, 57, 70);
-            docPdf.rect(0, 0, 210, 25, 'F');
-            docPdf.setTextColor(255);
-            docPdf.setFontSize(16);
-            docPdf.text("JAPAN SECURITY - RELATÓRIO DE VISTORIA", 15, 17);
-
-            let y = 35;
-            historicoLocal.forEach((i, index) => {
-                if(y > 270) { docPdf.addPage(); y = 20; }
-                
-                docPdf.setTextColor(230, 57, 70);
-                docPdf.setFont(undefined, 'bold');
+            let y = 20;
+            historicoLocal.forEach(i => {
+                if(y > 270) { docPdf.addPage(); y = 10; }
+                const txtCheck = Object.entries(i.checklist || {}).map(([k,v]) => `${k}:${v}`).join(" | ");
                 docPdf.setFontSize(10);
-                docPdf.text(`VISTORIA #${index + 1} - DATA: ${i.dataExibicao}`, 15, y);
-                
-                y += 6;
-                docPdf.setTextColor(40);
-                docPdf.setFont(undefined, 'normal');
-                docPdf.text(`Viatura: ${i.veiculo} | KM: ${i.km} | Vigilante: ${i.vigilante}`, 15, y);
-                
-                y += 6;
-                docPdf.setFontSize(8);
-                docPdf.text(`Status: ${i.checkList}`, 15, y, { maxWidth: 180 });
-                
-                y += 8;
-                docPdf.text(`Obs: ${i.obs}`, 15, y, { maxWidth: 180 });
-                
+                docPdf.text(`${i.dataExibicao} - ${i.veiculo} (${i.km}KM)`, 10, y);
                 y += 5;
-                docPdf.setDrawColor(200);
-                docPdf.line(15, y, 195, y);
+                docPdf.setFontSize(8);
+                docPdf.text(`Check: ${txtCheck}`, 10, y, {maxWidth: 180});
                 y += 10;
             });
+            docPdf.save("vistorias.pdf");
+        };
 
-            docPdf.save(`Vistorias_JapanSecurity_${new Date().toLocaleDateString()}.pdf`);
+        document.getElementById('btnCâmera').onclick = () => document.getElementById('input_foto').click();
+        document.getElementById('input_foto').onchange = (e) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+                fotoBase64 = reader.result;
+                document.getElementById('preview-foto').src = fotoBase64;
+                document.getElementById('preview-foto').style.display = 'block';
+            };
+            reader.readAsDataURL(e.target.files[0]);
         };
     </script>
 </body>
