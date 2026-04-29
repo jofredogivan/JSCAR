@@ -10,29 +10,43 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
     <style>
-        :root { --red: #e63946; --green: #2ecc71; --dark: #121212; }
+        :root { --red: #e63946; --red-dark: #b91c1c; --dark: #121212; }
         body { background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; padding-bottom: 50px; }
+        
         header { background: #1a1a1a; padding: 15px; text-align: center; border-bottom: 2px solid var(--red); position: sticky; top: 0; z-index: 1000; }
         .container { padding: 15px; max-width: 800px; margin: auto; }
-        .card { background: #1a1a1a; padding: 18px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #333; position: relative; }
-        label { font-size: 0.7rem; color: var(--red); font-weight: bold; text-transform: uppercase; display: block; margin-bottom: 5px; }
-        .modern-input { width: 100%; padding: 12px; background: #222; border: 1px solid #444; color: #fff; border-radius: 8px; box-sizing: border-box; font-size: 1rem; margin-bottom: 10px; }
         
+        .card { background: #1a1a1a; padding: 18px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #333; }
+        label { font-size: 0.7rem; color: var(--red); font-weight: bold; text-transform: uppercase; display: block; margin-bottom: 5px; }
+        
+        .modern-input { 
+            width: 100%; padding: 12px; background: #222; border: 1px solid #444; 
+            color: #fff; border-radius: 8px; box-sizing: border-box; font-size: 1rem; margin-bottom: 10px; 
+        }
+
+        /* Botões com Feedback de Clique */
+        .btn-primary { 
+            border: none; border-radius: 8px; cursor: pointer; font-weight: 800; 
+            display: flex; align-items: center; justify-content: center; gap: 8px; 
+            text-transform: uppercase; width: 100%; padding: 15px; transition: all 0.1s active;
+        }
+        .btn-primary:active { transform: scale(0.96); opacity: 0.8; box-shadow: inset 0 3px 5px rgba(0,0,0,0.5); }
+        
+        .btn-foto { background: #333; color: white; border: 1px dashed var(--red); margin-bottom: 10px; padding: 10px; }
+        
+        /* Lista de Sugestões */
         #lista_vtr { 
             display: none; position: absolute; width: calc(100% - 36px); 
             background: #222; border: 2px solid var(--red); z-index: 9999; 
-            max-height: 250px; overflow-y: auto; border-radius: 0 0 10px 10px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.8); top: 75px; 
+            max-height: 250px; overflow-y: auto; border-radius: 0 0 10px 10px; top: 75px; 
         }
-        #lista_vtr div { padding: 14px; border-bottom: 1px solid #333; cursor: pointer; font-size: 0.95rem; color: #ccc; }
+        #lista_vtr div { padding: 14px; border-bottom: 1px solid #333; cursor: pointer; color: #ccc; }
         #lista_vtr div:hover { background: var(--red); color: #fff; }
 
-        .checklist-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #222; padding: 15px; border-radius: 10px; border: 1px solid #333; }
+        .checklist-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #222; padding: 15px; border-radius: 10px; }
         .check-container { display: flex; align-items: center; gap: 8px; color: #ccc; font-size: 0.85rem; cursor: pointer; background: #2a2a2a; padding: 8px; border-radius: 5px; }
         .check-container input { width: 18px; height: 18px; accent-color: var(--red); }
 
-        .btn-primary { border: none; border-radius: 8px; cursor: pointer; font-weight: 800; transition: 0.1s; display: flex; align-items: center; justify-content: center; gap: 8px; text-transform: uppercase; width: 100%; padding: 15px; }
-        .btn-foto { background: #333; color: white; border: 1px dashed #e63946; margin-bottom: 10px; padding: 10px; }
         #preview-foto { width: 100%; max-height: 250px; object-fit: cover; border-radius: 8px; margin-bottom: 15px; display: none; border: 2px solid var(--red); }
 
         table { width: 100%; border-collapse: collapse; background: #111; font-size: 0.75rem; margin-top: 10px; }
@@ -52,36 +66,36 @@
 
     <main class="container">
         <div class="card" style="border-color: var(--red);">
-            <label><i class="fas fa-filter"></i> Período para Relatório</label>
+            <label><i class="fas fa-filter"></i> Período do Relatório</label>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                 <input type="datetime-local" id="f_ini" class="modern-input">
                 <input type="datetime-local" id="f_fim" class="modern-input">
             </div>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                <button id="btnFiltrar" class="btn-primary" style="background: #333; padding: 10px;">FILTRAR</button>
-                <button id="btnExportarPDF" class="btn-primary" style="background: #34495e; padding: 10px;"><i class="fas fa-file-pdf"></i> GERAR PDF</button>
+                <button id="btnFiltrar" class="btn-primary" style="background: #333; padding: 10px; color: #fff;">FILTRAR</button>
+                <button id="btnExportarPDF" class="btn-primary" style="background: #34495e; padding: 10px; color: #fff;"><i class="fas fa-file-pdf"></i> GERAR PDF</button>
             </div>
         </div>
 
         <div class="card">
             <div style="position: relative;">
-                <label>Viatura (Placa ou Nome)</label>
-                <input type="text" id="v_veiculo" class="modern-input" placeholder="Selecione o veículo..." autocomplete="off">
+                <label>Viatura</label>
+                <input type="text" id="v_veiculo" class="modern-input" placeholder="Buscar placa..." autocomplete="off">
                 <div id="lista_vtr"></div>
             </div>
 
             <div style="display: flex; gap: 10px;">
                 <div style="flex: 1;">
                     <label>KM Atual</label>
-                    <input type="number" id="v_km" class="modern-input" placeholder="0">
+                    <input type="number" id="v_km" class="modern-input">
                 </div>
                 <div style="flex: 1;">
                     <label>Vigilante</label>
-                    <input type="text" id="v_vigilante" class="modern-input" placeholder="Nome">
+                    <input type="text" id="v_vigilante" class="modern-input">
                 </div>
             </div>
 
-            <label>Checklist</label>
+            <label>Checklist de Itens</label>
             <div class="checklist-grid">
                 <label class="check-container"><input type="checkbox" class="v_chk" data-label="Água"> Água</label>
                 <label class="check-container"><input type="checkbox" class="v_chk" data-label="Óleo"> Óleo</label>
@@ -96,15 +110,15 @@
             </div>
 
             <label style="margin-top: 15px;">Observações</label>
-            <textarea id="v_obs" class="modern-input" rows="2" placeholder="Descreva avarias..."></textarea>
+            <textarea id="v_obs" class="modern-input" rows="2" placeholder="Descreva problemas..."></textarea>
 
-            <label>Foto</label>
+            <label>Foto da Viatura/Avaria</label>
             <button class="btn-primary btn-foto" id="btnCâmera"><i class="fas fa-camera"></i> TIRAR FOTO</button>
             <input type="file" id="input_foto" accept="image/*" capture="camera" style="display: none;">
-            <img id="preview-foto" src="">
+            <img id="preview-foto">
 
-            <button class="btn-primary" id="btnSalvarVistoria" style="background: var(--red);">
-                <i class="fas fa-save"></i> FINALIZAR E SINCRONIZAR
+            <button class="btn-primary" id="btnSalvarVistoria" style="background: var(--red); color: white; margin-top: 10px;">
+                <i class="fas fa-save"></i> FINALIZAR VISTORIA
             </button>
         </div>
 
@@ -112,7 +126,7 @@
             <thead>
                 <tr>
                     <th>Data/Hora</th>
-                    <th>VTR</th>
+                    <th>Viatura</th>
                     <th>Vigilante</th>
                     <th>KM</th>
                 </tr>
@@ -144,9 +158,8 @@
         let fotoBase64 = "";
 
         onAuthStateChanged(auth, (user) => {
-            if (user) { 
-                carregarVeiculos().then(() => carregarHistorico()); 
-            } else { window.location.href = "login.html"; }
+            if (user) { carregarVeiculos().then(() => carregarHistorico()); }
+            else { window.location.href = "login.html"; }
         });
 
         async function carregarVeiculos() {
@@ -154,25 +167,21 @@
             vtrCache = [];
             snap.forEach(d => {
                 const i = d.data();
-                const placa = i.placa || i.Placa;
-                const nome = i.nome || i.Nome;
-                if(placa && nome) {
-                    vtrCache.push({ id: d.id, placa: placa.toUpperCase(), nome: nome.toUpperCase(), km: i.kmAtual || 0 });
-                }
+                vtrCache.push({ id: d.id, placa: (i.placa || "").toUpperCase(), nome: (i.nome || "").toUpperCase(), km: i.kmAtual || 0 });
             });
         }
 
         const inputVtr = document.getElementById('v_veiculo');
         const boxVtr = document.getElementById('lista_vtr');
 
-        function filtrarVtr(texto) {
+        inputVtr.oninput = (e) => {
+            const val = e.target.value.toUpperCase();
             boxVtr.innerHTML = "";
-            const filtro = texto.toUpperCase();
-            const encontrados = vtrCache.filter(v => v.placa.includes(filtro) || v.nome.includes(filtro));
-            if (encontrados.length > 0) {
-                encontrados.forEach(v => {
+            const enc = vtrCache.filter(v => v.placa.includes(val) || v.nome.includes(val));
+            if(val && enc.length){
+                enc.forEach(v => {
                     const d = document.createElement('div');
-                    d.innerHTML = `<i class="fas fa-car" style="color:var(--red); margin-right:10px;"></i> <b>${v.placa}</b> - ${v.nome}`;
+                    d.innerHTML = `<b>${v.placa}</b> - ${v.nome}`;
                     d.onmousedown = () => {
                         inputVtr.value = `${v.placa} - ${v.nome}`;
                         document.getElementById('v_km').value = v.km;
@@ -182,11 +191,7 @@
                 });
                 boxVtr.style.display = 'block';
             } else { boxVtr.style.display = 'none'; }
-        }
-
-        inputVtr.addEventListener('input', (e) => filtrarVtr(e.target.value));
-        inputVtr.addEventListener('focus', () => filtrarVtr(inputVtr.value));
-        inputVtr.addEventListener('blur', () => setTimeout(() => boxVtr.style.display = 'none', 200));
+        };
 
         document.getElementById('btnCâmera').onclick = () => document.getElementById('input_foto').click();
         document.getElementById('input_foto').onchange = (e) => {
@@ -194,9 +199,8 @@
             const reader = new FileReader();
             reader.onload = () => {
                 fotoBase64 = reader.result;
-                const preview = document.getElementById('preview-foto');
-                preview.src = fotoBase64;
-                preview.style.display = 'block';
+                document.getElementById('preview-foto').src = fotoBase64;
+                document.getElementById('preview-foto').style.display = 'block';
             };
             reader.readAsDataURL(file);
         };
@@ -206,13 +210,7 @@
             historicoLocal = [];
             snap.forEach(doc => {
                 const item = doc.data();
-                if(item.usuario === auth.currentUser.email) {
-                    if (!item.nomeVeiculo || item.nomeVeiculo === "AVULSO") {
-                        const find = vtrCache.find(v => v.placa === item.veiculo);
-                        item.nomeVeiculo = find ? find.nome : "N/D";
-                    }
-                    historicoLocal.push({ id: doc.id, ...item });
-                }
+                if(item.usuario === auth.currentUser.email) historicoLocal.push({ id: doc.id, ...item });
             });
             renderizar();
         }
@@ -222,127 +220,99 @@
             corpo.innerHTML = "";
             const ini = document.getElementById('f_ini').value ? new Date(document.getElementById('f_ini').value).getTime() : 0;
             const fim = document.getElementById('f_fim').value ? new Date(document.getElementById('f_fim').value).getTime() : Infinity;
-            const filtrados = historicoLocal.filter(i => i.timestamp >= ini && i.timestamp <= fim).sort((a,b) => b.timestamp - a.timestamp);
-            filtrados.forEach(i => {
-                corpo.innerHTML += `<tr>
-                    <td style="color:#777; font-size:0.65rem;">${i.dataExibicao}</td>
-                    <td><b>${i.veiculo}</b><br><small style="color:var(--red)">${i.nomeVeiculo}</small></td>
-                    <td>${i.vigilante}</td>
-                    <td>${i.km}</td>
-                </tr>`;
-            });
+            historicoLocal.filter(i => i.timestamp >= ini && i.timestamp <= fim)
+                .sort((a,b) => b.timestamp - a.timestamp)
+                .forEach(i => {
+                    corpo.innerHTML += `<tr><td>${i.dataExibicao}</td><td><b>${i.veiculo}</b></td><td>${i.vigilante}</td><td>${i.km}</td></tr>`;
+                });
         }
 
         document.getElementById('btnFiltrar').onclick = renderizar;
 
         document.getElementById('btnSalvarVistoria').onclick = async () => {
-            const btn = document.getElementById('btnSalvarVistoria');
-            const inputVal = inputVtr.value.toUpperCase();
+            const vtrVal = inputVtr.value.toUpperCase();
             const km = document.getElementById('v_km').value;
             const vig = document.getElementById('v_vigilante').value.toUpperCase();
-            if(!inputVal || !km || !vig) return alert("Preencha os campos!");
-            
-            btn.disabled = true;
-            btn.innerHTML = "<i class='fas fa-spinner fa-spin'></i> SALVANDO...";
+            if(!vtrVal || !km || !vig) return alert("Preencha tudo!");
 
-            const vEncontrado = vtrCache.find(v => inputVal.includes(v.placa));
-            const placaFinal = vEncontrado ? vEncontrado.placa : inputVal;
-            const nomeFinal = vEncontrado ? vEncontrado.nome : "AVULSO";
-            const checks = [];
-            document.querySelectorAll('.v_chk:checked').forEach(c => checks.push(c.getAttribute('data-label')));
+            const vEncontrado = vtrCache.find(v => vtrVal.includes(v.placa));
+            const checksArr = [];
+            document.querySelectorAll('.v_chk').forEach(c => {
+                checksArr.push(`${c.getAttribute('data-label')}: ${c.checked ? 'OK' : 'X'}`);
+            });
 
             try {
                 await addDoc(collection(db, "vistorias"), {
-                    veiculo: placaFinal,
-                    nomeVeiculo: nomeFinal,
+                    veiculo: vEncontrado ? `${vEncontrado.placa} - ${vEncontrado.nome}` : vtrVal,
                     km: Number(km),
                     vigilante: vig,
-                    checkList: checks.join(", "),
-                    obs: document.getElementById('v_obs').value.toUpperCase(),
+                    checkList: checksArr.join(" | "),
+                    obs: document.getElementById('v_obs').value.toUpperCase() || "SEM OBSERVAÇÕES",
                     foto: fotoBase64,
                     timestamp: new Date().getTime(),
                     dataExibicao: new Date().toLocaleString('pt-BR'),
                     usuario: auth.currentUser.email
                 });
                 if(vEncontrado) await updateDoc(doc(db, "veiculos", vEncontrado.id), { kmAtual: Number(km) });
-                alert("Vistoria salva!"); location.reload();
-            } catch (e) { alert("Erro ao salvar."); btn.disabled = false; }
+                alert("Vistoria Salva!"); location.reload();
+            } catch (e) { alert("Erro ao salvar."); }
         };
 
-        // --- PDF COM PADRÃO JAPAN SECURITY (CORES CORRIGIDAS) ---
+        // --- PDF LIMPO IGUAL À IMAGEM ---
         document.getElementById('btnExportarPDF').onclick = () => {
-            if(historicoLocal.length === 0) return alert("Não há dados para exportar.");
-            
             const { jsPDF } = window.jspdf;
-            const docPdf = new jsPDF('l', 'mm', 'a4'); // Modo Paisagem
+            const docPdf = new jsPDF('p', 'mm', 'a4');
             
-            const redColor = [230, 57, 70]; // #e63946
+            const ini = document.getElementById('f_ini').value || "Início";
+            const fim = document.getElementById('f_fim').value || "Fim";
+            const filtrados = historicoLocal.filter(i => {
+                const t = i.timestamp;
+                const dIni = document.getElementById('f_ini').value ? new Date(document.getElementById('f_ini').value).getTime() : 0;
+                const dFim = document.getElementById('f_fim').value ? new Date(document.getElementById('f_fim').value).getTime() : Infinity;
+                return t >= dIni && t <= dFim;
+            }).sort((a,b) => b.timestamp - a.timestamp);
 
-            // Cabeçalho do Documento
-            docPdf.setFontSize(20);
-            docPdf.setTextColor(redColor[0], redColor[1], redColor[2]);
-            docPdf.text("JAPAN SECURITY - RELATÓRIO DE VISTORIA", 14, 20);
-
+            // Cabeçalho Vermelho Sólido
+            docPdf.setFillColor(230, 57, 70);
+            docPdf.rect(0, 0, 210, 35, 'F');
+            docPdf.setTextColor(255, 255, 255);
+            docPdf.setFontSize(16);
+            docPdf.text("JAPAN SECURITY - RELATÓRIO TÉCNICO DE VISTORIA", 10, 18);
             docPdf.setFontSize(10);
-            docPdf.setTextColor(100);
-            docPdf.text(`Relatório gerado em: ${new Date().toLocaleString()}`, 14, 27);
+            docPdf.text(`Período: ${ini} até ${fim}`, 10, 26);
 
-            // Filtros de Data
-            const ini = document.getElementById('f_ini').value ? new Date(document.getElementById('f_ini').value).getTime() : 0;
-            const fim = document.getElementById('f_fim').value ? new Date(document.getElementById('f_fim').value).getTime() : Infinity;
-            const filtrados = historicoLocal.filter(i => i.timestamp >= ini && i.timestamp <= fim).sort((a,b) => b.timestamp - a.timestamp);
+            let y = 50;
 
-            const rows = filtrados.map(i => [
-                i.dataExibicao,
-                `${i.veiculo}\n${i.nomeVeiculo}`,
-                i.vigilante,
-                i.km + " KM",
-                i.checkList,
-                i.obs,
-                "" // Foto
-            ]);
+            filtrados.forEach((i, index) => {
+                if (y > 240) { docPdf.addPage(); y = 20; }
 
-            docPdf.autoTable({
-                head: [["DATA/HORA", "VIATURA", "VIGILANTE", "KM", "CHECKLIST", "OBSERVAÇÕES", "FOTO"]],
-                body: rows,
-                startY: 35,
-                theme: 'grid',
-                headStyles: { 
-                    fillColor: redColor, 
-                    textColor: [255, 255, 255], 
-                    fontSize: 8, 
-                    halign: 'center' 
-                },
-                styles: { 
-                    fontSize: 7, 
-                    valign: 'middle', 
-                    minCellHeight: 25 // Altura para a foto não ficar pequena
-                },
-                columnStyles: {
-                    6: { cellWidth: 35 } // Largura da coluna da foto
-                },
-                didDrawCell: (data) => {
-                    // Se for a coluna da foto e houver imagem no dado correspondente
-                    if (data.column.index === 6 && data.cell.section === 'body') {
-                        const item = filtrados[data.row.index];
-                        if (item && item.foto) {
-                            try {
-                                docPdf.addImage(
-                                    item.foto, 
-                                    'JPEG', 
-                                    data.cell.x + 2, 
-                                    data.cell.y + 2, 
-                                    31, 21 // Dimensões da miniatura
-                                );
-                            } catch (e) {
-                                console.log("Erro imagem:", e);
-                            }
-                        }
-                    }
+                docPdf.setTextColor(0, 0, 0);
+                docPdf.setFont("helvetica", "bold");
+                docPdf.setFontSize(12);
+                docPdf.text(`VTR: ${i.veiculo}`, 10, y);
+                docPdf.text(`DATA: ${i.dataExibicao}`, 130, y);
+                
+                y += 6;
+                docPdf.setFont("helvetica", "normal");
+                docPdf.setFontSize(9);
+                docPdf.text(`KM: ${i.km} | Vigilante: ${i.vigilante} | ${i.checkList}`, 10, y, { maxWidth: 190 });
+
+                y += 10;
+                if(i.foto) {
+                    docPdf.addImage(i.foto, 'JPEG', 10, y, 60, 40);
+                    y += 45;
                 }
+
+                docPdf.setFont("helvetica", "italic");
+                docPdf.text(`Observações: ${i.obs}`, 10, y);
+                
+                y += 10;
+                docPdf.setDrawColor(200);
+                docPdf.line(10, y, 200, y); // Linha separadora
+                y += 15;
             });
 
-            docPdf.save(`Relatorio_Vistoria_Japan_${new Date().getTime()}.pdf`);
+            docPdf.save("Relatorio_Vistoria_Limp.pdf");
         };
     </script>
 </body>
