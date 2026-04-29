@@ -14,21 +14,23 @@
         body { background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; padding-bottom: 50px; }
         header { background: #1a1a1a; padding: 15px; text-align: center; border-bottom: 2px solid var(--red); position: sticky; top: 0; z-index: 1000; }
         .container { padding: 15px; max-width: 800px; margin: auto; }
-        .card { background: #1a1a1a; padding: 18px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #333; }
+        .card { background: #1a1a1a; padding: 18px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #333; position: relative; }
         label { font-size: 0.7rem; color: var(--red); font-weight: bold; text-transform: uppercase; display: block; margin-bottom: 5px; }
         .modern-input { width: 100%; padding: 12px; background: #222; border: 1px solid #444; color: #fff; border-radius: 8px; box-sizing: border-box; font-size: 1rem; margin-bottom: 10px; }
         
-        /* Grid Checklist */
         .checklist-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #222; padding: 15px; border-radius: 10px; border: 1px solid #333; }
         .check-container { display: flex; align-items: center; gap: 8px; color: #ccc; font-size: 0.85rem; cursor: pointer; background: #2a2a2a; padding: 8px; border-radius: 5px; }
         .check-container input { width: 18px; height: 18px; accent-color: var(--red); }
 
-        /* Estilo Botões */
         .btn-primary { border: none; border-radius: 8px; cursor: pointer; font-weight: 800; transition: 0.1s; display: flex; align-items: center; justify-content: center; gap: 8px; text-transform: uppercase; width: 100%; padding: 15px; }
-        .btn-foto { background: #333; color: white; border: 1px dashed #e63946; margin-bottom: 10px; }
+        .btn-foto { background: #333; color: white; border: 1px dashed #e63946; margin-bottom: 10px; padding: 10px; }
         #preview-foto { width: 100%; max-height: 250px; object-fit: cover; border-radius: 8px; margin-bottom: 15px; display: none; border: 2px solid var(--red); }
 
-        table { width: 100%; border-collapse: collapse; background: #111; font-size: 0.75rem; }
+        #lista_vtr { display: none; position: absolute; width: calc(100% - 36px); background: #222; border: 2px solid var(--red); z-index: 9999; max-height: 250px; overflow-y: auto; border-radius: 0 0 10px 10px; top: 75px; }
+        #lista_vtr div { padding: 14px; border-bottom: 1px solid #333; cursor: pointer; font-size: 0.95rem; color: #ccc; }
+        #lista_vtr div:hover { background: var(--red); color: #fff; }
+
+        table { width: 100%; border-collapse: collapse; background: #111; font-size: 0.75rem; margin-top: 10px; }
         th { background: #222; color: var(--red); padding: 10px; text-align: left; border-bottom: 2px solid var(--red); }
         td { padding: 10px; border-bottom: 1px solid #222; }
     </style>
@@ -45,22 +47,28 @@
 
     <main class="container">
         <div class="card" style="border-color: var(--red);">
-            <label>Filtrar e Exportar</label>
+            <label><i class="fas fa-filter"></i> Filtrar Período (Início e Fim)</label>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                <input type="date" id="f_data_ini" class="modern-input">
-                <button id="btnExportarPDF" class="btn-primary" style="background: #34495e; padding: 10px;"><i class="fas fa-file-pdf"></i> PDF PROFISSIONAL</button>
+                <input type="datetime-local" id="f_ini" class="modern-input">
+                <input type="datetime-local" id="f_fim" class="modern-input">
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <button id="btnFiltrar" class="btn-primary" style="background: #333; padding: 10px;">FILTRAR</button>
+                <button id="btnExportarPDF" class="btn-primary" style="background: #34495e; padding: 10px;"><i class="fas fa-file-pdf"></i> GERAR PDF</button>
             </div>
         </div>
 
         <div class="card">
-            <label>Dados do Veículo</label>
-            <input list="listaVeiculos" id="v_veiculo" class="modern-input" placeholder="Placa da Viatura">
-            <datalist id="listaVeiculos"></datalist>
+            <div style="position: relative;">
+                <label>Viatura (Placa ou Nome)</label>
+                <input type="text" id="v_veiculo" class="modern-input" placeholder="Clique para selecionar..." autocomplete="off">
+                <div id="lista_vtr"></div>
+            </div>
 
             <div style="display: flex; gap: 10px;">
                 <div style="flex: 1;">
                     <label>KM Atual</label>
-                    <input type="number" id="v_km" class="modern-input" placeholder="00000">
+                    <input type="number" id="v_km" class="modern-input" placeholder="0">
                 </div>
                 <div style="flex: 1;">
                     <label>Vigilante</label>
@@ -96,10 +104,10 @@
         </div>
 
         <div class="table-responsive">
-            <table>
+            <table id="tabelaDados">
                 <thead>
                     <tr>
-                        <th>Data</th>
+                        <th>Data/Hora</th>
                         <th>VTR</th>
                         <th>Vigilante</th>
                         <th>KM</th>
@@ -129,14 +137,52 @@
         const auth = getAuth(app);
 
         let vtrCache = [];
+        let historicoLocal = [];
+        let filtradosPDF = [];
         let fotoBase64 = "";
 
         onAuthStateChanged(auth, (user) => {
-            if (user) {
-                carregarVeiculos();
-                buscarVistorias();
+            if (user) { 
+                carregarVeiculos().then(() => buscarVistorias()); 
             } else { window.location.href = "login.html"; }
         });
+
+        async function carregarVeiculos() {
+            const snap = await getDocs(collection(db, "veiculos"));
+            vtrCache = [];
+            const list = document.getElementById('lista_vtr');
+            snap.forEach(d => {
+                const i = d.data();
+                const placa = i.placa || i.Placa;
+                const nome = i.nome || i.Nome;
+                if(placa && nome) {
+                    vtrCache.push({ id: d.id, placa: placa.toUpperCase(), nome: nome.toUpperCase(), km: i.kmAtual || 0 });
+                }
+            });
+        }
+
+        // Lógica de Seleção de Veículo (Igual Entrada/Saída)
+        const inputVtr = document.getElementById('v_veiculo');
+        const boxVtr = document.getElementById('lista_vtr');
+        inputVtr.oninput = () => {
+            const f = inputVtr.value.toUpperCase();
+            boxVtr.innerHTML = "";
+            const encontrados = vtrCache.filter(v => v.placa.includes(f) || v.nome.includes(f));
+            if(encontrados.length > 0) {
+                encontrados.forEach(v => {
+                    const d = document.createElement('div');
+                    d.innerHTML = `<b>${v.placa}</b> - ${v.nome}`;
+                    d.onmousedown = () => {
+                        inputVtr.value = `${v.placa} - ${v.nome}`;
+                        document.getElementById('v_km').value = v.km;
+                        boxVtr.style.display = 'none';
+                    };
+                    boxVtr.appendChild(d);
+                });
+                boxVtr.style.display = 'block';
+            } else { boxVtr.style.display = 'none'; }
+        };
+        inputVtr.onblur = () => setTimeout(() => boxVtr.style.display = 'none', 200);
 
         // Lógica da Foto
         document.getElementById('btnCâmera').onclick = () => document.getElementById('input_foto').click();
@@ -152,40 +198,63 @@
             reader.readAsDataURL(file);
         };
 
-        async function carregarVeiculos() {
-            const q = query(collection(db, "veiculos"), where("usuario", "==", auth.currentUser.email));
-            const snap = await getDocs(q);
-            const list = document.getElementById('listaVeiculos');
-            vtrCache = [];
-            snap.forEach(d => {
-                vtrCache.push({ id: d.id, placa: d.data().placa });
-                list.innerHTML += `<option value="${d.data().placa}">`;
-            });
-        }
-
         async function buscarVistorias() {
-            const q = query(collection(db, "vistorias"), where("usuario", "==", auth.currentUser.email), orderBy("timestamp", "desc"));
-            const snap = await getDocs(q);
-            const corpo = document.getElementById('tabelaVistoria');
-            corpo.innerHTML = "";
+            const snap = await getDocs(collection(db, "vistorias"));
+            historicoLocal = [];
             snap.forEach(doc => {
                 const item = doc.data();
-                corpo.innerHTML += `<tr><td>${item.dataExibicao.split(',')[0]}</td><td><b>${item.veiculo}</b></td><td>${item.vigilante}</td><td>${item.km}</td></tr>`;
+                if(item.usuario === auth.currentUser.email) {
+                    // Trava de segurança para o Nome do Veículo
+                    if (!item.nomeVeiculo || item.nomeVeiculo === "AVULSO") {
+                        const find = vtrCache.find(v => v.placa === item.veiculo);
+                        item.nomeVeiculo = find ? find.nome : "NÃO CADASTRADO";
+                    }
+                    historicoLocal.push({ id: doc.id, ...item });
+                }
+            });
+            renderizar();
+        }
+
+        function renderizar() {
+            const ini = document.getElementById('f_ini').value;
+            const fim = document.getElementById('f_fim').value;
+            const tsIni = ini ? new Date(ini).getTime() : 0;
+            const tsFim = fim ? new Date(fim).getTime() : Infinity;
+
+            const corpo = document.getElementById('tabelaVistoria');
+            corpo.innerHTML = "";
+            
+            filtradosPDF = historicoLocal.filter(i => i.timestamp >= tsIni && i.timestamp <= tsFim).sort((a,b) => b.timestamp - a.timestamp);
+
+            filtradosPDF.forEach(i => {
+                corpo.innerHTML += `<tr>
+                    <td style="color:#777; font-size:0.65rem;">${i.dataExibicao}</td>
+                    <td><b>${i.veiculo}</b><br><small style="color:var(--red)">${i.nomeVeiculo}</small></td>
+                    <td>${i.vigilante}</td>
+                    <td>${i.km}</td>
+                </tr>`;
             });
         }
 
+        document.getElementById('btnFiltrar').onclick = renderizar;
+
         document.getElementById('btnSalvarVistoria').onclick = async () => {
-            const placa = document.getElementById('v_veiculo').value.toUpperCase();
+            const valorInput = inputVtr.value.toUpperCase();
             const km = document.getElementById('v_km').value;
             const vig = document.getElementById('v_vigilante').value.toUpperCase();
             
-            if(!placa || !km || !vig) return alert("Por favor, preencha Placa, KM e Vigilante!");
+            if(!valorInput || !km || !vig) return alert("Preencha Placa, KM e Vigilante!");
+
+            const vEncontrado = vtrCache.find(v => valorInput.includes(v.placa));
+            const placaFinal = vEncontrado ? vEncontrado.placa : valorInput;
+            const nomeFinal = vEncontrado ? vEncontrado.nome : "AVULSO";
 
             const checks = [];
             document.querySelectorAll('.v_chk:checked').forEach(c => checks.push(c.getAttribute('data-label')));
 
             const dados = {
-                veiculo: placa,
+                veiculo: placaFinal,
+                nomeVeiculo: nomeFinal,
                 km: Number(km),
                 vigilante: vig,
                 checkList: checks.join(", "),
@@ -197,37 +266,27 @@
             };
 
             try {
-                // 1. Salva a Vistoria
                 await addDoc(collection(db, "vistorias"), dados);
-                
-                // 2. Sincroniza o KM no cadastro do veículo
-                const vtr = vtrCache.find(v => v.placa === placa);
-                if(vtr) {
-                    await updateDoc(doc(db, "veiculos", vtr.id), { kmAtual: Number(km) });
+                if(vEncontrado) {
+                    await updateDoc(doc(db, "veiculos", vEncontrado.id), { kmAtual: Number(km) });
                 }
-
-                alert("Vistoria salva e KM da viatura atualizado!");
+                alert("Vistoria finalizada com sucesso!");
                 location.reload();
             } catch (e) { alert("Erro ao salvar: " + e); }
         };
 
-        // PDF PROFISSIONAL AGRUPADO
-        document.getElementById('btnExportarPDF').onclick = async () => {
-            const snap = await getDocs(query(collection(db, "vistorias"), where("usuario", "==", auth.currentUser.email)));
-            const vistorias = [];
-            snap.forEach(d => vistorias.push(d.data()));
-
-            if(vistorias.length === 0) return alert("Não há dados para gerar o PDF.");
+        document.getElementById('btnExportarPDF').onclick = () => {
+            if(filtradosPDF.length === 0) return alert("Filtre os dados primeiro!");
 
             const { jsPDF } = window.jspdf;
             const docPdf = new jsPDF('l', 'mm', 'a4');
             const logoColor = [230, 57, 70];
 
-            // Agrupando por veículo
             const grupos = {};
-            vistorias.forEach(v => {
-                if(!grupos[v.veiculo]) grupos[v.veiculo] = [];
-                grupos[v.veiculo].push(v);
+            filtradosPDF.forEach(v => {
+                const key = `${v.veiculo} - ${v.nomeVeiculo}`;
+                if(!grupos[key]) grupos[key] = [];
+                grupos[key].push(v);
             });
 
             let yPos = 20;
@@ -237,16 +296,16 @@
             docPdf.text("RELATÓRIO TÉCNICO DE VISTORIAS DE FROTA", 14, yPos + 7);
             yPos += 20;
 
-            Object.keys(grupos).forEach(placa => {
+            Object.keys(grupos).sort().forEach(vKey => {
                 if(yPos > 170) { docPdf.addPage(); yPos = 20; }
 
                 docPdf.setFillColor(240, 240, 240); docPdf.rect(14, yPos, 269, 8, 'F');
-                docPdf.setTextColor(0); docPdf.setFontSize(12); docPdf.setFont("helvetica", "bold");
-                docPdf.text(`VIATURA: ${placa}`, 18, yPos + 6);
+                docPdf.setTextColor(0); docPdf.setFontSize(11); docPdf.setFont("helvetica", "bold");
+                docPdf.text(`VIATURA: ${vKey}`, 18, yPos + 6);
                 yPos += 10;
 
-                const rows = grupos[placa].sort((a,b) => b.timestamp - a.timestamp).map(i => [
-                    i.dataExibicao, i.vigilante, i.km, i.checkList, i.obs
+                const rows = grupos[vKey].map(i => [
+                    i.dataExibicao, i.vigilante, i.km + " KM", i.checkList, i.obs
                 ]);
 
                 docPdf.autoTable({
@@ -260,7 +319,7 @@
                 });
             });
 
-            docPdf.save(`Relatorio_Vistorias_Japan_${new Date().getTime()}.pdf`);
+            docPdf.save("Relatorio_Vistorias_Japan.pdf");
         };
     </script>
 </body>
