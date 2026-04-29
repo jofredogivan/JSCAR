@@ -10,68 +10,61 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
     <style>
-        :root { --red: #e63946; --green: #2ecc71; --dark-card: #111; --bg: #000; }
-        body { background: var(--bg); color: #fff; font-family: 'Segoe UI', Roboto, sans-serif; margin: 0; padding-bottom: 40px; }
+        :root { --red: #e63946; --green: #2ecc71; --dark: #121212; }
+        body { background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; padding-bottom: 50px; }
+        header { background: #1a1a1a; padding: 20px; text-align: center; border-bottom: 4px solid var(--red); }
+        .container { padding: 15px; max-width: 700px; margin: auto; }
+        .card { background: var(--dark); padding: 18px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #333; }
+        label { font-size: 0.7rem; color: var(--red); font-weight: bold; text-transform: uppercase; display: block; margin-bottom: 5px; }
+        .modern-input { width: 100%; padding: 12px; background: #222; border: 1px solid #444; color: #fff; border-radius: 8px; box-sizing: border-box; font-size: 1rem; margin-bottom: 10px; }
         
-        header { background: #1a1a1a; padding: 20px; text-align: center; border-bottom: 4px solid var(--red); box-shadow: 0 4px 10px rgba(0,0,0,0.8); }
-        .container { padding: 15px; max-width: 600px; margin: auto; }
-        
-        .card { background: var(--dark-card); padding: 18px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #333; }
-        label { font-size: 0.7rem; color: var(--red); font-weight: bold; text-transform: uppercase; display: block; margin-bottom: 5px; letter-spacing: 1px; }
-        
-        .modern-input { width: 100%; padding: 12px; background: #222; border: 1px solid #444; color: #fff; border-radius: 8px; box-sizing: border-box; font-size: 1rem; margin-bottom: 10px; transition: 0.3s; }
-        .modern-input:focus { border-color: var(--red); outline: none; }
-
-        /* BOTÕES COM EFEITO DE PRESSÃO REAL */
-        .btn { border: none; border-radius: 10px; cursor: pointer; font-weight: 800; transition: 0.1s; display: flex; align-items: center; justify-content: center; gap: 10px; text-transform: uppercase; }
-        .btn:active { transform: translateY(3px) scale(0.96); filter: brightness(1.2); }
-        
-        .btn-salvar { background: var(--green); color: #000; height: 55px; width: 100%; font-size: 1rem; margin-top: 10px; box-shadow: 0 4px 0 #27ae60; }
-        .btn-filtrar { background: #333; color: #fff; height: 42px; width: 100%; border: 1px solid #555; }
+        /* Botões com Feedback */
+        .btn { border: none; border-radius: 8px; cursor: pointer; font-weight: 800; transition: 0.1s; display: flex; align-items: center; justify-content: center; gap: 8px; text-transform: uppercase; }
+        .btn:active { transform: scale(0.95); opacity: 0.8; }
+        .btn-save { background: var(--green); color: #000; height: 55px; width: 100%; font-size: 1.1rem; box-shadow: 0 4px 0 #27ae60; }
+        .btn-filter { background: #333; color: #fff; height: 42px; width: 100%; border: 1px solid #555; }
         .btn-pdf { background: var(--red); color: #fff; height: 42px; width: 100%; }
 
-        /* LISTA DE SUGESTÕES */
-        #lista_vtr { display: none; position: absolute; width: 100%; background: #222; border: 2px solid var(--red); z-index: 1000; max-height: 180px; overflow-y: auto; border-radius: 0 0 10px 10px; box-shadow: 0 10px 20px #000; }
-        #lista_vtr div { padding: 14px; border-bottom: 1px solid #333; cursor: pointer; font-weight: bold; }
+        /* Lista de Sugestão */
+        #lista_vtr { display: none; position: absolute; width: 100%; background: #222; border: 2px solid var(--red); z-index: 1000; max-height: 200px; overflow-y: auto; border-radius: 0 0 10px 10px; }
+        #lista_vtr div { padding: 12px; border-bottom: 1px solid #333; cursor: pointer; }
         #lista_vtr div:hover { background: var(--red); }
 
-        /* TABELA */
-        .table-area { overflow-x: auto; border-radius: 10px; }
-        table { width: 100%; border-collapse: collapse; background: #111; font-size: 0.8rem; }
-        th { background: #222; color: var(--red); padding: 12px; text-align: left; border-bottom: 2px solid var(--red); }
-        td { padding: 12px; border-bottom: 1px solid #222; }
+        table { width: 100%; border-collapse: collapse; background: #111; margin-top: 10px; font-size: 0.8rem; }
+        th { background: #222; color: var(--red); padding: 10px; text-align: left; border-bottom: 2px solid var(--red); }
+        td { padding: 10px; border-bottom: 1px solid #222; }
     </style>
 </head>
 <body>
 
 <header>
-    <div style="font-size: 1.4rem; font-weight: 900; color: var(--red); letter-spacing: 2px;">JAPAN SECURITY</div>
-    <div style="font-size: 0.65rem; color: #888; font-weight: bold;">SISTEMA DE ENTRADA E SAÍDA</div>
+    <div style="font-size: 1.4rem; font-weight: 900; color: var(--red);">JAPAN SECURITY</div>
+    <div style="font-size: 0.6rem; color: #888; font-weight: bold; letter-spacing: 2px;">MOVIMENTAÇÃO DE FROTA</div>
 </header>
 
 <div class="container">
     <div class="card">
-        <label><i class="fas fa-filter"></i> Período (Data e Hora)</label>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px;">
+        <label><i class="fas fa-search"></i> Filtrar Período</label>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 5px;">
             <input type="datetime-local" id="f_ini" class="modern-input">
             <input type="datetime-local" id="f_fim" class="modern-input">
         </div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 5px;">
-            <button id="btnFiltrar" class="btn btn-filtrar"><i class="fas fa-search"></i> Filtrar</button>
-            <button id="btnPDF" class="btn btn-pdf"><i class="fas fa-file-pdf"></i> PDF</button>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <button id="btnFiltrar" class="btn btn-filter">Filtrar</button>
+            <button id="btnPDF" class="btn btn-pdf">Gerar PDF</button>
         </div>
     </div>
 
-    <div class="card" style="border-top: 4px solid var(--red);">
+    <div class="card" style="border-left: 5px solid var(--red);">
         <div style="position: relative;">
-            <label>Pesquisar Viatura</label>
-            <input type="text" id="es_vtr" class="modern-input" placeholder="Digite placa ou nome..." autocomplete="off">
+            <label>Viatura (Placa ou Nome)</label>
+            <input type="text" id="es_vtr" class="modern-input" placeholder="Pesquisar..." autocomplete="off">
             <div id="lista_vtr"></div>
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
             <div>
-                <label>Tipo</label>
+                <label>Evento</label>
                 <select id="es_tipo" class="modern-input">
                     <option value="SAIDA">SAÍDA</option>
                     <option value="ENTRADA">ENTRADA</option>
@@ -79,19 +72,19 @@
             </div>
             <div>
                 <label>KM Atual</label>
-                <input type="number" id="es_km" class="modern-input" placeholder="0">
+                <input type="number" id="es_km" class="modern-input">
             </div>
         </div>
 
         <div>
-            <label>Motorista Responsável</label>
+            <label>Motorista</label>
             <input type="text" id="es_vig" class="modern-input" placeholder="Nome Completo">
         </div>
 
-        <button id="btnSalvar" class="btn btn-salvar"><i class="fas fa-check-circle"></i> Confirmar Registro</button>
+        <button id="btnSalvar" class="btn btn-save"><i class="fas fa-save"></i> Salvar Registro</button>
     </div>
 
-    <div class="table-area">
+    <div style="overflow-x: auto;">
         <table>
             <thead>
                 <tr>
@@ -140,7 +133,14 @@
         vtrCache = [];
         snap.forEach(d => {
             const i = d.data();
-            vtrCache.push({ id: d.id, placa: i.placa, nome: i.nome, km: i.kmAtual, texto: `${i.placa.toUpperCase()} - ${i.nome.toUpperCase()}` });
+            // Pegamos o nome e a placa separadamente do seu banco
+            vtrCache.push({ 
+                id: d.id, 
+                placa: i.placa, 
+                nome: i.nome, 
+                km: i.kmAtual, 
+                textoBusca: `${i.placa.toUpperCase()} - ${i.nome.toUpperCase()}` 
+            });
         });
     }
 
@@ -151,12 +151,12 @@
         const b = inputVtr.value.toUpperCase();
         boxVtr.innerHTML = "";
         if (b.length < 1) { boxVtr.style.display = 'none'; return; }
-        const f = vtrCache.filter(v => v.texto.includes(b));
+        const f = vtrCache.filter(v => v.textoBusca.includes(b));
         f.forEach(v => {
             const d = document.createElement('div');
-            d.innerText = v.texto;
+            d.innerText = v.textoBusca;
             d.onclick = () => {
-                inputVtr.value = v.texto;
+                inputVtr.value = v.textoBusca;
                 document.getElementById('es_km').value = v.km;
                 boxVtr.style.display = 'none';
             };
@@ -194,8 +194,8 @@
             const cor = i.tipo === "SAIDA" ? "#e63946" : "#2ecc71";
             corpo.innerHTML += `
                 <tr>
-                    <td style="color:#777; font-size:0.7rem">${i.dataExibicao}</td>
-                    <td><b>${i.veiculo}</b><br><small style="color:var(--red)">${i.nomeVeiculo || ''}</small></td>
+                    <td style="color:#777; font-size:0.65rem;">${i.dataExibicao}</td>
+                    <td><b>${i.veiculo}</b><br><small style="color:var(--red)">${i.nomeVeiculo || 'NÃO INFORMADO'}</small></td>
                     <td>${i.vigilante}</td>
                     <td>${i.km}</td>
                     <td style="color:${cor}; font-weight:bold">${i.tipo}</td>
@@ -205,33 +205,38 @@
     }
 
     document.getElementById('btnSalvar').onclick = async () => {
-        const txt = inputVtr.value.toUpperCase();
+        const valorInput = inputVtr.value.toUpperCase();
         const km = document.getElementById('es_km').value;
         const vig = document.getElementById('es_vig').value.toUpperCase();
 
-        if(!txt || !km || !vig) return alert("Preencha todos os dados!");
+        if(!valorInput || !km || !vig) return alert("Preencha todos os campos!");
 
-        let placa = txt; let nome = "FROTA";
-        if(txt.includes(" - ")) {
-            placa = txt.split(" - ")[0].trim();
-            nome = txt.split(" - ")[1].trim();
-        }
+        // BUSCA O NOME REAL NO CACHE BASEADO NO QUE FOI ESCRITO/SELECIONADO
+        const veiculoEncontrado = vtrCache.find(v => valorInput.includes(v.placa));
+        
+        const placaFinal = veiculoEncontrado ? veiculoEncontrado.placa : valorInput;
+        const nomeFinal = veiculoEncontrado ? veiculoEncontrado.nome : "Modelo Avulso";
 
         try {
             await addDoc(collection(db, "movimentacoes"), {
-                veiculo: placa, nomeVeiculo: nome, km: Number(km),
-                vigilante: vig, tipo: document.getElementById('es_tipo').value,
+                veiculo: placaFinal,
+                nomeVeiculo: nomeFinal,
+                km: Number(km),
+                vigilante: vig,
+                tipo: document.getElementById('es_tipo').value,
                 timestamp: new Date().getTime(),
                 dataExibicao: new Date().toLocaleString('pt-BR'),
                 usuario: auth.currentUser.email
             });
 
-            const v = vtrCache.find(x => x.placa === placa);
-            if(v) await updateDoc(doc(db, "veiculos", v.id), { kmAtual: Number(km) });
+            // Atualiza KM na coleção de veículos
+            if(veiculoEncontrado) {
+                await updateDoc(doc(db, "veiculos", veiculoEncontrado.id), { kmAtual: Number(km) });
+            }
 
-            alert("✓ Registrado!");
+            alert("✓ Registro Salvo!");
             location.reload();
-        } catch (e) { alert("Erro ao salvar no banco."); }
+        } catch (e) { alert("Erro ao salvar."); }
     };
 
     document.getElementById('btnFiltrar').onclick = renderizar;
@@ -243,14 +248,14 @@
         docPdf.text("JAPAN SECURITY - RELATORIO DE FROTA", 148, 15, { align: "center" });
         const dados = filtradosPDF.map(i => [i.dataExibicao, i.veiculo, i.nomeVeiculo, i.vigilante, i.km, i.tipo]);
         docPdf.autoTable({
-            head: [["DATA/HORA", "PLACA", "NOME", "MOTORISTA", "KM", "TIPO"]],
+            head: [["DATA/HORA", "PLACA", "NOME/MODELO", "MOTORISTA", "KM", "TIPO"]],
             body: dados, startY: 25, headStyles: { fillColor: [230, 57, 70] }
         });
         docPdf.save("Relatorio_Japan.pdf");
     };
 
     window.apagarRegistro = async (id) => {
-        if(confirm("Excluir?")) {
+        if(confirm("Excluir registro?")) {
             await deleteDoc(doc(db, "movimentacoes", id));
             carregarHistorico();
         }
