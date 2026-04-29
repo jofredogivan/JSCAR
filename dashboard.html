@@ -8,7 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { --red-japan: #e63946; --bg-card: #1e1e1e; --green: #2ecc71; }
-        body { background-color: #121212; color: white; margin: 0; font-family: sans-serif; padding-bottom: 30px; }
+        body { background-color: #121212; color: white; margin: 0; font-family: 'Segoe UI', sans-serif; padding-bottom: 30px; }
         
         /* --- STATUS PISCANDO --- */
         .status-bar {
@@ -34,46 +34,60 @@
             100% { opacity: 1; text-shadow: 0 0 5px var(--green); }
         }
 
-        /* --- BOTÕES DE NAVEGAÇÃO --- */
+        .container { max-width: 1100px; margin: 0 auto; padding: 0 15px; }
+
+        /* --- BOTÕES DE NAVEGAÇÃO (RESPONSIVO PC/CELULAR) --- */
         .nav-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(85px, 1fr));
-            gap: 8px;
-            padding: 15px;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 10px;
+            padding: 20px 0;
         }
         .nav-card {
             background: var(--bg-card);
             border: 1px solid #333;
-            padding: 12px 5px;
-            border-radius: 10px;
+            padding: 15px 5px;
+            border-radius: 12px;
             text-align: center;
             text-decoration: none;
             color: white;
             transition: 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
-        .nav-card:active { transform: scale(0.95); background: #222; }
-        .nav-card i { color: var(--red-japan); font-size: 1.3rem; margin-bottom: 6px; display: block; }
-        .nav-card span { font-size: 0.6rem; font-weight: bold; text-transform: uppercase; }
+        .nav-card:hover { border-color: var(--red-japan); background: #222; }
+        .nav-card i { color: var(--red-japan); font-size: 1.5rem; margin-bottom: 8px; }
+        .nav-card span { font-size: 0.7rem; font-weight: bold; text-transform: uppercase; }
 
-        .stats-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 0 15px 15px; }
+        /* --- ESTATÍSTICAS --- */
+        .stats-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
         .stat-card { background: var(--bg-card); padding: 20px; border-radius: 15px; text-align: center; border-bottom: 4px solid var(--red-japan); }
         .stat-card span { font-size: 0.7rem; color: #888; text-transform: uppercase; display: block; }
         .stat-card strong { font-size: 1.8rem; display: block; margin-top: 5px; }
         
-        .chart-section { padding: 0 15px 20px; }
-        .chart-card { background: var(--bg-card); border-radius: 15px; padding: 20px; margin-bottom: 20px; border: 1px solid #333; }
+        /* --- GRÁFICOS --- */
+        .chart-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .chart-card { background: var(--bg-card); border-radius: 15px; padding: 20px; border: 1px solid #333; }
         .chart-title { font-size: 0.9rem; font-weight: bold; color: var(--red-japan); margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
         .canvas-container { position: relative; height: 220px; width: 100%; }
+
+        @media (max-width: 500px) {
+            .nav-grid { grid-template-columns: repeat(3, 1fr); }
+            .nav-card:last-child { grid-column: span 3; } /* Backup fica maior no final */
+        }
     </style>
 </head>
 <body>
 
-    <header style="background: #1a1a1a; padding: 15px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 1000;">
-        <div style="color: white; font-size: 0.9rem; font-weight: bold; display: flex; align-items: center; gap: 8px;">
-            <i class="fas fa-user-shield"></i> JOFRE
+    <header style="background: #1a1a1a; padding: 15px; border-bottom: 1px solid #333;">
+        <div class="container" style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="color: white; font-size: 0.9rem; font-weight: bold; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-shield-alt"></i> JOFRE | OPERACIONAL
+            </div>
+            <div style="color: var(--red-japan); font-weight: 900; font-size: 0.8rem; letter-spacing: 2px;">JAPAN SECURITY</div>
+            <a href="login.html" id="btnLogout" style="color: #666; text-decoration: none;"><i class="fas fa-sign-out-alt"></i></a>
         </div>
-        <div style="color: var(--red-japan); font-weight: 900; font-size: 0.8rem; letter-spacing: 2px;">JAPAN SECURITY</div>
-        <a href="index.html" style="color: #666; text-decoration: none;"><i class="fas fa-sign-out-alt"></i></a>
     </header>
 
     <div class="status-bar">
@@ -82,59 +96,57 @@
         </div>
     </div>
 
-    <nav class="nav-grid">
-        <a href="vistoria.html" class="nav-card">
-            <i class="fas fa-clipboard-check"></i>
-            <span>Vistoria</span>
-        </a>
-        <a href="veiculos.html" class="nav-card">
-            <i class="fas fa-car-side"></i>
-            <span>Frota</span>
-        </a>
-        <a href="entrada_saida.html" class="nav-card">
-            <i class="fas fa-exchange-alt"></i>
-            <span>Entr/Saída</span>
-        </a>
-        <a href="manutencao.html" class="nav-card">
-            <i class="fas fa-wrench"></i>
-            <span>Manut.</span>
-        </a>
-        <a href="backup.html" class="nav-card">
-            <i class="fas fa-database"></i>
-            <span>Backup</span>
-        </a>
-    </nav>
+    <main class="container">
+        <nav class="nav-grid">
+            <a href="vistoria.html" class="nav-card">
+                <i class="fas fa-clipboard-check"></i>
+                <span>Vistoria</span>
+            </a>
+            <a href="vehicles.html" class="nav-card">
+                <i class="fas fa-car"></i>
+                <span>Frota</span>
+            </a>
+            <a href="entrada_saida.html" class="nav-card">
+                <i class="fas fa-exchange-alt"></i>
+                <span>Entr/Saída</span>
+            </a>
+            <a href="maintenance.html" class="nav-card">
+                <i class="fas fa-tools"></i>
+                <span>Manut.</span>
+            </a>
+            <a href="backup.html" class="nav-card">
+                <i class="fas fa-database"></i>
+                <span>Backup</span>
+            </a>
+        </nav>
 
-    <section class="stats-container">
-        <div class="stat-card">
-            <span>Frota Total</span>
-            <strong id="countFrotaTotal">0</strong>
-        </div>
-        <div class="stat-card">
-            <span>Vistorias Hoje</span>
-            <strong id="countVistorias">0</strong>
-        </div>
-    </section>
+        <section class="stats-container">
+            <div class="stat-card">
+                <span>Frota Total</span>
+                <strong id="countFrotaTotal">0</strong>
+            </div>
+            <div class="stat-card">
+                <span>Vistorias Hoje</span>
+                <strong id="countVistorias">0</strong>
+            </div>
+        </section>
 
-    <section class="chart-section">
-        <div class="chart-card">
-            <div class="chart-title"><i class="fas fa-chart-pie"></i> STATUS OPERACIONAL</div>
-            <div class="canvas-container">
-                <canvas id="graficoPizza"></canvas>
+        <section class="chart-grid">
+            <div class="chart-card">
+                <div class="chart-title"><i class="fas fa-chart-pie"></i> STATUS OPERACIONAL</div>
+                <div class="canvas-container"><canvas id="graficoPizza"></canvas></div>
             </div>
-        </div>
-        <div class="chart-card">
-            <div class="chart-title"><i class="fas fa-chart-bar"></i> QUILOMETRAGEM POR VEÍCULO</div>
-            <div class="canvas-container">
-                <canvas id="graficoLinha"></canvas>
+            <div class="chart-card">
+                <div class="chart-title"><i class="fas fa-chart-bar"></i> KM POR VEÍCULO</div>
+                <div class="canvas-container"><canvas id="graficoLinha"></canvas></div>
             </div>
-        </div>
-    </section>
+        </section>
+    </main>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDczjdNxa2TZP07iiwTAkOLFbKcOPx1POo",
@@ -192,34 +204,22 @@
             new Chart(document.getElementById('graficoPizza'), {
                 type: 'doughnut',
                 data: {
-                    labels: ['Em Operação', 'Manutenção'],
-                    datasets: [{
-                        data: [placas.length, 0], 
-                        backgroundColor: ['#2ecc71', '#e63946'],
-                        borderWidth: 0
-                    }]
+                    labels: ['Operacional', 'Oficina'],
+                    datasets: [{ data: [placas.length, 0], backgroundColor: ['#2ecc71', '#e63946'], borderWidth: 0 }]
                 },
-                options: { responsive: true, maintainAspectRatio: false }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#fff' } } } }
             });
 
             new Chart(document.getElementById('graficoLinha'), {
                 type: 'bar',
                 data: {
                     labels: placas,
-                    datasets: [{
-                        label: 'KM Atual',
-                        data: kms,
-                        backgroundColor: '#e63946',
-                        borderRadius: 5
-                    }]
+                    datasets: [{ label: 'KM', data: kms, backgroundColor: '#e63946', borderRadius: 5 }]
                 },
                 options: { 
                     responsive: true, 
                     maintainAspectRatio: false,
-                    scales: { 
-                        y: { beginAtZero: true, grid: { color: '#333' } },
-                        x: { grid: { display: false } }
-                    }
+                    scales: { y: { beginAtZero: true, grid: { color: '#333' } }, x: { grid: { display: false } } }
                 }
             });
         }
