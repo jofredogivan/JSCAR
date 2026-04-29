@@ -6,34 +6,88 @@
     <title>Japan Security | Login</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Estilo rápido para manter o padrão que você gosta */
-        body { background: #121212; color: white; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-        .card-login { background: #1a1a1a; padding: 30px; border-radius: 12px; width: 100%; max-width: 320px; border-bottom: 4px solid #e63946; text-align: center; }
-        .modern-input { width: 100%; padding: 12px; margin: 10px 0; background: #222; border: 1px solid #333; color: white; border-radius: 6px; box-sizing: border-box; }
-        .btn-acessar { background: #e63946; color: white; border: none; width: 100%; padding: 15px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        .btn-criar { background: transparent; color: #888; border: 1px solid #333; width: 100%; padding: 10px; border-radius: 6px; margin-top: 10px; cursor: pointer; font-size: 0.8rem; }
+        body { 
+            background: #121212; 
+            color: white; 
+            font-family: 'Segoe UI', Roboto, sans-serif; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            height: 100vh; 
+            margin: 0; 
+        }
+        .card-login { 
+            background: #1a1a1a; 
+            padding: 40px 30px; 
+            border-radius: 16px; 
+            width: 90%; 
+            max-width: 350px; 
+            border-bottom: 5px solid #e63946; 
+            text-align: center; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .logo-icon { font-size: 3rem; color: #e63946; margin-bottom: 15px; }
+        .modern-input { 
+            width: 100%; 
+            padding: 14px; 
+            margin: 10px 0; 
+            background: #252525; 
+            border: 1px solid #333; 
+            color: white; 
+            border-radius: 8px; 
+            box-sizing: border-box; 
+            outline: none;
+            transition: 0.3s;
+        }
+        .modern-input:focus { border-color: #e63946; background: #2a2a2a; }
+        .btn-acessar { 
+            background: #e63946; 
+            color: white; 
+            border: none; 
+            width: 100%; 
+            padding: 16px; 
+            border-radius: 8px; 
+            font-weight: 900; 
+            cursor: pointer; 
+            margin-top: 15px; 
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: 0.3s;
+        }
+        .btn-acessar:active { transform: scale(0.98); opacity: 0.9; }
+        .btn-criar { 
+            background: transparent; 
+            color: #666; 
+            border: none; 
+            width: 100%; 
+            padding: 10px; 
+            margin-top: 20px; 
+            cursor: pointer; 
+            font-size: 0.75rem; 
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
 
     <div class="card-login">
-        <div style="color: #e63946; font-weight: 900; font-size: 1.4rem; letter-spacing: 2px; margin-bottom: 5px;">JAPAN SECURITY</div>
-        <div style="color: #888; font-size: 0.7rem; margin-bottom: 25px; text-transform: uppercase;">Controle de Frota</div>
+        <i class="fas fa-shield-alt logo-icon"></i>
+        <div style="color: white; font-weight: 900; font-size: 1.8rem; letter-spacing: 4px; margin-bottom: 5px;">JAPAN</div>
+        <div style="color: #e63946; font-size: 0.75rem; margin-bottom: 30px; text-transform: uppercase; font-weight: bold; letter-spacing: 2px;">Security Car Management</div>
 
-        <input type="email" id="email" class="modern-input" placeholder="Seu e-mail">
-        <input type="password" id="password" class="modern-input" placeholder="Sua senha">
+        <input type="email" id="email" class="modern-input" placeholder="E-mail de acesso">
+        <input type="password" id="password" class="modern-input" placeholder="Senha">
         
-        <button class="btn-acessar" onclick="login()">ENTRAR NO SISTEMA</button>
-        <button class="btn-criar" onclick="cadastrar()">CRIAR MINHA CONTA</button>
+        <button class="btn-acessar" onclick="login()">ENTRAR NO PAINEL</button>
+        <button class="btn-criar" onclick="cadastrar()">Ainda não tem conta? Criar acesso</button>
 
-        <div id="msg" style="margin-top: 15px; font-size: 0.8rem; color: #ffb703;"></div>
+        <div id="msg" style="margin-top: 20px; font-size: 0.85rem; color: #ffb703; min-height: 20px;"></div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        // Seus dados integrados aqui:
         const firebaseConfig = {
             apiKey: "AIzaSyDczjdNxa2TZP07iiwTAkOLFbKcOPx1POo",
             authDomain: "japan-security-car-1a7d8.firebaseapp.com",
@@ -46,17 +100,25 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
-        // Função de Login
+        // Função de Login Direto para o Dashboard
         window.login = async () => {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const msg = document.getElementById('msg');
 
+            if(!email || !password) {
+                msg.innerText = "Preencha todos os campos.";
+                return;
+            }
+
+            msg.innerText = "Autenticando...";
+
             try {
                 await signInWithEmailAndPassword(auth, email, password);
-                window.location.href = "index.html"; // Vai para a tela inicial
+                // REDIRECIONAMENTO CORRIGIDO:
+                window.location.href = "dashboard.html"; 
             } catch (error) {
-                msg.innerText = "Erro: Usuário ou senha incorretos.";
+                msg.innerText = "Erro: E-mail ou senha incorretos.";
             }
         };
 
@@ -73,9 +135,10 @@
 
             try {
                 await createUserWithEmailAndPassword(auth, email, password);
-                alert("Conta criada com sucesso! Você já pode entrar.");
+                msg.style.color = "#2ecc71";
+                msg.innerText = "Conta criada! Agora clique em ENTRAR.";
             } catch (error) {
-                msg.innerText = "Erro ao criar conta. Tente outro e-mail.";
+                msg.innerText = "Erro ao criar conta. Verifique o e-mail.";
             }
         };
     </script>
