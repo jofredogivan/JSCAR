@@ -5,99 +5,104 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Japan Security | Vistoria</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="css/style.css">
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
     <style>
-        .check-container { display: flex; align-items: center; gap: 8px; color: #ccc; font-size: 0.8rem; cursor: pointer; }
-        .check-container input { width: 18px; height: 18px; accent-color: #e63946; }
+        :root { --red: #e63946; --green: #2ecc71; --dark: #121212; }
+        body { background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; padding-bottom: 50px; }
+        header { background: #1a1a1a; padding: 15px; text-align: center; border-bottom: 2px solid var(--red); position: sticky; top: 0; z-index: 1000; }
+        .container { padding: 15px; max-width: 800px; margin: auto; }
+        .card { background: #1a1a1a; padding: 18px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #333; }
+        label { font-size: 0.7rem; color: var(--red); font-weight: bold; text-transform: uppercase; display: block; margin-bottom: 5px; }
+        .modern-input { width: 100%; padding: 12px; background: #222; border: 1px solid #444; color: #fff; border-radius: 8px; box-sizing: border-box; font-size: 1rem; margin-bottom: 10px; }
+        
+        /* Grid Checklist */
+        .checklist-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #222; padding: 15px; border-radius: 10px; border: 1px solid #333; }
+        .check-container { display: flex; align-items: center; gap: 8px; color: #ccc; font-size: 0.85rem; cursor: pointer; background: #2a2a2a; padding: 8px; border-radius: 5px; }
+        .check-container input { width: 18px; height: 18px; accent-color: var(--red); }
+
+        /* Estilo Botões */
+        .btn-primary { border: none; border-radius: 8px; cursor: pointer; font-weight: 800; transition: 0.1s; display: flex; align-items: center; justify-content: center; gap: 8px; text-transform: uppercase; width: 100%; padding: 15px; }
+        .btn-foto { background: #333; color: white; border: 1px dashed #e63946; margin-bottom: 10px; }
+        #preview-foto { width: 100%; max-height: 250px; object-fit: cover; border-radius: 8px; margin-bottom: 15px; display: none; border: 2px solid var(--red); }
+
+        table { width: 100%; border-collapse: collapse; background: #111; font-size: 0.75rem; }
+        th { background: #222; color: var(--red); padding: 10px; text-align: left; border-bottom: 2px solid var(--red); }
+        td { padding: 10px; border-bottom: 1px solid #222; }
     </style>
 </head>
 <body>
 
-    <header style="background: #1a1a1a; padding: 15px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 1000;">
-        <a href="index.html" style="color: white; text-decoration: none; font-size: 0.9rem; font-weight: bold; display: flex; align-items: center; gap: 8px;">
-            <i class="fas fa-chevron-left"></i> INÍCIO
-        </a>
-        <div style="color: #e63946; font-weight: 900; font-size: 0.8rem; letter-spacing: 2px;">VISTORIA</div>
-        <div style="width: 50px;"></div>
+    <header>
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+            <a href="index.html" style="color: white; text-decoration: none; font-size: 0.8rem;"><i class="fas fa-chevron-left"></i> VOLTAR</a>
+            <div style="color: var(--red); font-weight: 900; letter-spacing: 2px;">VISTORIA TÉCNICA</div>
+            <div style="width: 50px;"></div>
+        </div>
     </header>
 
-    <main class="main-content" style="padding: 15px;">
-        
-        <div class="card" style="margin-bottom: 15px; border: 1px solid #e63946; background: #1a1a1a;">
-            <div style="display: flex; flex-direction: column; gap: 10px;">
-                <label style="color: #e63946; font-size: 0.7rem; font-weight: bold;">FILTRAR VISTORIAS</label>
-                <input list="listaVeiculos" id="f_placa" class="modern-input" placeholder="Todas as Viaturas">
-                <div style="display: flex; gap: 10px;">
-                    <input type="date" id="f_data_ini" class="modern-input">
-                    <input type="date" id="f_data_fim" class="modern-input">
-                </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                    <button class="btn-primary" id="btnFiltrar" style="background: #333;">
-                        <i class="fas fa-search"></i> FILTRAR
-                    </button>
-                    <button class="btn-primary" id="btnExportarPDF" style="background: #34495e;">
-                        <i class="fas fa-file-pdf"></i> GERAR PDF
-                    </button>
-                </div>
+    <main class="container">
+        <div class="card" style="border-color: var(--red);">
+            <label>Filtrar e Exportar</label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <input type="date" id="f_data_ini" class="modern-input">
+                <button id="btnExportarPDF" class="btn-primary" style="background: #34495e; padding: 10px;"><i class="fas fa-file-pdf"></i> PDF PROFISSIONAL</button>
             </div>
         </div>
 
-        <div class="card" style="margin-bottom: 20px;">
-            <div style="display: flex; flex-direction: column; gap: 12px;">
-                
-                <div class="input-group">
-                    <label>Viatura</label>
-                    <input list="listaVeiculos" id="v_veiculo" class="modern-input" placeholder="Selecione a placa...">
-                    <datalist id="listaVeiculos"></datalist>
-                </div>
+        <div class="card">
+            <label>Dados do Veículo</label>
+            <input list="listaVeiculos" id="v_veiculo" class="modern-input" placeholder="Placa da Viatura">
+            <datalist id="listaVeiculos"></datalist>
 
-                <div class="input-group" style="background: #252525; padding: 10px; border-radius: 8px; border: 1px solid #333;">
-                    <label style="font-size: 0.65rem; color: #e63946; font-weight: bold;">DATA/HORA DA VISTORIA</label>
-                    <input type="datetime-local" id="v_data_retroativa" class="modern-input">
+            <div style="display: flex; gap: 10px;">
+                <div style="flex: 1;">
+                    <label>KM Atual</label>
+                    <input type="number" id="v_km" class="modern-input" placeholder="00000">
                 </div>
-
-                <div style="display: flex; gap: 10px;">
-                    <div style="flex: 1;">
-                        <label>KM Atual</label>
-                        <input type="number" id="v_km" class="modern-input">
-                    </div>
-                    <div style="flex: 1;">
-                        <label>Vigilante</label>
-                        <input type="text" id="v_vigilante" class="modern-input" placeholder="Nome">
-                    </div>
+                <div style="flex: 1;">
+                    <label>Vigilante</label>
+                    <input type="text" id="v_vigilante" class="modern-input" placeholder="Nome">
                 </div>
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #252525; padding: 15px; border-radius: 10px; border: 1px solid #333;">
-                    <label class="check-container"><input type="checkbox" class="v_chk" data-label="Óleo"> Óleo</label>
-                    <label class="check-container"><input type="checkbox" class="v_chk" data-label="Água"> Água</label>
-                    <label class="check-container"><input type="checkbox" class="v_chk" data-label="Pneus"> Pneus</label>
-                    <label class="check-container"><input type="checkbox" class="v_chk" data-label="Limpeza"> Limpeza</label>
-                    <label class="check-container"><input type="checkbox" class="v_chk" data-label="Faróis"> Faróis</label>
-                    <label class="check-container"><input type="checkbox" class="v_chk" data-label="Lanternas"> Lanternas</label>
-                </div>
-
-                <div class="input-group">
-                    <label>Observações Adicionais</label>
-                    <textarea id="v_obs" class="modern-input" rows="2" placeholder="Descreva avarias ou detalhes..."></textarea>
-                </div>
-
-                <button class="btn-primary" id="btnSalvarVistoria" style="background: #e63946; padding: 15px;">
-                    <i class="fas fa-check-circle"></i> FINALIZAR VISTORIA
-                </button>
             </div>
+
+            <label>Checklist Completo</label>
+            <div class="checklist-grid">
+                <label class="check-container"><input type="checkbox" class="v_chk" data-label="Água"> Água</label>
+                <label class="check-container"><input type="checkbox" class="v_chk" data-label="Óleo"> Óleo</label>
+                <label class="check-container"><input type="checkbox" class="v_chk" data-label="Macaco"> Macaco</label>
+                <label class="check-container"><input type="checkbox" class="v_chk" data-label="Triângulo"> Triângulo</label>
+                <label class="check-container"><input type="checkbox" class="v_chk" data-label="Farol Esq."> Farol Esq.</label>
+                <label class="check-container"><input type="checkbox" class="v_chk" data-label="Farol Dir."> Farol Dir.</label>
+                <label class="check-container"><input type="checkbox" class="v_chk" data-label="Lanterna Esq."> Lant. Esq.</label>
+                <label class="check-container"><input type="checkbox" class="v_chk" data-label="Lanterna Dir."> Lant. Dir.</label>
+                <label class="check-container"><input type="checkbox" class="v_chk" data-label="Pneus"> Pneus</label>
+                <label class="check-container"><input type="checkbox" class="v_chk" data-label="Limpeza"> Limpeza</label>
+            </div>
+
+            <label style="margin-top: 15px;">Observações de Avarias</label>
+            <textarea id="v_obs" class="modern-input" rows="2" placeholder="Descreva amassados, riscos ou problemas..."></textarea>
+
+            <label>Foto da Vistoria</label>
+            <button class="btn-primary btn-foto" id="btnCâmera"><i class="fas fa-camera"></i> TIRAR FOTO</button>
+            <input type="file" id="input_foto" accept="image/*" capture="camera" style="display: none;">
+            <img id="preview-foto" src="">
+
+            <button class="btn-primary" id="btnSalvarVistoria" style="background: var(--red);">
+                <i class="fas fa-save"></i> FINALIZAR E SINCRONIZAR KM
+            </button>
         </div>
 
         <div class="table-responsive">
-            <table class="modern-table">
+            <table>
                 <thead>
                     <tr>
                         <th>Data</th>
                         <th>VTR</th>
                         <th>Vigilante</th>
+                        <th>KM</th>
                     </tr>
                 </thead>
                 <tbody id="tabelaVistoria"></tbody>
@@ -107,7 +112,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, query, where, orderBy, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
@@ -123,120 +128,140 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        let dadosFiltrados = [];
+        let vtrCache = [];
+        let fotoBase64 = "";
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 carregarVeiculos();
                 buscarVistorias();
-            } else {
-                window.location.href = "login.html";
-            }
+            } else { window.location.href = "login.html"; }
         });
 
-        async function buscarVistorias() {
-            const placa = document.getElementById('f_placa').value.toUpperCase();
-            const dIni = document.getElementById('f_data_ini').value;
-            const dFim = document.getElementById('f_data_fim').value;
-
-            const q = query(collection(db, "vistorias"), where("usuario", "==", auth.currentUser.email), orderBy("timestamp", "desc"));
-            const snap = await getDocs(q);
-            
-            const corpo = document.getElementById('tabelaVistoria');
-            corpo.innerHTML = "";
-            dadosFiltrados = [];
-
-            snap.forEach(doc => {
-                const item = doc.data();
-                const dataISO = item.dataISO ? item.dataISO.split('T')[0] : "";
-                
-                const batePlaca = placa === "" || item.veiculo.includes(placa);
-                const bateData = (!dIni || dataISO >= dIni) && (!dFim || dataISO <= dFim);
-
-                if (batePlaca && bateData) {
-                    dadosFiltrados.push(item);
-                    corpo.innerHTML += `<tr>
-                        <td style="font-size:0.7rem">${item.dataExibicao}</td>
-                        <td><b>${item.veiculo}</b></td>
-                        <td style="font-size:0.7rem">${item.vigilante}</td>
-                    </tr>`;
-                }
-            });
-        }
-
-        document.getElementById('btnFiltrar').onclick = buscarVistorias;
-
-        document.getElementById('btnSalvarVistoria').onclick = async () => {
-            const btn = document.getElementById('btnSalvarVistoria');
-            const dataRetro = document.getElementById('v_data_retroativa').value;
-            const dataObj = dataRetro ? new Date(dataRetro) : new Date();
-
-            btn.disabled = true;
-            btn.innerText = "PROCESSANDO...";
-
-            const checks = [];
-            document.querySelectorAll('.v_chk').forEach(c => {
-                if(c.checked) checks.push(c.getAttribute('data-label'));
-            });
-
-            const dados = {
-                veiculo: document.getElementById('v_veiculo').value.toUpperCase(),
-                km: document.getElementById('v_km').value || "N/A",
-                vigilante: document.getElementById('v_vigilante').value.toUpperCase(),
-                checkList: checks.join(", "),
-                obs: document.getElementById('v_obs').value.toUpperCase() || "SEM OBS",
-                dataExibicao: dataObj.toLocaleString('pt-BR'),
-                dataISO: dataObj.toISOString(),
-                timestamp: dataObj.getTime(),
-                usuario: auth.currentUser.email
+        // Lógica da Foto
+        document.getElementById('btnCâmera').onclick = () => document.getElementById('input_foto').click();
+        document.getElementById('input_foto').onchange = (e) => {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.onload = () => {
+                fotoBase64 = reader.result;
+                const preview = document.getElementById('preview-foto');
+                preview.src = fotoBase64;
+                preview.style.display = 'block';
             };
-
-            try {
-                await addDoc(collection(db, "vistorias"), dados);
-                alert("Vistoria finalizada com sucesso!");
-                location.reload();
-            } catch (e) {
-                alert("Erro: " + e);
-                btn.disabled = false;
-            }
-        };
-
-        document.getElementById('btnExportarPDF').onclick = () => {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            
-            doc.setFillColor(26, 26, 26);
-            doc.rect(0, 0, 210, 35, 'F');
-            doc.setTextColor(230, 57, 70);
-            doc.setFontSize(22);
-            doc.text("JAPAN SECURITY", 14, 18);
-            doc.setTextColor(255, 255, 255);
-            doc.setFontSize(10);
-            doc.text("RELATÓRIO TÉCNICO DE VISTORIA DE FROTA", 14, 28);
-
-            const colunas = ["Data", "VTR", "Vigilante", "KM", "Itens OK", "Obs"];
-            const linhas = dadosFiltrados.map(i => [
-                i.dataExibicao, i.veiculo, i.vigilante, i.km, i.checkList, i.obs
-            ]);
-
-            doc.autoTable({
-                head: [colunas],
-                body: linhas,
-                startY: 40,
-                headStyles: { fillColor: [230, 57, 70] },
-                styles: { fontSize: 7 },
-                columnStyles: { 4: { cellWidth: 40 }, 5: { cellWidth: 30 } }
-            });
-
-            doc.save(`vistoria_${new Date().getTime()}.pdf`);
+            reader.readAsDataURL(file);
         };
 
         async function carregarVeiculos() {
             const q = query(collection(db, "veiculos"), where("usuario", "==", auth.currentUser.email));
             const snap = await getDocs(q);
             const list = document.getElementById('listaVeiculos');
-            snap.forEach(doc => { list.innerHTML += `<option value="${doc.data().placa}">`; });
+            vtrCache = [];
+            snap.forEach(d => {
+                vtrCache.push({ id: d.id, placa: d.data().placa });
+                list.innerHTML += `<option value="${d.data().placa}">`;
+            });
         }
+
+        async function buscarVistorias() {
+            const q = query(collection(db, "vistorias"), where("usuario", "==", auth.currentUser.email), orderBy("timestamp", "desc"));
+            const snap = await getDocs(q);
+            const corpo = document.getElementById('tabelaVistoria');
+            corpo.innerHTML = "";
+            snap.forEach(doc => {
+                const item = doc.data();
+                corpo.innerHTML += `<tr><td>${item.dataExibicao.split(',')[0]}</td><td><b>${item.veiculo}</b></td><td>${item.vigilante}</td><td>${item.km}</td></tr>`;
+            });
+        }
+
+        document.getElementById('btnSalvarVistoria').onclick = async () => {
+            const placa = document.getElementById('v_veiculo').value.toUpperCase();
+            const km = document.getElementById('v_km').value;
+            const vig = document.getElementById('v_vigilante').value.toUpperCase();
+            
+            if(!placa || !km || !vig) return alert("Por favor, preencha Placa, KM e Vigilante!");
+
+            const checks = [];
+            document.querySelectorAll('.v_chk:checked').forEach(c => checks.push(c.getAttribute('data-label')));
+
+            const dados = {
+                veiculo: placa,
+                km: Number(km),
+                vigilante: vig,
+                checkList: checks.join(", "),
+                obs: document.getElementById('v_obs').value.toUpperCase() || "SEM OBS",
+                foto: fotoBase64,
+                timestamp: new Date().getTime(),
+                dataExibicao: new Date().toLocaleString('pt-BR'),
+                usuario: auth.currentUser.email
+            };
+
+            try {
+                // 1. Salva a Vistoria
+                await addDoc(collection(db, "vistorias"), dados);
+                
+                // 2. Sincroniza o KM no cadastro do veículo
+                const vtr = vtrCache.find(v => v.placa === placa);
+                if(vtr) {
+                    await updateDoc(doc(db, "veiculos", vtr.id), { kmAtual: Number(km) });
+                }
+
+                alert("Vistoria salva e KM da viatura atualizado!");
+                location.reload();
+            } catch (e) { alert("Erro ao salvar: " + e); }
+        };
+
+        // PDF PROFISSIONAL AGRUPADO
+        document.getElementById('btnExportarPDF').onclick = async () => {
+            const snap = await getDocs(query(collection(db, "vistorias"), where("usuario", "==", auth.currentUser.email)));
+            const vistorias = [];
+            snap.forEach(d => vistorias.push(d.data()));
+
+            if(vistorias.length === 0) return alert("Não há dados para gerar o PDF.");
+
+            const { jsPDF } = window.jspdf;
+            const docPdf = new jsPDF('l', 'mm', 'a4');
+            const logoColor = [230, 57, 70];
+
+            // Agrupando por veículo
+            const grupos = {};
+            vistorias.forEach(v => {
+                if(!grupos[v.veiculo]) grupos[v.veiculo] = [];
+                grupos[v.veiculo].push(v);
+            });
+
+            let yPos = 20;
+            docPdf.setFontSize(22); docPdf.setTextColor(logoColor[0], logoColor[1], logoColor[2]);
+            docPdf.text("JAPAN SECURITY", 14, yPos);
+            docPdf.setFontSize(10); docPdf.setTextColor(100);
+            docPdf.text("RELATÓRIO TÉCNICO DE VISTORIAS DE FROTA", 14, yPos + 7);
+            yPos += 20;
+
+            Object.keys(grupos).forEach(placa => {
+                if(yPos > 170) { docPdf.addPage(); yPos = 20; }
+
+                docPdf.setFillColor(240, 240, 240); docPdf.rect(14, yPos, 269, 8, 'F');
+                docPdf.setTextColor(0); docPdf.setFontSize(12); docPdf.setFont("helvetica", "bold");
+                docPdf.text(`VIATURA: ${placa}`, 18, yPos + 6);
+                yPos += 10;
+
+                const rows = grupos[placa].sort((a,b) => b.timestamp - a.timestamp).map(i => [
+                    i.dataExibicao, i.vigilante, i.km, i.checkList, i.obs
+                ]);
+
+                docPdf.autoTable({
+                    head: [["DATA/HORA", "VIGILANTE", "KM", "ITENS OK", "OBSERVAÇÕES"]],
+                    body: rows,
+                    startY: yPos,
+                    theme: 'striped',
+                    headStyles: { fillColor: logoColor },
+                    styles: { fontSize: 8 },
+                    didDrawPage: (data) => { yPos = data.cursor.y + 15; }
+                });
+            });
+
+            docPdf.save(`Relatorio_Vistorias_Japan_${new Date().getTime()}.pdf`);
+        };
     </script>
 </body>
 </html>
