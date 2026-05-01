@@ -307,16 +307,34 @@
             docPdf.save(`Relatorio_Japan_${new Date().getTime()}.pdf`);
         };
 
-        document.getElementById('btnFiltrar').onclick = () => {
-            const iniStr = document.getElementById('f_ini').value;
-            const fimStr = document.getElementById('f_fim').value;
-            if(!iniStr || !fimStr) return alert("Selecione o período para filtrar!");
-            
-            const ini = new Date(iniStr).getTime();
-            const fim = new Date(fimStr).getTime();
-            
-            const filtrados = historicoLocal.filter(i => i.timestamp >= ini && i.timestamp <= fim);
-            historicoLocal = filtrados;
-            renderizar();
+        document.getElementById('btnFiltrar').onclick = async () => {
+    const iniStr = document.getElementById('f_ini').value;
+    const fimStr = document.getElementById('f_fim').value;
+
+    if(!iniStr || !fimStr) return alert("Por favor, preencha Data/Hora de Início e Fim.");
+
+    // Converte o que o operador digitou para milissegundos exatos
+    const dInicio = new Date(iniStr).getTime();
+    const dFim = new Date(fimStr).getTime();
+
+    // Recarrega do banco para garantir que pegamos os testes novos
+    const q = query(collection(db, "vistorias"), orderBy("timestamp", "desc"));
+    const snap = await getDocs(q);
+    
+    // Filtra pela data/hora exata e pelo usuário
+    const todos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    
+    historicoLocal = todos.filter(i => {
+        const dono = i.usuario === auth.currentUser.email;
+        // O timestamp do registro deve estar entre o início e o fim escolhido[cite: 1]
+        const noPeriodo = i.timestamp >= dInicio && i.timestamp <= dFim;
+        return dono && noPeriodo;
+    });
+
+    if(historicoLocal.length === 0) {
+        alert("Nenhum registro encontrado exatamente neste horário.");
+    }
+
+    renderizar(); 
         };
     </script>
