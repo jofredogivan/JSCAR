@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Japan Security | Sistema</title>
+    <title>Japan Security | MANUTENÇAO</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
@@ -12,43 +12,89 @@
         body { background: var(--bg); color: var(--text); font-family: sans-serif; margin: 0; padding: 10px; }
         .card { background: var(--card); border-radius: 12px; padding: 15px; margin-bottom: 15px; border: 1px solid #333; }
         .modern-input { width: 100%; padding: 12px; background: #252525; border: 1px solid #444; color: white; border-radius: 8px; box-sizing: border-box; margin-top: 5px; }
-        button { cursor: pointer; border: none; border-radius: 8px; font-weight: bold; }
+        button { cursor: pointer; border: none; border-radius: 8px; font-weight: bold; transition: 0.3s; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th { text-align: left; color: var(--primary); font-size: 0.8rem; padding: 10px; border-bottom: 2px solid #333; }
-        td { padding: 12px; border-bottom: 1px solid #222; font-size: 0.9rem; }
-        .btn-acao { padding: 8px; margin-right: 5px; border-radius: 4px; color: white; }
+        th { text-align: left; color: var(--primary); font-size: 0.7rem; padding: 10px; border-bottom: 2px solid #333; text-transform: uppercase; }
+        td { padding: 12px; border-bottom: 1px solid #222; font-size: 0.85rem; vertical-align: top; }
+        .btn-acao { padding: 8px; border-radius: 6px; color: white; border: none; margin-top: 5px; }
+        .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .stat-box { background: #1a1a1a; padding: 10px; border-radius: 8px; text-align: center; border-bottom: 3px solid var(--primary); }
     </style>
 </head>
 <body>
 
+    <!-- Resumo de Gastos -->
+    <div class="stats">
+        <div class="stat-box">
+            <small style="color:#888; font-size:0.6rem;">TOTAL FILTRADO</small>
+            <div id="resumoGasto" style="font-weight:bold;">R$ 0,00</div>
+        </div>
+        <div class="stat-box" style="border-color: #3498db;">
+            <small style="color:#888; font-size:0.6rem;">LANÇAMENTOS</small>
+            <div id="resumoQtd" style="font-weight:bold;">0</div>
+        </div>
+    </div>
+
+    <!-- Formulário de Cadastro -->
     <div class="card">
-        <h3 style="color:var(--primary); margin-top:0;">Nova Manutenção</h3>
-        <input list="listaVeiculos" id="m_veiculo" class="modern-input" placeholder="Viatura (Placa)">
+        <h3 style="color:var(--primary); margin: 0 0 15px 0; font-size: 1rem;"><i class="fas fa-tools"></i> Lançar Manutenção</h3>
+        
+        <label style="font-size:0.7rem; color:#888;">VIATURA (PLACA)</label>
+        <input list="listaVeiculos" id="m_veiculo" class="modern-input" placeholder="Selecione ou digite...">
         <datalist id="listaVeiculos"></datalist>
         
         <div style="display: flex; gap: 10px; margin-top: 10px;">
-            <input type="number" id="m_valor" class="modern-input" placeholder="Valor R$">
-            <input type="datetime-local" id="m_data" class="modern-input">
+            <div style="flex:1">
+                <label style="font-size:0.7rem; color:#888;">DATA/HORA</label>
+                <input type="datetime-local" id="m_data" class="modern-input">
+            </div>
+            <div style="flex:1">
+                <label style="font-size:0.7rem; color:#888;">VALOR R$</label>
+                <input type="number" id="m_valor" class="modern-input" placeholder="0.00">
+            </div>
         </div>
         
-        <input type="text" id="m_servico" class="modern-input" placeholder="Descrição do Serviço">
+        <label style="font-size:0.7rem; color:#888; margin-top:10px; display:block;">DESCRIÇÃO DO SERVIÇO</label>
+        <input type="text" id="m_servico" class="modern-input" placeholder="Ex: Troca de Óleo">
+
+        <div style="display: flex; gap: 10px; margin-top: 10px;">
+            <div style="flex:1">
+                <label style="font-size:0.7rem; color:#888;">KM ATUAL</label>
+                <input type="number" id="m_km" class="modern-input">
+            </div>
+            <div style="flex:1">
+                <label style="font-size:0.7rem; color:#888;">PRÓXIMA KM</label>
+                <input type="number" id="m_proxima" class="modern-input">
+            </div>
+        </div>
         
-        <button id="btnSalvar" style="width:100%; background:var(--primary); color:white; padding: 15px; margin-top:15px;">
+        <button id="btnSalvar" style="width:100%; background:var(--primary); color:white; padding: 15px; margin-top:20px; font-size: 0.9rem;">
             <i class="fas fa-save"></i> SALVAR REGISTRO
         </button>
     </div>
 
-    <div class="card">
-        <div style="display:flex; justify-content: space-between; align-items: center;">
-            <h3 style="margin:0;">Histórico</h3>
-            <button onclick="location.reload()" style="background:#333; color:white; padding:5px 10px;">Atualizar Lista</button>
+    <!-- Filtros de Busca -->
+    <div class="card" style="border-left: 4px solid #3498db;">
+        <label style="font-size:0.7rem; color:#3498db; font-weight:bold;">FILTRAR BUSCA</label>
+        <div style="display: flex; gap: 5px; margin-top: 5px;">
+            <input type="date" id="f_ini" class="modern-input" style="font-size:0.8rem;">
+            <input type="date" id="f_fim" class="modern-input" style="font-size:0.8rem;">
+            <button id="btnFiltrar" style="background:#3498db; color:white; padding:0 15px; margin-top:5px;"><i class="fas fa-search"></i></button>
         </div>
-        <div id="status">Carregando dados...</div>
+    </div>
+
+    <!-- Histórico -->
+    <div class="card">
+        <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <h3 style="margin:0; font-size: 1rem;">Histórico</h3>
+            <button id="btnPDF" style="background:#27ae60; color:white; padding:5px 10px; font-size:0.7rem;"><i class="fas fa-file-pdf"></i> PDF</button>
+        </div>
+        <div id="status" style="font-size:0.8rem; color:#888; text-align:center;">Buscando registros...</div>
         <table>
             <thead>
                 <tr>
-                    <th>Veículo/Serviço</th>
-                    <th>Valor/Ações</th>
+                    <th>Informações</th>
+                    <th style="text-align:right;">Valor/Ações</th>
                 </tr>
             </thead>
             <tbody id="tabelaCorpo"></tbody>
@@ -74,115 +120,166 @@
         const auth = getAuth(app);
 
         let editId = null;
+        let dadosLocais = [];
 
         onAuthStateChanged(auth, (user) => {
             if (user) { 
+                carregarVeiculos();
                 carregarHistorico(); 
             } else { 
                 window.location.href = "login.html"; 
             }
         });
 
+        // Carregar Veículos para o Datalist (Sugestões)
+        async function carregarVeiculos() {
+            const snap = await getDocs(collection(db, "veiculos"));
+            const list = document.getElementById('listaVeiculos');
+            list.innerHTML = "";
+            snap.forEach(d => {
+                list.innerHTML += `<option value="${d.data().placa}">`;
+            });
+        }
+
         async function carregarHistorico() {
             const corpo = document.getElementById('tabelaCorpo');
             const status = document.getElementById('status');
+            const dataIni = document.getElementById('f_ini').value;
+            const dataFim = document.getElementById('f_fim').value;
             
             try {
-                // Busca simples sem ORDER BY para evitar erro de índice
                 const q = query(collection(db, "manutencoes"), where("usuario", "==", auth.currentUser.email));
                 const snap = await getDocs(q);
-                
                 corpo.innerHTML = "";
-                
-                if (snap.empty) {
-                    status.innerText = "Nenhum registro encontrado.";
-                    return;
+                dadosLocais = [];
+                let totalSoma = 0;
+
+                snap.forEach(d => {
+                    const item = { id: d.id, ...d.data() };
+                    const dataItem = item.dataISO ? item.dataISO.split('T')[0] : "";
+                    
+                    // Lógica de Filtro por Data
+                    const filtroData = (!dataIni || dataItem >= dataIni) && (!dataFim || dataItem <= dataFim);
+                    
+                    if (filtroData) {
+                        dadosLocais.push(item);
+                        totalSoma += parseFloat(item.valor || 0);
+                    }
+                });
+
+                // Ordenar por data mais recente
+                dadosLocais.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+                if (dadosLocais.length === 0) {
+                    status.innerText = "Nenhum registro encontrado no período.";
+                } else {
+                    status.innerText = "";
+                    dadosLocais.forEach(item => {
+                        corpo.innerHTML += `
+                            <tr>
+                                <td>
+                                    <small style="color:#888; font-size:0.65rem;">${item.dataExibicao}</small><br>
+                                    <b style="color:var(--primary)">${item.veiculo}</b><br>
+                                    <b>${item.servico}</b><br>
+                                    <small style="color:#3498db">KM: ${item.km || 'N/A'} | Prox: ${item.proxima_km || 'N/A'}</small>
+                                </td>
+                                <td style="text-align:right;">
+                                    <b>R$ ${parseFloat(item.valor).toFixed(2)}</b><br>
+                                    <button onclick="window.editar('${item.id}')" class="btn-acao" style="background:#3498db;"><i class="fas fa-edit"></i></button>
+                                    <button onclick="window.excluir('${item.id}')" class="btn-acao" style="background:#e63946;"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+                        `;
+                    });
                 }
 
-                status.innerText = "";
-                
-                // Transformar em array e ordenar manualmente por data (mais recente primeiro)
-                let lista = [];
-                snap.forEach(d => lista.push({ id: d.id, ...d.data() }));
-                lista.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+                document.getElementById('resumoGasto').innerText = `R$ ${totalSoma.toFixed(2)}`;
+                document.getElementById('resumoQtd').innerText = dadosLocais.length;
 
-                lista.forEach(item => {
-                    corpo.innerHTML += `
-                        <tr>
-                            <td>
-                                <small style="color:#888">${item.dataExibicao || ''}</small><br>
-                                <b>${item.veiculo}</b><br>
-                                <span style="font-size:0.8rem; color:var(--primary)">${item.servico}</span>
-                            </td>
-                            <td>
-                                <b>R$ ${parseFloat(item.valor).toFixed(2)}</b><br><br>
-                                <button onclick="window.editar('${item.id}')" style="background:#3498db; color:white; padding:5px;"><i class="fas fa-edit"></i></button>
-                                <button onclick="window.excluir('${item.id}')" style="background:#e63946; color:white; padding:5px;"><i class="fas fa-trash"></i></button>
-                            </td>
-                        </tr>
-                    `;
-                });
             } catch (e) {
-                status.innerText = "Erro ao carregar: " + e.message;
+                status.innerText = "Erro: " + e.message;
             }
         }
 
         document.getElementById('btnSalvar').onclick = async () => {
             const btn = document.getElementById('btnSalvar');
-            const veiculo = document.getElementById('m_veiculo').value.toUpperCase();
-            if(!veiculo) return alert("Digite a placa");
+            const vtr = document.getElementById('m_veiculo').value.toUpperCase();
+            if(!vtr) return alert("Informe a placa");
 
             btn.disabled = true;
-            btn.innerText = "SALVANDO...";
-
             const dataInput = document.getElementById('m_data').value;
-            const dataObj = dataInput ? new Date(dataInput) : new Date();
+            const dObj = dataInput ? new Date(dataInput) : new Date();
 
             const dados = {
-                veiculo: veiculo,
+                veiculo: vtr,
                 valor: parseFloat(document.getElementById('m_valor').value) || 0,
                 servico: document.getElementById('m_servico').value.toUpperCase(),
-                dataExibicao: dataObj.toLocaleString('pt-BR'),
-                timestamp: dataObj.getTime(),
+                km: document.getElementById('m_km').value || "",
+                proxima_km: document.getElementById('m_proxima').value || "",
+                dataExibicao: dObj.toLocaleString('pt-BR'),
+                dataISO: dObj.toISOString(),
+                timestamp: dObj.getTime(),
                 usuario: auth.currentUser.email
             };
 
             try {
                 if(editId) {
                     await updateDoc(doc(db, "manutencoes", editId), dados);
-                    alert("Atualizado com sucesso!");
-                    editId = null;
                 } else {
                     await addDoc(collection(db, "manutencoes"), dados);
-                    alert("Salvo com sucesso!");
                 }
+                alert("Sucesso!");
                 location.reload();
             } catch (e) {
-                alert("Erro ao salvar: " + e.message);
+                alert("Erro: " + e.message);
                 btn.disabled = false;
             }
         };
 
         window.editar = async (id) => {
-            const docRef = doc(db, "manutencoes", id);
-            const snap = await getDoc(docRef);
-            if(snap.exists()){
-                const d = snap.data();
+            const d = dadosLocais.find(x => x.id === id);
+            if(d){
                 editId = id;
                 document.getElementById('m_veiculo').value = d.veiculo;
                 document.getElementById('m_valor').value = d.valor;
                 document.getElementById('m_servico').value = d.servico;
-                document.getElementById('btnSalvar').style.background = "#3498db";
-                document.getElementById('btnSalvar').innerText = "ATUALIZAR REGISTRO";
+                document.getElementById('m_km').value = d.km;
+                document.getElementById('m_proxima').value = d.proxima_km;
+                if(d.dataISO) document.getElementById('m_data').value = d.dataISO.substring(0, 16);
+                
+                const b = document.getElementById('btnSalvar');
+                b.style.background = "#3498db";
+                b.innerHTML = "<i class='fas fa-sync'></i> ATUALIZAR";
                 window.scrollTo(0,0);
             }
         };
 
         window.excluir = async (id) => {
-            if(confirm("Tem certeza que deseja excluir?")){
+            if(confirm("Excluir este registro?")){
                 await deleteDoc(doc(db, "manutencoes", id));
                 carregarHistorico();
             }
+        };
+
+        document.getElementById('btnFiltrar').onclick = carregarHistorico;
+
+        document.getElementById('btnPDF').onclick = () => {
+            const { jsPDF } = window.jspdf;
+            const docPDF = new jsPDF();
+            docPDF.setFontSize(16);
+            docPDF.text("JAPAN SECURITY - RELATÓRIO DE MANUTENÇÃO", 14, 15);
+            docPDF.setFontSize(10);
+            docPDF.text(`Gerado em: ${new Date().toLocaleString()}`, 14, 22);
+
+            const rows = dadosLocais.map(i => [i.dataExibicao, i.veiculo, i.servico, i.km, `R$ ${parseFloat(i.valor).toFixed(2)}`]);
+            docPDF.autoTable({
+                head: [['Data', 'VTR', 'Serviço', 'KM', 'Valor']],
+                body: rows,
+                startY: 30,
+                theme: 'grid',
+                headStyles: { fillColor: [230, 57, 70] }
+            });
+            docPDF.save("Manutencao_Japan.pdf");
         };
 
     </script>
