@@ -124,155 +124,199 @@
     </main>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, query, where, orderBy, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDczjdNxa2TZP07iiwTAkOLFbKcOPx1POo",
-            authDomain: "japan-security-car-1a7d8.firebaseapp.com",
-            projectId: "japan-security-car-1a7d8",
-            storageBucket: "japan-security-car-1a7d8.firebasestorage.app",
-            messagingSenderId: "616009365036",
-            appId: "1:616009365036:web:f644dd6106818566900389"
-        };
+    const firebaseConfig = {
+        apiKey: "AIzaSyDczjdNxa2TZP07iiwTAkOLFbKcOPx1POo",
+        authDomain: "japan-security-car-1a7d8.firebaseapp.com",
+        projectId: "japan-security-car-1a7d8",
+        storageBucket: "japan-security-car-1a7d8.firebasestorage.app",
+        messagingSenderId: "616009365036",
+        appId: "1:616009365036:web:f644dd6106818566900389"
+    };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
 
-        let dadosFiltrados = [];
+    let dadosFiltrados = [];
+    let editId = null; // Armazena o ID se estiver editando
 
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                carregarVeiculos();
-                buscarManutencoes();
-            } else {
-                window.location.href = "login.html";
-            }
-        });
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            carregarVeiculos();
+            buscarManutencoes();
+        } else {
+            window.location.href = "login.html";
+        }
+    });
 
-        async function buscarManutencoes() {
-            const placa = document.getElementById('f_placa').value.toUpperCase();
-            const dIni = document.getElementById('f_data_ini').value;
-            const dFim = document.getElementById('f_data_fim').value;
+    // --- BUSCAR/CARREGAR HISTÓRICO ---
+    async function buscarManutencoes() {
+        const placa = document.getElementById('f_placa').value.toUpperCase();
+        const dIni = document.getElementById('f_data_ini').value;
+        const dFim = document.getElementById('f_data_fim').value;
 
-            try {
-                const q = query(collection(db, "manutencoes"), where("usuario", "==", auth.currentUser.email), orderBy("timestamp", "desc"));
-                const snap = await getDocs(q);
+        try {
+            const q = query(collection(db, "manutencoes"), where("usuario", "==", auth.currentUser.email), orderBy("timestamp", "desc"));
+            const snap = await getDocs(q);
+            
+            const corpo = document.getElementById('tabelaManutencao');
+            corpo.innerHTML = "";
+            dadosFiltrados = [];
+            let totalSoma = 0;
+
+            snap.forEach(docSnap => {
+                const item = docSnap.data();
+                const id = docSnap.id;
+                const dataItem = item.dataISO ? item.dataISO.split('T')[0] : "";
                 
-                const corpo = document.getElementById('tabelaManutencao');
-                corpo.innerHTML = "";
-                dadosFiltrados = [];
-                let totalSoma = 0;
+                const batePlaca = placa === "" || item.veiculo.includes(placa);
+                const bateData = (!dIni || dataItem >= dIni) && (!dFim || dataItem <= dFim);
 
-                snap.forEach(doc => {
-                    const item = doc.data();
-                    const dataItem = item.dataISO ? item.dataISO.split('T')[0] : "";
+                if (batePlaca && bateData) {
+                    dadosFiltrados.push({...item, id});
+                    totalSoma += (parseFloat(item.valor) || 0);
                     
-                    const batePlaca = placa === "" || item.veiculo.includes(placa);
-                    const bateData = (!dIni || dataItem >= dIni) && (!dFim || dataItem <= dFim);
-
-                    if (batePlaca && bateData) {
-                        dadosFiltrados.push(item);
-                        totalSoma += item.valor;
-                        corpo.innerHTML += `<tr style="border-bottom: 1px solid #333;">
+                    corpo.innerHTML += `
+                        <tr onclick="window.preencherParaEditar('${id}')" style="border-bottom: 1px solid #333; cursor: pointer;">
                             <td style="padding: 12px; font-size:0.7rem; color: #888;">${item.dataExibicao}</td>
                             <td style="padding: 12px;"><b>${item.veiculo}</b><br><small style="color: #e63946">${item.servico}</small></td>
-                            <td style="padding: 12px; font-weight: bold;">R$ ${item.valor.toFixed(2)}</td>
+                            <td style="padding: 12px; font-weight: bold;">R$ ${(parseFloat(item.valor) || 0).toFixed(2)}</td>
                         </tr>`;
-                    }
-                });
-
-                document.getElementById('totalGasto').innerText = `R$ ${totalSoma.toFixed(2)}`;
-                document.getElementById('totalRegistros').innerText = dadosFiltrados.length;
-            } catch (e) {
-                console.error("Erro ao buscar dados: ", e);
-            }
-        }
-
-        document.getElementById('btnFiltrar').onclick = buscarManutencoes;
-
-        document.getElementById('btnSalvar').onclick = async () => {
-            const btn = document.getElementById('btnSalvar');
-            const dataRetro = document.getElementById('m_data_retroativa').value;
-            const dataObj = dataRetro ? new Date(dataRetro) : new Date();
-
-            if(!document.getElementById('m_veiculo').value || !document.getElementById('m_valor').value) {
-                alert("Por favor, preencha a Viatura e o Valor.");
-                return;
-            }
-
-            btn.disabled = true;
-            btn.innerText = "SALVANDO...";
-
-            const dados = {
-                veiculo: document.getElementById('m_veiculo').value.toUpperCase(),
-                tipo: document.getElementById('m_tipo').value,
-                valor: parseFloat(document.getElementById('m_valor').value) || 0,
-                servico: document.getElementById('m_servico').value.toUpperCase(),
-                km: document.getElementById('m_km').value || "N/A",
-                proxima_km: document.getElementById('m_proxima').value || "N/A",
-                dataExibicao: dataObj.toLocaleString('pt-BR'),
-                dataISO: dataObj.toISOString(),
-                timestamp: dataObj.getTime(),
-                usuario: auth.currentUser.email
-            };
-
-            try {
-                await addDoc(collection(db, "manutencoes"), dados);
-                alert("✓ Manutenção salva com sucesso!");
-                location.reload();
-            } catch (e) {
-                alert("Erro ao salvar: " + e);
-                btn.disabled = false;
-                btn.innerText = "SALVAR REGISTRO";
-            }
-        };
-
-        document.getElementById('btnExportarPDF').onclick = () => {
-            if (dadosFiltrados.length === 0) return alert("Não há dados para exportar.");
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            
-            doc.setFillColor(26, 26, 26);
-            doc.rect(0, 0, 210, 35, 'F');
-            doc.setTextColor(230, 57, 70);
-            doc.setFontSize(22);
-            doc.text("JAPAN SECURITY", 14, 18);
-            doc.setTextColor(255, 255, 255);
-            doc.setFontSize(10);
-            doc.text("RELATÓRIO TÉCNICO DE MANUTENÇÃO VEICULAR", 14, 28);
-
-            const colunas = ["Data", "VTR", "Serviço", "Tipo", "KM", "Valor"];
-            const linhas = dadosFiltrados.map(i => [
-                i.dataExibicao, i.veiculo, i.servico, i.tipo, i.km, `R$ ${i.valor.toFixed(2)}`
-            ]);
-
-            doc.autoTable({
-                head: [colunas],
-                body: linhas,
-                startY: 40,
-                headStyles: { fillColor: [230, 57, 70] },
-                theme: 'grid',
-                styles: { fontSize: 7 }
+                }
             });
 
-            doc.save(`Relatorio_Manutencao_Japan_${new Date().getTime()}.pdf`);
+            document.getElementById('totalGasto').innerText = `R$ ${totalSoma.toFixed(2)}`;
+            document.getElementById('totalRegistros').innerText = dadosFiltrados.length;
+        } catch (e) {
+            console.error("Erro ao buscar dados: ", e);
+        }
+    }
+
+    // --- FUNÇÃO PARA EDITAR (EXPOSTA AO WINDOW) ---
+    window.preencherParaEditar = async (id) => {
+        try {
+            const docRef = doc(db, "manutencoes", id);
+            const snap = await getDoc(docRef);
+            if (snap.exists()) {
+                const dados = snap.data();
+                editId = id;
+
+                document.getElementById('m_veiculo').value = dados.veiculo;
+                document.getElementById('m_tipo').value = dados.tipo;
+                document.getElementById('m_valor').value = dados.valor;
+                document.getElementById('m_servico').value = dados.servico;
+                document.getElementById('m_km').value = dados.km === "N/A" ? "" : dados.km;
+                document.getElementById('m_proxima').value = dados.proxima_km === "N/A" ? "" : dados.proxima_km;
+                
+                if(dados.dataISO) {
+                    document.getElementById('m_data_retroativa').value = dados.dataISO.substring(0, 16);
+                }
+
+                const btn = document.getElementById('btnSalvar');
+                btn.style.background = "#3498db";
+                btn.innerHTML = `<i class="fas fa-sync"></i> ATUALIZAR REGISTRO`;
+                window.scrollTo({ top: 100, behavior: 'smooth' });
+            }
+        } catch (e) {
+            alert("Erro ao carregar dados para edição.");
+        }
+    };
+
+    // --- SALVAR OU ATUALIZAR ---
+    document.getElementById('btnSalvar').onclick = async () => {
+        const btn = document.getElementById('btnSalvar');
+        const veiculo = document.getElementById('m_veiculo').value.toUpperCase();
+        
+        if(!veiculo) {
+            alert("Por favor, informe pelo menos a Viatura.");
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerText = "PROCESSANDO...";
+
+        const dataRetro = document.getElementById('m_data_retroativa').value;
+        const dataObj = dataRetro ? new Date(dataRetro) : new Date();
+
+        const dados = {
+            veiculo: veiculo,
+            tipo: document.getElementById('m_tipo').value,
+            valor: parseFloat(document.getElementById('m_valor').value) || 0,
+            servico: document.getElementById('m_servico').value.toUpperCase() || "MANUTENÇÃO GERAL",
+            km: document.getElementById('m_km').value || "N/A",
+            proxima_km: document.getElementById('m_proxima').value || "N/A",
+            dataExibicao: dataObj.toLocaleString('pt-BR'),
+            dataISO: dataObj.toISOString(),
+            timestamp: dataObj.getTime(),
+            usuario: auth.currentUser.email
         };
 
-        async function carregarVeiculos() {
-            try {
-                const snap = await getDocs(collection(db, "veiculos"));
-                const list = document.getElementById('listaVeiculos');
-                list.innerHTML = "";
-                snap.forEach(doc => { 
-                    list.innerHTML += `<option value="${doc.data().placa}">`; 
-                });
-            } catch (e) {
-                console.error("Erro ao carregar veículos: ", e);
+        try {
+            if (editId) {
+                await updateDoc(doc(db, "manutencoes", editId), dados);
+                alert("✓ Registro atualizado!");
+            } else {
+                await addDoc(collection(db, "manutencoes"), dados);
+                alert("✓ Manutenção salva!");
             }
+            location.reload();
+        } catch (e) {
+            alert("Erro: " + e);
+            btn.disabled = false;
+            btn.innerText = "SALVAR REGISTRO";
         }
-    </script>
+    };
+
+    // --- OUTRAS FUNÇÕES ---
+    document.getElementById('btnFiltrar').onclick = buscarManutencoes;
+
+    document.getElementById('btnExportarPDF').onclick = () => {
+        if (dadosFiltrados.length === 0) return alert("Não há dados para exportar.");
+        const { jsPDF } = window.jspdf;
+        const docPDF = new jsPDF();
+        
+        docPDF.setFillColor(26, 26, 26);
+        docPDF.rect(0, 0, 210, 35, 'F');
+        docPDF.setTextColor(230, 57, 70);
+        docPDF.setFontSize(22);
+        docPDF.text("JAPAN SECURITY", 14, 18);
+        docPDF.setTextColor(255, 255, 255);
+        docPDF.setFontSize(10);
+        docPDF.text("RELATÓRIO TÉCNICO DE MANUTENÇÃO VEICULAR", 14, 28);
+
+        const colunas = ["Data", "VTR", "Serviço", "Tipo", "KM", "Valor"];
+        const linhas = dadosFiltrados.map(i => [
+            i.dataExibicao, i.veiculo, i.servico, i.tipo, i.km, `R$ ${parseFloat(i.valor).toFixed(2)}`
+        ]);
+
+        docPDF.autoTable({
+            head: [colunas],
+            body: linhas,
+            startY: 40,
+            headStyles: { fillColor: [230, 57, 70] },
+            theme: 'grid',
+            styles: { fontSize: 7 }
+        });
+
+        docPDF.save(`Relatorio_Manutencao_Japan_${new Date().getTime()}.pdf`);
+    };
+
+    async function carregarVeiculos() {
+        try {
+            const snap = await getDocs(collection(db, "veiculos"));
+            const list = document.getElementById('listaVeiculos');
+            list.innerHTML = "";
+            snap.forEach(doc => { 
+                list.innerHTML += `<option value="${doc.data().placa}">`; 
+            });
+        } catch (e) {
+            console.error("Erro ao carregar veículos: ", e);
+        }
+    }
+</script>
 </body>
 </html>
