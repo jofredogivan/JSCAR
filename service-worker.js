@@ -1,4 +1,4 @@
-const CACHE_NAME = 'japan-security-v2';
+const CACHE_NAME = 'japan-security-v3';
 const urlsToCache = [
   './',
   './index.html',
