@@ -11,7 +11,17 @@
     <meta name="theme-color" content="#121212">
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="css/style.css">
+    <style>
+        :root { --primary: #e63946; --bg: #121212; --card: #1a1a1a; --text: #ffffff; }
+        body { background: var(--bg); color: var(--text); font-family: sans-serif; margin: 0; padding: 0; }
+        .modern-input { width: 100%; padding: 12px; background: #252525; border: 1px solid #444; color: white; border-radius: 8px; box-sizing: border-box; }
+        .btn-primary { width: 100%; cursor: pointer; transition: 0.3s; }
+        .card { background: var(--card); border-radius: 12px; padding: 15px; border: 1px solid #333; }
+        table { width: 100%; border-collapse: collapse; }
+        th { border-bottom: 2px solid var(--primary); padding: 10px; text-align: left; }
+        td { padding: 12px; border-bottom: 1px solid #333; }
+        .action-icons i { cursor: pointer; margin-right: 15px; font-size: 1.1rem; }
+    </style>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
@@ -29,52 +39,52 @@
     <main class="main-content" style="padding: 15px;">
         
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
-            <div class="card" style="text-align: center; border-bottom: 3px solid #e63946; padding: 10px; background: #1a1a1a; border-radius: 8px;">
+            <div class="card" style="text-align: center; border-bottom: 3px solid #e63946;">
                 <small style="color: #888; font-size: 0.6rem; text-transform: uppercase;">Investimento Filtrado</small>
-                <div id="totalGasto" style="font-size: 1.1rem; font-weight: bold; color: #fff;">R$ 0,00</div>
+                <div id="totalGasto" style="font-size: 1.1rem; font-weight: bold;">R$ 0,00</div>
             </div>
-            <div class="card" style="text-align: center; border-bottom: 3px solid #3498db; padding: 10px; background: #1a1a1a; border-radius: 8px;">
+            <div class="card" style="text-align: center; border-bottom: 3px solid #3498db;">
                 <small style="color: #888; font-size: 0.6rem; text-transform: uppercase;">Qtd. Serviços</small>
-                <div id="totalRegistros" style="font-size: 1.1rem; font-weight: bold; color: #fff;">0</div>
+                <div id="totalRegistros" style="font-size: 1.1rem; font-weight: bold;">0</div>
             </div>
         </div>
 
-        <div class="card" style="margin-bottom: 15px; border: 1px solid #333; background: #1a1a1a; padding: 15px; border-radius: 12px;">
+        <div class="card" style="margin-bottom: 15px;">
             <div style="display: flex; flex-direction: column; gap: 10px;">
                 <label style="color: #e63946; font-size: 0.7rem; font-weight: bold;">FILTRAR E GERAR RELATÓRIO</label>
-                <input list="listaVeiculos" id="f_placa" class="modern-input" placeholder="Todas as Placas" style="width: 100%; padding: 10px; background: #222; border: 1px solid #444; color: white; border-radius: 5px;">
+                <input list="listaVeiculos" id="f_placa" class="modern-input" placeholder="Todas as Placas">
                 <div style="display: flex; gap: 10px;">
-                    <input type="date" id="f_data_ini" class="modern-input" style="flex: 1; padding: 10px; background: #222; border: 1px solid #444; color: white;">
-                    <input type="date" id="f_data_fim" class="modern-input" style="flex: 1; padding: 10px; background: #222; border: 1px solid #444; color: white;">
+                    <input type="date" id="f_data_ini" class="modern-input" style="flex: 1;">
+                    <input type="date" id="f_data_fim" class="modern-input" style="flex: 1;">
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                    <button class="btn-primary" id="btnFiltrar" style="background: #333; color: white; border: none; padding: 12px; border-radius: 5px; cursor: pointer;">
+                    <button class="btn-primary" id="btnFiltrar" style="background: #333; color: white; border: none; padding: 12px; border-radius: 5px;">
                         <i class="fas fa-search"></i> FILTRAR
                     </button>
-                    <button class="btn-primary" id="btnExportarPDF" style="background: #e63946; color: white; border: none; padding: 12px; border-radius: 5px; cursor: pointer;">
+                    <button class="btn-primary" id="btnExportarPDF" style="background: #e63946; color: white; border: none; padding: 12px; border-radius: 5px;">
                         <i class="fas fa-file-pdf"></i> GERAR PDF
                     </button>
                 </div>
             </div>
         </div>
 
-        <div class="card" style="margin-bottom: 20px; background: #1a1a1a; padding: 15px; border-radius: 12px; border: 1px solid #333;">
+        <div class="card" style="margin-bottom: 20px;">
             <div style="display: flex; flex-direction: column; gap: 12px;">
-                <div class="input-group">
+                <div>
                     <label style="font-size: 0.7rem; color: #888;">VIATURA</label>
-                    <input list="listaVeiculos" id="m_veiculo" class="modern-input" placeholder="Selecione a placa..." style="width: 100%; padding: 12px; background: #252525; border: 1px solid #444; color: white; border-radius: 8px;">
+                    <input list="listaVeiculos" id="m_veiculo" class="modern-input" placeholder="Selecione a placa...">
                     <datalist id="listaVeiculos"></datalist>
                 </div>
 
-                <div class="input-group" style="background: #252525; padding: 10px; border-radius: 8px; border: 1px solid #333;">
+                <div style="background: #252525; padding: 10px; border-radius: 8px;">
                     <label style="font-size: 0.65rem; color: #e63946; font-weight: bold;">DATA/HORA DO SERVIÇO</label>
-                    <input type="datetime-local" id="m_data_retroativa" class="modern-input" style="width: 100%; background: transparent; border: none; color: white; padding-top: 5px;">
+                    <input type="datetime-local" id="m_data_retroativa" class="modern-input" style="border: none; background: transparent;">
                 </div>
 
                 <div style="display: flex; gap: 10px;">
                     <div style="flex: 1;">
                         <label style="font-size: 0.7rem; color: #888;">TIPO</label>
-                        <select id="m_tipo" class="modern-input" style="width: 100%; padding: 12px; background: #252525; border: 1px solid #444; color: white; border-radius: 8px;">
+                        <select id="m_tipo" class="modern-input">
                             <option value="PREVENTIVA">PREVENTIVA</option>
                             <option value="CORRETIVA">CORRETIVA</option>
                             <option value="PNEUS">PNEUS</option>
@@ -83,39 +93,39 @@
                     </div>
                     <div style="flex: 1;">
                         <label style="font-size: 0.7rem; color: #888;">VALOR (R$)</label>
-                        <input type="number" id="m_valor" class="modern-input" placeholder="0.00" style="width: 100%; padding: 12px; background: #252525; border: 1px solid #444; color: white; border-radius: 8px;">
+                        <input type="number" id="m_valor" class="modern-input" placeholder="0.00">
                     </div>
                 </div>
 
                 <div class="input-group">
                     <label style="font-size: 0.7rem; color: #888;">DESCRIÇÃO DO SERVIÇO</label>
-                    <input type="text" id="m_servico" class="modern-input" placeholder="O que foi feito?" style="width: 100%; padding: 12px; background: #252525; border: 1px solid #444; color: white; border-radius: 8px;">
+                    <input type="text" id="m_servico" class="modern-input" placeholder="O que foi feito?">
                 </div>
 
                 <div style="display: flex; gap: 10px;">
                     <div style="flex: 1;">
                         <label style="font-size: 0.7rem; color: #888;">KM ATUAL</label>
-                        <input type="number" id="m_km" class="modern-input" style="width: 100%; padding: 12px; background: #252525; border: 1px solid #444; color: white; border-radius: 8px;">
+                        <input type="number" id="m_km" class="modern-input">
                     </div>
                     <div style="flex: 1;">
                         <label style="font-size: 0.7rem; color: #888;">PRÓXIMA (KM)</label>
-                        <input type="number" id="m_proxima" class="modern-input" style="width: 100%; padding: 12px; background: #252525; border: 1px solid #444; color: white; border-radius: 8px;">
+                        <input type="number" id="m_proxima" class="modern-input">
                     </div>
                 </div>
 
-                <button class="btn-primary" id="btnSalvar" style="background: #e63946; color: white; padding: 18px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px;">
+                <button class="btn-primary" id="btnSalvar" style="background: #e63946; color: white; padding: 18px; font-weight: bold; border: none; border-radius: 8px; text-transform: uppercase;">
                     <i class="fas fa-save"></i> SALVAR REGISTRO
                 </button>
             </div>
         </div>
 
-        <div class="table-responsive" style="overflow-x: auto;">
-            <table class="modern-table" style="width: 100%; border-collapse: collapse; background: #1a1a1a; color: white; font-size: 0.85rem;">
+        <div class="table-responsive">
+            <table class="modern-table">
                 <thead>
-                    <tr style="background: #222; border-bottom: 2px solid #e63946;">
-                        <th style="padding: 12px; text-align: left;">Data</th>
-                        <th style="padding: 12px; text-align: left;">VTR / Serviço</th>
-                        <th style="padding: 12px; text-align: left;">Valor</th>
+                    <tr>
+                        <th>Data</th>
+                        <th>VTR / Serviço</th>
+                        <th>Valor / Ação</th>
                     </tr>
                 </thead>
                 <tbody id="tabelaManutencao"></tbody>
@@ -124,199 +134,181 @@
     </main>
 
     <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, query, where, orderBy, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, query, where, orderBy, doc, updateDoc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyDczjdNxa2TZP07iiwTAkOLFbKcOPx1POo",
-        authDomain: "japan-security-car-1a7d8.firebaseapp.com",
-        projectId: "japan-security-car-1a7d8",
-        storageBucket: "japan-security-car-1a7d8.firebasestorage.app",
-        messagingSenderId: "616009365036",
-        appId: "1:616009365036:web:f644dd6106818566900389"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const auth = getAuth(app);
-
-    let dadosFiltrados = [];
-    let editId = null; // Armazena o ID se estiver editando
-
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            carregarVeiculos();
-            buscarManutencoes();
-        } else {
-            window.location.href = "login.html";
-        }
-    });
-
-    // --- BUSCAR/CARREGAR HISTÓRICO ---
-    async function buscarManutencoes() {
-        const placa = document.getElementById('f_placa').value.toUpperCase();
-        const dIni = document.getElementById('f_data_ini').value;
-        const dFim = document.getElementById('f_data_fim').value;
-
-        try {
-            const q = query(collection(db, "manutencoes"), where("usuario", "==", auth.currentUser.email), orderBy("timestamp", "desc"));
-            const snap = await getDocs(q);
-            
-            const corpo = document.getElementById('tabelaManutencao');
-            corpo.innerHTML = "";
-            dadosFiltrados = [];
-            let totalSoma = 0;
-
-            snap.forEach(docSnap => {
-                const item = docSnap.data();
-                const id = docSnap.id;
-                const dataItem = item.dataISO ? item.dataISO.split('T')[0] : "";
-                
-                const batePlaca = placa === "" || item.veiculo.includes(placa);
-                const bateData = (!dIni || dataItem >= dIni) && (!dFim || dataItem <= dFim);
-
-                if (batePlaca && bateData) {
-                    dadosFiltrados.push({...item, id});
-                    totalSoma += (parseFloat(item.valor) || 0);
-                    
-                    corpo.innerHTML += `
-                        <tr onclick="window.preencherParaEditar('${id}')" style="border-bottom: 1px solid #333; cursor: pointer;">
-                            <td style="padding: 12px; font-size:0.7rem; color: #888;">${item.dataExibicao}</td>
-                            <td style="padding: 12px;"><b>${item.veiculo}</b><br><small style="color: #e63946">${item.servico}</small></td>
-                            <td style="padding: 12px; font-weight: bold;">R$ ${(parseFloat(item.valor) || 0).toFixed(2)}</td>
-                        </tr>`;
-                }
-            });
-
-            document.getElementById('totalGasto').innerText = `R$ ${totalSoma.toFixed(2)}`;
-            document.getElementById('totalRegistros').innerText = dadosFiltrados.length;
-        } catch (e) {
-            console.error("Erro ao buscar dados: ", e);
-        }
-    }
-
-    // --- FUNÇÃO PARA EDITAR (EXPOSTA AO WINDOW) ---
-    window.preencherParaEditar = async (id) => {
-        try {
-            const docRef = doc(db, "manutencoes", id);
-            const snap = await getDoc(docRef);
-            if (snap.exists()) {
-                const dados = snap.data();
-                editId = id;
-
-                document.getElementById('m_veiculo').value = dados.veiculo;
-                document.getElementById('m_tipo').value = dados.tipo;
-                document.getElementById('m_valor').value = dados.valor;
-                document.getElementById('m_servico').value = dados.servico;
-                document.getElementById('m_km').value = dados.km === "N/A" ? "" : dados.km;
-                document.getElementById('m_proxima').value = dados.proxima_km === "N/A" ? "" : dados.proxima_km;
-                
-                if(dados.dataISO) {
-                    document.getElementById('m_data_retroativa').value = dados.dataISO.substring(0, 16);
-                }
-
-                const btn = document.getElementById('btnSalvar');
-                btn.style.background = "#3498db";
-                btn.innerHTML = `<i class="fas fa-sync"></i> ATUALIZAR REGISTRO`;
-                window.scrollTo({ top: 100, behavior: 'smooth' });
-            }
-        } catch (e) {
-            alert("Erro ao carregar dados para edição.");
-        }
-    };
-
-    // --- SALVAR OU ATUALIZAR ---
-    document.getElementById('btnSalvar').onclick = async () => {
-        const btn = document.getElementById('btnSalvar');
-        const veiculo = document.getElementById('m_veiculo').value.toUpperCase();
-        
-        if(!veiculo) {
-            alert("Por favor, informe pelo menos a Viatura.");
-            return;
-        }
-
-        btn.disabled = true;
-        btn.innerText = "PROCESSANDO...";
-
-        const dataRetro = document.getElementById('m_data_retroativa').value;
-        const dataObj = dataRetro ? new Date(dataRetro) : new Date();
-
-        const dados = {
-            veiculo: veiculo,
-            tipo: document.getElementById('m_tipo').value,
-            valor: parseFloat(document.getElementById('m_valor').value) || 0,
-            servico: document.getElementById('m_servico').value.toUpperCase() || "MANUTENÇÃO GERAL",
-            km: document.getElementById('m_km').value || "N/A",
-            proxima_km: document.getElementById('m_proxima').value || "N/A",
-            dataExibicao: dataObj.toLocaleString('pt-BR'),
-            dataISO: dataObj.toISOString(),
-            timestamp: dataObj.getTime(),
-            usuario: auth.currentUser.email
+        const firebaseConfig = {
+            apiKey: "AIzaSyDczjdNxa2TZP07iiwTAkOLFbKcOPx1POo",
+            authDomain: "japan-security-car-1a7d8.firebaseapp.com",
+            projectId: "japan-security-car-1a7d8",
+            storageBucket: "japan-security-car-1a7d8.firebasestorage.app",
+            messagingSenderId: "616009365036",
+            appId: "1:616009365036:web:f644dd6106818566900389"
         };
 
-        try {
-            if (editId) {
-                await updateDoc(doc(db, "manutencoes", editId), dados);
-                alert("✓ Registro atualizado!");
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        let dadosFiltrados = [];
+        let editId = null;
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                carregarVeiculos();
+                buscarManutencoes();
             } else {
-                await addDoc(collection(db, "manutencoes"), dados);
-                alert("✓ Manutenção salva!");
+                window.location.href = "login.html";
             }
-            location.reload();
-        } catch (e) {
-            alert("Erro: " + e);
-            btn.disabled = false;
-            btn.innerText = "SALVAR REGISTRO";
-        }
-    };
-
-    // --- OUTRAS FUNÇÕES ---
-    document.getElementById('btnFiltrar').onclick = buscarManutencoes;
-
-    document.getElementById('btnExportarPDF').onclick = () => {
-        if (dadosFiltrados.length === 0) return alert("Não há dados para exportar.");
-        const { jsPDF } = window.jspdf;
-        const docPDF = new jsPDF();
-        
-        docPDF.setFillColor(26, 26, 26);
-        docPDF.rect(0, 0, 210, 35, 'F');
-        docPDF.setTextColor(230, 57, 70);
-        docPDF.setFontSize(22);
-        docPDF.text("JAPAN SECURITY", 14, 18);
-        docPDF.setTextColor(255, 255, 255);
-        docPDF.setFontSize(10);
-        docPDF.text("RELATÓRIO TÉCNICO DE MANUTENÇÃO VEICULAR", 14, 28);
-
-        const colunas = ["Data", "VTR", "Serviço", "Tipo", "KM", "Valor"];
-        const linhas = dadosFiltrados.map(i => [
-            i.dataExibicao, i.veiculo, i.servico, i.tipo, i.km, `R$ ${parseFloat(i.valor).toFixed(2)}`
-        ]);
-
-        docPDF.autoTable({
-            head: [colunas],
-            body: linhas,
-            startY: 40,
-            headStyles: { fillColor: [230, 57, 70] },
-            theme: 'grid',
-            styles: { fontSize: 7 }
         });
 
-        docPDF.save(`Relatorio_Manutencao_Japan_${new Date().getTime()}.pdf`);
-    };
+        // --- BUSCAR DADOS ---
+        async function buscarManutencoes() {
+            const placaFiltro = document.getElementById('f_placa').value.toUpperCase();
+            const dIni = document.getElementById('f_data_ini').value;
+            const dFim = document.getElementById('f_data_fim').value;
 
-    async function carregarVeiculos() {
-        try {
+            try {
+                // Tenta buscar com ordenação. Se der erro de índice, busca sem ordenação.
+                let q;
+                try {
+                    q = query(collection(db, "manutencoes"), where("usuario", "==", auth.currentUser.email), orderBy("timestamp", "desc"));
+                } catch (e) {
+                    q = query(collection(db, "manutencoes"), where("usuario", "==", auth.currentUser.email));
+                }
+
+                const snap = await getDocs(q);
+                const corpo = document.getElementById('tabelaManutencao');
+                corpo.innerHTML = "";
+                dadosFiltrados = [];
+                let totalSoma = 0;
+
+                snap.forEach(docSnap => {
+                    const item = docSnap.data();
+                    const id = docSnap.id;
+                    const dataItem = item.dataISO ? item.dataISO.split('T')[0] : "";
+                    
+                    const batePlaca = placaFiltro === "" || item.veiculo.includes(placaFiltro);
+                    const bateData = (!dIni || dataItem >= dIni) && (!dFim || dataItem <= dFim);
+
+                    if (batePlaca && bateData) {
+                        dadosFiltrados.push({...item, id});
+                        totalSoma += (parseFloat(item.valor) || 0);
+                        
+                        corpo.innerHTML += `
+                            <tr>
+                                <td style="font-size:0.7rem; color: #888;">${item.dataExibicao}</td>
+                                <td><b>${item.veiculo}</b><br><small style="color: #e63946">${item.servico}</small></td>
+                                <td>
+                                    <b>R$ ${(parseFloat(item.valor) || 0).toFixed(2)}</b>
+                                    <div class="action-icons" style="margin-top:8px;">
+                                        <i class="fas fa-edit" style="color: #3498db" onclick="window.preencherParaEditar('${id}')"></i>
+                                        <i class="fas fa-trash" style="color: #e63946" onclick="window.excluirRegistro('${id}')"></i>
+                                    </div>
+                                </td>
+                            </tr>`;
+                    }
+                });
+
+                document.getElementById('totalGasto').innerText = `R$ ${totalSoma.toFixed(2)}`;
+                document.getElementById('totalRegistros').innerText = dadosFiltrados.length;
+            } catch (e) {
+                console.error("Erro ao carregar:", e);
+            }
+        }
+
+        // --- SALVAR / ATUALIZAR ---
+        document.getElementById('btnSalvar').onclick = async () => {
+            const btn = document.getElementById('btnSalvar');
+            const vtr = document.getElementById('m_veiculo').value.toUpperCase();
+            if(!vtr) return alert("Informe a Viatura");
+
+            btn.disabled = true;
+            btn.innerText = "PROCESSANDO...";
+
+            const dataRetro = document.getElementById('m_data_retroativa').value;
+            const dObj = dataRetro ? new Date(dataRetro) : new Date();
+
+            const dados = {
+                veiculo: vtr,
+                tipo: document.getElementById('m_tipo').value,
+                valor: parseFloat(document.getElementById('m_valor').value) || 0,
+                servico: (document.getElementById('m_servico').value || "GERAL").toUpperCase(),
+                km: document.getElementById('m_km').value || "N/A",
+                proxima_km: document.getElementById('m_proxima').value || "N/A",
+                dataExibicao: dObj.toLocaleString('pt-BR'),
+                dataISO: dObj.toISOString(),
+                timestamp: dObj.getTime(),
+                usuario: auth.currentUser.email
+            };
+
+            try {
+                if(editId) {
+                    await updateDoc(doc(db, "manutencoes", editId), dados);
+                    alert("Atualizado!");
+                } else {
+                    await addDoc(collection(db, "manutencoes"), dados);
+                    alert("Salvo!");
+                }
+                location.reload();
+            } catch (e) {
+                alert("Erro: " + e);
+                btn.disabled = false;
+            }
+        };
+
+        // --- FUNÇÕES GLOBAIS (EDITAR/EXCLUIR) ---
+        window.preencherParaEditar = async (id) => {
+            const snap = await getDoc(doc(db, "manutencoes", id));
+            if(snap.exists()) {
+                const d = snap.data();
+                editId = id;
+                document.getElementById('m_veiculo').value = d.veiculo;
+                document.getElementById('m_tipo').value = d.tipo;
+                document.getElementById('m_valor').value = d.valor;
+                document.getElementById('m_servico').value = d.servico;
+                document.getElementById('m_km').value = d.km === "N/A" ? "" : d.km;
+                document.getElementById('m_proxima').value = d.proxima_km === "N/A" ? "" : d.proxima_km;
+                if(d.dataISO) document.getElementById('m_data_retroativa').value = d.dataISO.substring(0, 16);
+
+                const b = document.getElementById('btnSalvar');
+                b.style.background = "#3498db";
+                b.innerHTML = `<i class="fas fa-sync"></i> ATUALIZAR REGISTRO`;
+                window.scrollTo({ top: 100, behavior: 'smooth' });
+            }
+        };
+
+        window.excluirRegistro = async (id) => {
+            if(confirm("Excluir definitivamente?")) {
+                await deleteDoc(doc(db, "manutencoes", id));
+                buscarManutencoes();
+            }
+        };
+
+        // --- FILTROS E EXPORTAÇÃO ---
+        document.getElementById('btnFiltrar').onclick = buscarManutencoes;
+        
+        document.getElementById('btnExportarPDF').onclick = () => {
+            const { jsPDF } = window.jspdf;
+            const docPDF = new jsPDF();
+            docPDF.text("Relatório de Manutenção - Japan Security", 14, 15);
+            
+            const linhas = dadosFiltrados.map(i => [i.dataExibicao, i.veiculo, i.servico, `R$ ${i.valor}`]);
+            docPDF.autoTable({
+                head: [['Data', 'VTR', 'Serviço', 'Valor']],
+                body: linhas,
+                startY: 25,
+                theme: 'grid'
+            });
+            docPDF.save("Relatorio_Manutencao.pdf");
+        };
+
+        async function carregarVeiculos() {
             const snap = await getDocs(collection(db, "veiculos"));
             const list = document.getElementById('listaVeiculos');
-            list.innerHTML = "";
-            snap.forEach(doc => { 
-                list.innerHTML += `<option value="${doc.data().placa}">`; 
-            });
-        } catch (e) {
-            console.error("Erro ao carregar veículos: ", e);
+            snap.forEach(d => { list.innerHTML += `<option value="${d.data().placa}">`; });
         }
-    }
-</script>
+    </script>
 </body>
 </html>
