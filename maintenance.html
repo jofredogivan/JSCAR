@@ -113,7 +113,7 @@
     <div class="card">
         <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
             <h3 style="margin:0; font-size: 1rem;">Histórico</h3>
-            <button id="btnPDF" style="background:#27ae60; color:white; padding:5px 10px; font-size:0.7rem;"><i class="fas fa-file-pdf"></i> PDF</button>
+            <button id="btnPDF" style="background:#27ae60; color:white; padding:5px 10px; font-size:0.7rem;"><i class="fas fa-file-pdf"></i> GERAR RELATÓRIO</button>
         </div>
         <div id="status" style="font-size:0.8rem; color:#888; text-align:center;">Carregando...</div>
         <table>
@@ -145,11 +145,9 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        // Registro do Service Worker para PWA
+        // Registro Service Worker
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js')
-            .then(() => console.log("Service Worker Ativo"))
-            .catch(err => console.log("Erro SW:", err));
+            navigator.serviceWorker.register('sw.js').catch(err => console.log(err));
         }
 
         let editId = null;
@@ -221,7 +219,7 @@
                 }
                 document.getElementById('resumoGasto').innerText = `R$ ${totalSoma.toFixed(2)}`;
                 document.getElementById('resumoQtd').innerText = dadosLocais.length;
-            } catch (e) { console.error(e); }
+            } catch (e) { status.innerText = "Erro ao carregar."; }
         }
 
         document.getElementById('btnSalvar').onclick = async () => {
@@ -230,7 +228,7 @@
             if(!vtr) return alert("Placa necessária");
 
             btn.disabled = true;
-            btn.innerText = "PROCESSANDO...";
+            btn.innerText = "SALVANDO...";
 
             const dataInput = document.getElementById('m_data').value;
             const dObj = dataInput ? new Date(dataInput) : new Date();
@@ -252,7 +250,7 @@
                 else await addDoc(collection(db, "manutencoes"), dados);
                 location.reload();
             } catch (e) {
-                alert("Erro: " + e);
+                alert("Erro ao salvar.");
                 btn.disabled = false;
             }
         };
@@ -271,24 +269,57 @@
         };
 
         window.excluir = async (id) => {
-            if(confirm("Excluir?")) { await deleteDoc(doc(db, "manutencoes", id)); carregarHistorico(); }
+            if(confirm("Deseja excluir este registro?")) { 
+                await deleteDoc(doc(db, "manutencoes", id)); 
+                carregarHistorico(); 
+            }
         };
 
         document.getElementById('btnFiltrar').onclick = carregarHistorico;
         
-        // Exportação para PDF
+        // FUNÇÃO PDF PROFISSIONAL
         document.getElementById('btnPDF').onclick = () => {
             const { jsPDF } = window.jspdf;
             const docPDF = new jsPDF();
-            docPDF.text("JAPAN SECURITY - MANUTENÇÃO", 14, 15);
-            const rows = dadosLocais.map(i => [i.dataExibicao, i.veiculo, i.servico, `R$ ${i.valor}`]);
+            const corPrimaria = [230, 57, 70]; 
+
+            // Cabeçalho
+            docPDF.setFillColor(26, 26, 26);
+            docPDF.rect(0, 0, 210, 40, 'F');
+            docPDF.setTextColor(255, 255, 255);
+            docPDF.setFontSize(18);
+            docPDF.text("JAPAN SECURITY", 14, 20);
+            docPDF.setFontSize(10);
+            docPDF.text("RELATÓRIO GERENCIAL DE MANUTENÇÃO", 14, 28);
+            docPDF.text(`Emissão: ${new Date().toLocaleString('pt-BR')}`, 150, 28);
+
+            const linhas = dadosLocais.map(i => [
+                i.dataExibicao.split(' ')[0],
+                i.veiculo,
+                i.servico,
+                i.km || '-',
+                `R$ ${parseFloat(i.valor).toFixed(2)}`
+            ]);
+
             docPDF.autoTable({
-                head: [['Data', 'Viatura', 'Serviço', 'Valor']],
-                body: rows,
-                startY: 25
+                head: [['DATA', 'VIATURA', 'SERVIÇO', 'KM', 'VALOR']],
+                body: linhas,
+                startY: 50,
+                theme: 'striped',
+                headStyles: { fillColor: corPrimaria, halign: 'center' },
+                columnStyles: { 4: { halign: 'right' } },
+                styles: { fontSize: 8 }
             });
-            docPDF.save("Relatorio_Japan.pdf");
+
+            const total = dadosLocais.reduce((acc, curr) => acc + parseFloat(curr.valor), 0);
+            const finalY = docPDF.lastAutoTable.finalY + 10;
+            docPDF.setTextColor(40);
+            docPDF.setFont("helvetica", "bold");
+            docPDF.text(`TOTAL GERAL: R$ ${total.toFixed(2)}`, 195, finalY, { align: 'right' });
+
+            docPDF.save("Relatorio_Japan_Security.pdf");
         };
+
     </script>
 </body>
 </html>
