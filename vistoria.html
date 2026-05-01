@@ -255,57 +255,84 @@
         };
 
         document.getElementById('btnExportarPDF').onclick = () => {
-            const { jsPDF } = window.jspdf;
-            const docPdf = new jsPDF();
-            
-            // Cabeçalho Profissional Japan Security[cite: 1]
-            docPdf.setFillColor(185, 28, 28); // Vermelho Escuro
-            docPdf.rect(0, 0, 210, 30, 'F');
-            docPdf.setTextColor(255);
-            docPdf.setFontSize(16);
-            docPdf.text("JAPAN SECURITY - RELATÓRIO TÉCNICO DE VISTORIA", 105, 15, { align: 'center' });
-            
-            const f_ini = document.getElementById('f_ini').value || "Início";
-            const f_fim = document.getElementById('f_fim').value || "Fim";
-            docPdf.setFontSize(10);
-            docPdf.text(`Período: ${f_ini} até ${f_fim}`, 105, 23, { align: 'center' });
+    const { jsPDF } = window.jspdf;
+    const docPdf = new jsPDF();
+    
+    // Cabeçalho Padrão Japan Security
+    docPdf.setFillColor(185, 28, 28); 
+    docPdf.rect(0, 0, 210, 30, 'F');
+    docPdf.setTextColor(255);
+    docPdf.setFontSize(16);
+    docPdf.setFont(undefined, 'bold');
+    docPdf.text("JAPAN SECURITY - RELATÓRIO TÉCNICO", 105, 15, { align: 'center' });
+    
+    const f_ini = document.getElementById('f_ini').value || "---";
+    const f_fim = document.getElementById('f_fim').value || "---";
+    docPdf.setFontSize(10);
+    docPdf.setFont(undefined, 'normal');
+    docPdf.text(`Período: ${f_ini} até ${f_fim}`, 105, 23, { align: 'center' });
 
-            let y = 40;
-            historicoLocal.forEach((i, index) => {
-                if(y > 240) { docPdf.addPage(); y = 20; }
+    let y = 40; // Posição inicial
 
-                // Bloco de Dados VTR[cite: 1]
-                docPdf.setTextColor(185, 28, 28);
-                docPdf.setFont(undefined, 'bold');
-                docPdf.text(`VTR: ${formatarNomeVeiculo(i.veiculo)}`, 10, y);
-                docPdf.setTextColor(0);
-                docPdf.text(`DATA: ${i.dataExibicao}`, 140, y);
-                y += 6;
+    historicoLocal.forEach((i) => {
+        // Verifica se precisa de nova página
+        if(y > 230) { docPdf.addPage(); y = 20; }
 
-                docPdf.setFont(undefined, 'normal');
-                docPdf.setFontSize(9);
-                docPdf.text(`KM: ${i.km} | Vigilante: ${i.vigilante}`, 10, y);
-                y += 5;
-                docPdf.text(`${i.checkList}`, 10, y, { maxWidth: 190 });
-                y += 5;
-                docPdf.setFont(undefined, 'italic');
-                docPdf.text(`Observações: ${i.obs}`, 10, y, { maxWidth: 190 });
-                y += 8;
+        // Identificação da VTR
+        docPdf.setTextColor(185, 28, 28);
+        docPdf.setFontSize(11);
+        docPdf.setFont(undefined, 'bold');
+        docPdf.text(`VTR: ${formatarNomeVeiculo(i.veiculo)}`, 10, y);
+        
+        docPdf.setTextColor(0);
+        docPdf.setFontSize(9);
+        docPdf.text(`DATA: ${i.dataExibicao}`, 140, y);
+        y += 7;
 
-                // Inserir Foto se existir[cite: 1]
-                if(i.foto) {
-                    try {
-                        docPdf.addImage(i.foto, 'JPEG', 10, y, 60, 45); // Tamanho da foto no PDF
-                        y += 52;
-                    } catch(e) { y += 5; }
-                }
+        // Vigilante e KM[cite: 1]
+        docPdf.setFont(undefined, 'bold');
+        docPdf.text(`KM:`, 10, y);
+        docPdf.setFont(undefined, 'normal');
+        docPdf.text(`${i.km} | Vigilante: ${i.vigilante}`, 20, y);
+        y += 6;
 
-                docPdf.line(10, y, 200, y);
-                y += 10;
-            });
+        // CORREÇÃO DO CHECKLIST (Quebra de linha dinâmica)[cite: 1]
+        docPdf.setFont(undefined, 'bold');
+        docPdf.text(`CHECKLIST:`, 10, y);
+        docPdf.setFont(undefined, 'normal');
+        const checkLines = docPdf.splitTextToSize(i.checkList, 170); // Define largura máxima[cite: 1]
+        docPdf.text(checkLines, 35, y);
+        
+        // O "pulo" do Y agora depende de quantas linhas o checklist gerou[cite: 1]
+        y += (checkLines.length * 5) + 2; 
 
-            docPdf.save(`Relatorio_Japan_${new Date().getTime()}.pdf`);
-        };
+        // CORREÇÃO DA OBSERVAÇÃO (Agora ela respeita o espaço do checklist)[cite: 1]
+        docPdf.setFont(undefined, 'bold');
+        docPdf.text(`OBSERVAÇÕES:`, 10, y);
+        docPdf.setFont(undefined, 'italic');
+        const obsLines = docPdf.splitTextToSize(i.obs || "SEM OBS", 165);
+        docPdf.text(obsLines, 38, y);
+        
+        // Atualiza o Y novamente baseado nas linhas da observação[cite: 1]
+        y += (obsLines.length * 5) + 5;
+
+        // Inserção da Foto[cite: 1]
+        if(i.foto) {
+            try {
+                if (y > 230) { docPdf.addPage(); y = 20; }
+                docPdf.addImage(i.foto, 'JPEG', 10, y, 65, 48); 
+                y += 55;
+            } catch(e) { y += 5; }
+        }
+
+        // Linha Divisora[cite: 1]
+        docPdf.setDrawColor(200);
+        docPdf.line(10, y, 200, y);
+        y += 10;
+    });
+
+    docPdf.save(`Relatorio_Japan_${new Date().getTime()}.pdf`);
+};
 
         document.getElementById('btnFiltrar').onclick = async () => {
     const iniStr = document.getElementById('f_ini').value;
