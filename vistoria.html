@@ -104,7 +104,7 @@
         </table>
     </main>
 
-    <script type="module">
+   <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -142,14 +142,32 @@
 
         function formatarNomeVeiculo(vtrTexto) {
             if (!vtrTexto) return "---";
-            if (vtrTexto.includes(" - ")) return vtrTexto;
-            const busca = vtrCache.find(v => v.placa === vtrTexto.trim());
+            const busca = vtrCache.find(v => v.placa === vtrTexto.split(' - ')[0].trim());
             return busca ? `${busca.placa} - ${busca.nome}` : vtrTexto;
+        }
+
+        // --- COMPACTADOR DE FOTO (ESSENCIAL PARA SALVAR) ---
+        function comprimirFoto(file, callback) {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 800; // Tamanho ideal para PDF e Banco
+                    const scaleSize = MAX_WIDTH / img.width;
+                    canvas.width = MAX_WIDTH;
+                    canvas.height = img.height * scaleSize;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    callback(canvas.toDataURL('image/jpeg', 0.7)); // Qualidade 70%
+                };
+            };
         }
 
         const inputVtr = document.getElementById('v_veiculo');
         const boxVtr = document.getElementById('lista_vtr');
-        
         inputVtr.onfocus = () => exibirSugestoes(inputVtr.value.toUpperCase());
         inputVtr.oninput = (e) => exibirSugestoes(e.target.value.toUpperCase());
 
@@ -159,7 +177,6 @@
             filtrados.forEach(v => {
                 const d = document.createElement('div');
                 d.innerHTML = `<b>${v.placa}</b> - ${v.nome}`;
-                // USAR MOUSEDOWN para evitar que o blur feche antes de clicar
                 d.onmousedown = (e) => {
                     e.preventDefault();
                     inputVtr.value = `${v.placa} - ${v.nome}`;
@@ -171,24 +188,19 @@
             boxVtr.style.display = filtrados.length ? 'block' : 'none';
         }
 
-        // Fecha a lista se clicar fora
-        document.addEventListener('click', (e) => {
-            if (e.target !== inputVtr) boxVtr.style.display = 'none';
-        });
-
         document.getElementById('btnCâmera').onclick = () => document.getElementById('input_foto').click();
         document.getElementById('input_foto').onchange = (e) => {
-            const reader = new FileReader();
-            reader.onload = () => {
-                fotoBase64 = reader.result;
-                document.getElementById('preview-foto').src = fotoBase64;
-                document.getElementById('preview-foto').style.display = 'block';
-            };
-            reader.readAsDataURL(e.target.files[0]);
+            if (e.target.files[0]) {
+                comprimirFoto(e.target.files[0], (base64) => {
+                    fotoBase64 = base64;
+                    document.getElementById('preview-foto').src = base64;
+                    document.getElementById('preview-foto').style.display = 'block';
+                });
+            }
         };
 
         window.excluirVistoria = async (id) => {
-            if(confirm("Excluir vistoria?")) { await deleteDoc(doc(db, "vistorias", id)); carregarHistorico(); }
+            if(confirm("Excluir esta vistoria?")) { await deleteDoc(doc(db, "vistorias", id)); carregarHistorico(); }
         };
 
         function renderizar() {
@@ -205,10 +217,15 @@
         }
 
         document.getElementById('btnSalvarVistoria').onclick = async () => {
+            const btn = document.getElementById('btnSalvarVistoria');
             const vtrVal = inputVtr.value.toUpperCase();
             const km = document.getElementById('v_km').value;
             const vig = document.getElementById('v_vigilante').value.toUpperCase();
+
             if(!vtrVal || !km || !vig) return alert("Preencha Viatura, KM e Vigilante!");
+
+            btn.disabled = true;
+            btn.innerHTML = "SALVANDO...";
 
             const checks = [];
             document.querySelectorAll('.v_chk').forEach(c => {
@@ -222,47 +239,84 @@
                     vigilante: vig,
                     checkList: checks.join(" | "),
                     obs: document.getElementById('v_obs').value.toUpperCase() || "SEM OBS",
-                    foto: fotoBase64,
+                    foto: fotoBase64, // Agora enviando a foto comprimida
                     timestamp: Date.now(),
                     dataExibicao: new Date().toLocaleString('pt-BR'),
                     usuario: auth.currentUser.email
                 });
-                alert("Vistoria Finalizada!"); location.reload();
-            } catch (e) { alert("Erro ao salvar!"); }
-        };
-
-        document.getElementById('btnFiltrar').onclick = () => {
-            const ini = new Date(document.getElementById('f_ini').value).getTime();
-            const fim = new Date(document.getElementById('f_fim').value).getTime();
-            if(!ini || !fim) return alert("Selecione o período!");
-            const filtrados = historicoLocal.filter(i => i.timestamp >= ini && i.timestamp <= fim);
-            historicoLocal = filtrados;
-            renderizar();
+                alert("Vistoria salva com sucesso!");
+                location.reload();
+            } catch (e) { 
+                console.error(e);
+                alert("Erro ao salvar! Verifique a internet."); 
+                btn.disabled = false;
+                btn.innerHTML = "FINALIZAR VISTORIA";
+            }
         };
 
         document.getElementById('btnExportarPDF').onclick = () => {
             const { jsPDF } = window.jspdf;
             const docPdf = new jsPDF();
-            docPdf.setFillColor(230, 57, 70);
-            docPdf.rect(0, 0, 210, 25, 'F');
+            
+            // Cabeçalho Profissional Japan Security[cite: 1]
+            docPdf.setFillColor(185, 28, 28); // Vermelho Escuro
+            docPdf.rect(0, 0, 210, 30, 'F');
             docPdf.setTextColor(255);
-            docPdf.text("JAPAN SECURITY - VISTORIAS", 10, 15);
+            docPdf.setFontSize(16);
+            docPdf.text("JAPAN SECURITY - RELATÓRIO TÉCNICO DE VISTORIA", 105, 15, { align: 'center' });
+            
+            const f_ini = document.getElementById('f_ini').value || "Início";
+            const f_fim = document.getElementById('f_fim').value || "Fim";
+            docPdf.setFontSize(10);
+            docPdf.text(`Período: ${f_ini} até ${f_fim}`, 105, 23, { align: 'center' });
 
-            let y = 35;
-            historicoLocal.forEach(i => {
-                if(y > 260) { docPdf.addPage(); y = 20; }
+            let y = 40;
+            historicoLocal.forEach((i, index) => {
+                if(y > 240) { docPdf.addPage(); y = 20; }
+
+                // Bloco de Dados VTR[cite: 1]
+                docPdf.setTextColor(185, 28, 28);
+                docPdf.setFont(undefined, 'bold');
+                docPdf.text(`VTR: ${formatarNomeVeiculo(i.veiculo)}`, 10, y);
                 docPdf.setTextColor(0);
-                docPdf.setFontSize(10);
-                docPdf.text(`Data: ${i.dataExibicao} | VTR: ${formatarNomeVeiculo(i.veiculo)}`, 10, y);
+                docPdf.text(`DATA: ${i.dataExibicao}`, 140, y);
+                y += 6;
+
+                docPdf.setFont(undefined, 'normal');
+                docPdf.setFontSize(9);
+                docPdf.text(`KM: ${i.km} | Vigilante: ${i.vigilante}`, 10, y);
                 y += 5;
-                docPdf.setFontSize(8);
-                docPdf.text(`Checklist: ${i.checkList}`, 10, y, { maxWidth: 180 });
-                y += 10;
-                docPdf.line(10, y, 200, y);
+                docPdf.text(`${i.checkList}`, 10, y, { maxWidth: 190 });
+                y += 5;
+                docPdf.setFont(undefined, 'italic');
+                docPdf.text(`Observações: ${i.obs}`, 10, y, { maxWidth: 190 });
                 y += 8;
+
+                // Inserir Foto se existir[cite: 1]
+                if(i.foto) {
+                    try {
+                        docPdf.addImage(i.foto, 'JPEG', 10, y, 60, 45); // Tamanho da foto no PDF
+                        y += 52;
+                    } catch(e) { y += 5; }
+                }
+
+                docPdf.line(10, y, 200, y);
+                y += 10;
             });
-            docPdf.save("Vistorias.pdf");
+
+            docPdf.save(`Relatorio_Japan_${new Date().getTime()}.pdf`);
+        };
+
+        document.getElementById('btnFiltrar').onclick = () => {
+            const iniStr = document.getElementById('f_ini').value;
+            const fimStr = document.getElementById('f_fim').value;
+            if(!iniStr || !fimStr) return alert("Selecione o período para filtrar!");
+            
+            const ini = new Date(iniStr).getTime();
+            const fim = new Date(fimStr).getTime();
+            
+            const filtrados = historicoLocal.filter(i => i.timestamp >= ini && i.timestamp <= fim);
+            historicoLocal = filtrados;
+            renderizar();
         };
     </script>
-</body>
-</html>
