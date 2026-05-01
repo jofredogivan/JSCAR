@@ -5,9 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Japan Security | Home</title>
     
-    <link rel="manifest" href="manifest.json">
+    <!-- Caminho atualizado para o manifest dentro da subpasta -->
+    <link rel="manifest" href="/JSCAR/manifest.json">
     <meta name="theme-color" content="#e63946">
-    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <link rel="apple-touch-icon" href="/JSCAR/icons/icon-192x192.png">
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -91,7 +92,6 @@
             margin-top: 15px;
         }
 
-        /* Botão flutuante de instalação (opcional, aparece se disponível) */
         #installBtn {
             display: none;
             margin-top: 15px;
@@ -165,12 +165,12 @@
             });
         };
 
-        // --- REGISTRO DO SERVICE WORKER E INSTALAÇÃO ---
-        
+        // --- REGISTRO DO SERVICE WORKER COM ESCOPO DA SUBPASTA ---
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
-                    .then(reg => console.log('SW registrado com sucesso!'))
+                // Definindo o escopo explicitamente para /JSCAR/
+                navigator.serviceWorker.register('/JSCAR/sw.js', { scope: '/JSCAR/' })
+                    .then(reg => console.log('SW registrado com sucesso!', reg))
                     .catch(err => console.log('Falha ao registrar SW', err));
             });
         }
@@ -179,10 +179,8 @@
         const installBtn = document.getElementById('installBtn');
 
         window.addEventListener('beforeinstallprompt', (e) => {
-            // Impede o Chrome de mostrar o prompt automático imediatamente
             e.preventDefault();
             deferredPrompt = e;
-            // Mostra o nosso botão de instalação personalizado
             installBtn.style.display = 'block';
         });
 
@@ -191,7 +189,7 @@
                 deferredPrompt.prompt();
                 const { outcome } = await deferredPrompt.userChoice;
                 if (outcome === 'accepted') {
-                    console.log('Usuário instalou o app');
+                    console.log('Usuário aceitou a instalação');
                 }
                 deferredPrompt = null;
                 installBtn.style.display = 'none';
