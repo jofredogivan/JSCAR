@@ -94,7 +94,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDczjdNxa2TZP07iiwTAkOLFbKcOPx1POo",
@@ -108,7 +108,7 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
-        // REGISTRO DO SERVICE WORKER (ADICIONADO)
+        // REGISTRO DO SERVICE WORKER
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('sw.js').then(reg => {
@@ -119,6 +119,25 @@
             });
         }
 
+        // --- LÓGICA DE INATIVIDADE NA TELA DE LOGIN ---
+        let inactivityTimer;
+        const INACTIVITY_LIMIT = 15 * 60 * 1000; // 15 minutos
+
+        function resetInactivityTimer() {
+            clearTimeout(inactivityTimer);
+            inactivityTimer = setTimeout(() => {
+                // Se estiver inativo na tela de login, limpa os campos por segurança
+                document.getElementById('email').value = "";
+                document.getElementById('password').value = "";
+                document.getElementById('msg').innerText = "Sessão expirada por inatividade.";
+            }, INACTIVITY_LIMIT);
+        }
+
+        window.onload = resetInactivityTimer;
+        document.onmousemove = resetInactivityTimer;
+        document.onkeydown = resetInactivityTimer;
+
+        // --- FUNÇÃO DE LOGIN ATUALIZADA ---
         window.login = async () => {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
@@ -132,6 +151,9 @@
             msg.innerText = "Autenticando...";
 
             try {
+                // CONFIGURAÇÃO: Login expira ao fechar o navegador/aba
+                await setPersistence(auth, browserSessionPersistence);
+                
                 await signInWithEmailAndPassword(auth, email, password);
                 window.location.href = "index.html"; 
             } catch (error) {
