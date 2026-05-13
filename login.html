@@ -4,6 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Japan Security | Login</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#121212">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { 
@@ -100,7 +108,17 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
-        // Função de Login Direto para o Menu Inicial (Index)
+        // REGISTRO DO SERVICE WORKER (ADICIONADO)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').then(reg => {
+                    console.log('SW registrado!', reg);
+                }).catch(err => {
+                    console.log('Erro no SW:', err);
+                });
+            });
+        }
+
         window.login = async () => {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
@@ -115,14 +133,12 @@
 
             try {
                 await signInWithEmailAndPassword(auth, email, password);
-                // REDIRECIONAMENTO CORRIGIDO: Agora vai para o index de apresentação
                 window.location.href = "index.html"; 
             } catch (error) {
                 msg.innerText = "Erro: E-mail ou senha incorretos.";
             }
         };
 
-        // Função de Cadastro
         window.cadastrar = async () => {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
