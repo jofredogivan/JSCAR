@@ -5,10 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Japan Security | Home</title>
     
-    <!-- Caminho atualizado para o manifest dentro da subpasta -->
-    <link rel="manifest" href="/JSCAR/manifest.json">
+    <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#e63946">
-    <link rel="apple-touch-icon" href="/JSCAR/icons/icon-192x192.png">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -151,9 +150,28 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
+        // --- LÓGICA DE INATIVIDADE (15 MINUTOS) ---
+        let timerInatividade;
+        const TEMPO_LIMITE = 15 * 60 * 1000; 
+
+        function resetarTimer() {
+            clearTimeout(timerInatividade);
+            timerInatividade = setTimeout(async () => {
+                alert("Sua sessão expirou por inatividade.");
+                await signOut(auth);
+                window.location.href = "login.html";
+            }, TEMPO_LIMITE);
+        }
+
+        // Monitora cliques, teclas e toques
+        document.onmousemove = resetarTimer;
+        document.onkeydown = resetarTimer;
+        document.ontouchstart = resetarTimer;
+
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 document.getElementById('userBadge').innerText = user.email;
+                resetarTimer(); // Inicia o timer quando o usuário é detectado
             } else {
                 window.location.href = "login.html";
             }
@@ -165,13 +183,12 @@
             });
         };
 
-        // --- REGISTRO DO SERVICE WORKER COM ESCOPO DA SUBPASTA ---
+        // --- REGISTRO DO SERVICE WORKER ---
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                // Definindo o escopo explicitamente para /JSCAR/
-                navigator.serviceWorker.register('/JSCAR/sw.js', { scope: '/JSCAR/' })
-                    .then(reg => console.log('SW registrado com sucesso!', reg))
-                    .catch(err => console.log('Falha ao registrar SW', err));
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('SW registrado!', reg))
+                    .catch(err => console.log('Erro SW:', err));
             });
         }
 
@@ -188,9 +205,6 @@
             if (deferredPrompt) {
                 deferredPrompt.prompt();
                 const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') {
-                    console.log('Usuário aceitou a instalação');
-                }
                 deferredPrompt = null;
                 installBtn.style.display = 'none';
             }
