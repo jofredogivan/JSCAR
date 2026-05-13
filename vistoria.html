@@ -22,7 +22,6 @@
         .btn-primary { border: none; border-radius: 8px; cursor: pointer; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 8px; text-transform: uppercase; width: 100%; padding: 15px; transition: all 0.1s; }
         .btn-primary:active { transform: scale(0.96); opacity: 0.8; }
         
-        /* Sugestão de Viaturas */
         #lista_vtr { display: none; position: absolute; width: 100%; background: #222; border: 2px solid var(--red); z-index: 9999; max-height: 250px; overflow-y: auto; border-radius: 8px; top: 70px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
         #lista_vtr div { padding: 14px; border-bottom: 1px solid #333; cursor: pointer; color: #ccc; }
         #lista_vtr div:hover { background: var(--red); color: #fff; }
@@ -69,7 +68,7 @@
 
             <div style="display: flex; gap: 10px;">
                 <div style="flex: 1;"><label>KM Atual</label><input type="number" id="v_km" class="modern-input"></div>
-                <div style="flex: 1;"><label>Vigilante</label><input type="text" id="v_vigilante" class="modern-input"></div>
+                <div style="flex: 1;"><label>Nome</label><input type="text" id="v_nome" class="modern-input" placeholder="Responsável"></div>
             </div>
 
             <label>Checklist Completo</label>
@@ -99,7 +98,7 @@
         </div>
 
         <table id="minhaTabela">
-            <thead><tr><th>Data</th><th>Viatura</th><th>Vigilante</th><th>KM</th></tr></thead>
+            <thead><tr><th>Data</th><th>Viatura</th><th>Nome</th><th>KM</th></tr></thead>
             <tbody id="tabelaVistoria"></tbody>
         </table>
     </main>
@@ -146,7 +145,6 @@
             return busca ? `${busca.placa} - ${busca.nome}` : vtrTexto;
         }
 
-        // --- COMPACTADOR DE FOTO (ESSENCIAL PARA SALVAR) ---
         function comprimirFoto(file, callback) {
             const reader = new FileReader();
             reader.readAsDataURL(file);
@@ -155,13 +153,13 @@
                 img.src = event.target.result;
                 img.onload = () => {
                     const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 800; // Tamanho ideal para PDF e Banco
+                    const MAX_WIDTH = 800;
                     const scaleSize = MAX_WIDTH / img.width;
                     canvas.width = MAX_WIDTH;
                     canvas.height = img.height * scaleSize;
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                    callback(canvas.toDataURL('image/jpeg', 0.7)); // Qualidade 70%
+                    callback(canvas.toDataURL('image/jpeg', 0.7));
                 };
             };
         }
@@ -207,10 +205,12 @@
             const corpo = document.getElementById('tabelaVistoria');
             corpo.innerHTML = "";
             historicoLocal.forEach(i => {
+                // AJUSTE: Exibe tanto o campo antigo 'vigilante' quanto o novo 'nome' para não bugar o histórico
+                const nomeExibicao = i.nome || i.vigilante || "---";
                 corpo.innerHTML += `<tr>
                     <td>${i.dataExibicao ? i.dataExibicao.split(' ')[0] : '---'}</td>
                     <td><b>${formatarNomeVeiculo(i.veiculo)}</b></td>
-                    <td>${i.vigilante}</td>
+                    <td>${nomeExibicao}</td>
                     <td>${i.km} <button class="btn-excluir" onclick="excluirVistoria('${i.id}')"><i class="fas fa-trash"></i></button></td>
                 </tr>`;
             });
@@ -220,9 +220,9 @@
             const btn = document.getElementById('btnSalvarVistoria');
             const vtrVal = inputVtr.value.toUpperCase();
             const km = document.getElementById('v_km').value;
-            const vig = document.getElementById('v_vigilante').value.toUpperCase();
+            const nomeVal = document.getElementById('v_nome').value.toUpperCase();
 
-            if(!vtrVal || !km || !vig) return alert("Preencha Viatura, KM e Vigilante!");
+            if(!vtrVal || !km || !nomeVal) return alert("Preencha Viatura, KM e Nome!");
 
             btn.disabled = true;
             btn.innerHTML = "SALVANDO...";
@@ -236,10 +236,11 @@
                 await addDoc(collection(db, "vistorias"), {
                     veiculo: vtrVal,
                     km: Number(km),
-                    vigilante: vig,
+                    nome: nomeVal, // Novo campo padrão
+                    vigilante: nomeVal, // Mantido para compatibilidade com relatórios antigos
                     checkList: checks.join(" | "),
                     obs: document.getElementById('v_obs').value.toUpperCase() || "SEM OBS",
-                    foto: fotoBase64, // Agora enviando a foto comprimida
+                    foto: fotoBase64,
                     timestamp: Date.now(),
                     dataExibicao: new Date().toLocaleString('pt-BR'),
                     usuario: auth.currentUser.email
@@ -248,120 +249,100 @@
                 location.reload();
             } catch (e) { 
                 console.error(e);
-                alert("Erro ao salvar! Verifique a internet."); 
+                alert("Erro ao salvar!"); 
                 btn.disabled = false;
                 btn.innerHTML = "FINALIZAR VISTORIA";
             }
         };
 
         document.getElementById('btnExportarPDF').onclick = () => {
-    const { jsPDF } = window.jspdf;
-    const docPdf = new jsPDF();
-    
-    // Cabeçalho Padrão Japan Security
-    docPdf.setFillColor(185, 28, 28); 
-    docPdf.rect(0, 0, 210, 30, 'F');
-    docPdf.setTextColor(255);
-    docPdf.setFontSize(16);
-    docPdf.setFont(undefined, 'bold');
-    docPdf.text("JAPAN SECURITY - RELATÓRIO TÉCNICO", 105, 15, { align: 'center' });
-    
-    const f_ini = document.getElementById('f_ini').value || "---";
-    const f_fim = document.getElementById('f_fim').value || "---";
-    docPdf.setFontSize(10);
-    docPdf.setFont(undefined, 'normal');
-    docPdf.text(`Período: ${f_ini} até ${f_fim}`, 105, 23, { align: 'center' });
+            const { jsPDF } = window.jspdf;
+            const docPdf = new jsPDF();
+            
+            docPdf.setFillColor(185, 28, 28); 
+            docPdf.rect(0, 0, 210, 30, 'F');
+            docPdf.setTextColor(255);
+            docPdf.setFontSize(16);
+            docPdf.setFont(undefined, 'bold');
+            docPdf.text("JAPAN SECURITY - RELATÓRIO TÉCNICO", 105, 15, { align: 'center' });
+            
+            const f_ini = document.getElementById('f_ini').value || "---";
+            const f_fim = document.getElementById('f_fim').value || "---";
+            docPdf.setFontSize(10);
+            docPdf.setFont(undefined, 'normal');
+            docPdf.text(`Período: ${f_ini} até ${f_fim}`, 105, 23, { align: 'center' });
 
-    let y = 40; // Posição inicial
+            let y = 40;
 
-    historicoLocal.forEach((i) => {
-        // Verifica se precisa de nova página
-        if(y > 230) { docPdf.addPage(); y = 20; }
+            historicoLocal.forEach((i) => {
+                if(y > 230) { docPdf.addPage(); y = 20; }
 
-        // Identificação da VTR
-        docPdf.setTextColor(185, 28, 28);
-        docPdf.setFontSize(11);
-        docPdf.setFont(undefined, 'bold');
-        docPdf.text(`VTR: ${formatarNomeVeiculo(i.veiculo)}`, 10, y);
-        
-        docPdf.setTextColor(0);
-        docPdf.setFontSize(9);
-        docPdf.text(`DATA: ${i.dataExibicao}`, 140, y);
-        y += 7;
+                docPdf.setTextColor(185, 28, 28);
+                docPdf.setFontSize(11);
+                docPdf.setFont(undefined, 'bold');
+                docPdf.text(`VTR: ${formatarNomeVeiculo(i.veiculo)}`, 10, y);
+                
+                docPdf.setTextColor(0);
+                docPdf.setFontSize(9);
+                docPdf.text(`DATA: ${i.dataExibicao}`, 140, y);
+                y += 7;
 
-        // Vigilante e KM[cite: 1]
-        docPdf.setFont(undefined, 'bold');
-        docPdf.text(`KM:`, 10, y);
-        docPdf.setFont(undefined, 'normal');
-        docPdf.text(`${i.km} | Vigilante: ${i.vigilante}`, 20, y);
-        y += 6;
+                docPdf.setFont(undefined, 'bold');
+                docPdf.text(`KM:`, 10, y);
+                docPdf.setFont(undefined, 'normal');
+                // AJUSTE: No PDF agora aparece "Colaborador" em vez de "Vigilante"
+                const resp = i.nome || i.vigilante || "---";
+                docPdf.text(`${i.km} | Colaborador: ${resp}`, 20, y);
+                y += 6;
 
-        // CORREÇÃO DO CHECKLIST (Quebra de linha dinâmica)[cite: 1]
-        docPdf.setFont(undefined, 'bold');
-        docPdf.text(`CHECKLIST:`, 10, y);
-        docPdf.setFont(undefined, 'normal');
-        const checkLines = docPdf.splitTextToSize(i.checkList, 170); // Define largura máxima[cite: 1]
-        docPdf.text(checkLines, 35, y);
-        
-        // O "pulo" do Y agora depende de quantas linhas o checklist gerou[cite: 1]
-        y += (checkLines.length * 5) + 2; 
+                docPdf.setFont(undefined, 'bold');
+                docPdf.text(`CHECKLIST:`, 10, y);
+                docPdf.setFont(undefined, 'normal');
+                const checkLines = docPdf.splitTextToSize(i.checkList, 170);
+                docPdf.text(checkLines, 35, y);
+                
+                y += (checkLines.length * 5) + 2; 
 
-        // CORREÇÃO DA OBSERVAÇÃO (Agora ela respeita o espaço do checklist)[cite: 1]
-        docPdf.setFont(undefined, 'bold');
-        docPdf.text(`OBSERVAÇÕES:`, 10, y);
-        docPdf.setFont(undefined, 'italic');
-        const obsLines = docPdf.splitTextToSize(i.obs || "SEM OBS", 165);
-        docPdf.text(obsLines, 38, y);
-        
-        // Atualiza o Y novamente baseado nas linhas da observação[cite: 1]
-        y += (obsLines.length * 5) + 5;
+                docPdf.setFont(undefined, 'bold');
+                docPdf.text(`OBSERVAÇÕES:`, 10, y);
+                docPdf.setFont(undefined, 'italic');
+                const obsLines = docPdf.splitTextToSize(i.obs || "SEM OBS", 165);
+                docPdf.text(obsLines, 38, y);
+                
+                y += (obsLines.length * 5) + 5;
 
-        // Inserção da Foto[cite: 1]
-        if(i.foto) {
-            try {
-                if (y > 230) { docPdf.addPage(); y = 20; }
-                docPdf.addImage(i.foto, 'JPEG', 10, y, 65, 48); 
-                y += 55;
-            } catch(e) { y += 5; }
-        }
+                if(i.foto) {
+                    try {
+                        if (y > 230) { docPdf.addPage(); y = 20; }
+                        docPdf.addImage(i.foto, 'JPEG', 10, y, 65, 48); 
+                        y += 55;
+                    } catch(e) { y += 5; }
+                }
 
-        // Linha Divisora[cite: 1]
-        docPdf.setDrawColor(200);
-        docPdf.line(10, y, 200, y);
-        y += 10;
-    });
+                docPdf.setDrawColor(200);
+                docPdf.line(10, y, 200, y);
+                y += 10;
+            });
 
-    docPdf.save(`Relatorio_Japan_${new Date().getTime()}.pdf`);
-};
+            docPdf.save(`Relatorio_Japan_${new Date().getTime()}.pdf`);
+        };
 
         document.getElementById('btnFiltrar').onclick = async () => {
-    const iniStr = document.getElementById('f_ini').value;
-    const fimStr = document.getElementById('f_fim').value;
-
-    if(!iniStr || !fimStr) return alert("Por favor, preencha Data/Hora de Início e Fim.");
-
-    // Converte o que o operador digitou para milissegundos exatos
-    const dInicio = new Date(iniStr).getTime();
-    const dFim = new Date(fimStr).getTime();
-
-    // Recarrega do banco para garantir que pegamos os testes novos
-    const q = query(collection(db, "vistorias"), orderBy("timestamp", "desc"));
-    const snap = await getDocs(q);
-    
-    // Filtra pela data/hora exata e pelo usuário
-    const todos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    
-    historicoLocal = todos.filter(i => {
-        const dono = i.usuario === auth.currentUser.email;
-        // O timestamp do registro deve estar entre o início e o fim escolhido[cite: 1]
-        const noPeriodo = i.timestamp >= dInicio && i.timestamp <= dFim;
-        return dono && noPeriodo;
-    });
-
-    if(historicoLocal.length === 0) {
-        alert("Nenhum registro encontrado exatamente neste horário.");
-    }
-
-    renderizar(); 
+            const iniStr = document.getElementById('f_ini').value;
+            const fimStr = document.getElementById('f_fim').value;
+            if(!iniStr || !fimStr) return alert("Preencha as datas.");
+            const dInicio = new Date(iniStr).getTime();
+            const dFim = new Date(fimStr).getTime();
+            const q = query(collection(db, "vistorias"), orderBy("timestamp", "desc"));
+            const snap = await getDocs(q);
+            const todos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            historicoLocal = todos.filter(i => {
+                const dono = i.usuario === auth.currentUser.email;
+                const noPeriodo = i.timestamp >= dInicio && i.timestamp <= dFim;
+                return dono && noPeriodo;
+            });
+            renderizar(); 
         };
     </script>
+</body>
+</html>
