@@ -5,13 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Japan Security | Manutenção</title>
     
-    <!-- CONFIGURAÇÕES PWA -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#121212">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     
-    <!-- ÍCONES -->
     <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png">
     <link rel="apple-touch-icon" href="icons/icon-192x192.png">
     
@@ -129,7 +127,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, query, where, doc, updateDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, query, where, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
@@ -145,7 +143,6 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        // Registro Service Worker
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('sw.js').catch(err => console.log(err));
         }
@@ -224,7 +221,7 @@
 
         document.getElementById('btnSalvar').onclick = async () => {
             const btn = document.getElementById('btnSalvar');
-            const vtr = document.getElementById('m_veiculo').value.toUpperCase();
+            const vtr = document.getElementById('m_veiculo').value.toUpperCase().trim();
             if(!vtr) return alert("Placa necessária");
 
             btn.disabled = true;
@@ -232,12 +229,14 @@
 
             const dataInput = document.getElementById('m_data').value;
             const dObj = dataInput ? new Date(dataInput) : new Date();
+            const kmAtualDigitado = parseInt(document.getElementById('m_km').value) || 0;
+            const servicoTexto = document.getElementById('m_servico').value.toUpperCase();
 
             const dados = {
                 veiculo: vtr,
                 valor: parseFloat(document.getElementById('m_valor').value) || 0,
-                servico: document.getElementById('m_servico').value.toUpperCase(),
-                km: document.getElementById('m_km').value || "",
+                servico: servicoTexto,
+                km: kmAtualDigitado || "",
                 proxima_km: document.getElementById('m_proxima').value || "",
                 dataExibicao: dObj.toLocaleString('pt-BR'),
                 dataISO: dObj.toISOString(),
@@ -246,12 +245,49 @@
             };
 
             try {
-                if(editId) await updateDoc(doc(db, "manutencoes", editId), dados);
-                else await addDoc(collection(db, "manutencoes"), dados);
+                // 1. SALVA OU ATUALIZA O LOG NA COLEÇÃO DE MANUTENÇÕES
+                if(editId) {
+                    await updateDoc(doc(db, "manutencoes", editId), dados);
+                } else {
+                    await addDoc(collection(db, "manutencoes"), dados);
+                }
+
+                // 2. LOGICA DE ATUALIZAÇÃO AUTOMÁTICA DO VEÍCULO (PREVENTIVA)
+                // Procura na coleção 'veiculos' o documento que pertence a placa digitada
+                const qVeiculo = query(collection(db, "veiculos"), where("placa", "==", vtr));
+                const snapVeiculo = await getDocs(qVeiculo);
+                
+                if (!snapVeiculo.empty) {
+                    // Pega o primeiro veículo correspondente encontrado
+                    const veiculoDoc = snapVeiculo.docs[0];
+                    const veiculoRef = doc(db, "veiculos", veiculoDoc.id);
+                    
+                    const camposAtualizacao = {};
+                    
+                    // Sempre atualiza o KM Geral do carro para bater com o último informado
+                    if(kmAtualDigitado > 0) {
+                        camposAtualizacao.kmAtual = kmAtualDigitado;
+                    }
+
+                    // Se a descrição contiver "OLEO" ou "ÓLEO", define esse KM como a última troca
+                    if(servicoTexto.includes("OLEO") || servicoTexto.includes("ÓLEO")) {
+                        if(kmAtualDigitado > 0) {
+                            camposAtualizacao.kmUltimaTroca = kmAtualDigitado;
+                        }
+                    }
+
+                    // Se houver algum campo para atualizar, executa no documento do veículo
+                    if(Object.keys(camposAtualizacao).length > 0) {
+                        await updateDoc(veiculoRef, camposAtualizacao);
+                    }
+                }
+
                 location.reload();
             } catch (e) {
+                console.error("Erro ao salvar lançamento/sincronizar veículo: ", e);
                 alert("Erro ao salvar.");
                 btn.disabled = false;
+                btn.innerText = "SALVAR REGISTRO";
             }
         };
 
