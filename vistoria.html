@@ -103,9 +103,9 @@
         </table>
     </main>
 
-   <script type="module">
+    <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
@@ -133,7 +133,11 @@
         }
 
         async function carregarHistorico() {
-            const q = query(collection(db, "vistorias"), orderBy("timestamp", "desc"));
+            const q = query(
+                collection(db, "vistorias"), 
+                orderBy("timestamp", "desc"),
+                limit(15)
+            );
             const snap = await getDocs(q);
             historicoLocal = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(i => i.usuario === auth.currentUser.email);
             renderizar();
@@ -153,13 +157,13 @@
                 img.src = event.target.result;
                 img.onload = () => {
                     const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 800;
+                    const MAX_WIDTH = 600;
                     const scaleSize = MAX_WIDTH / img.width;
                     canvas.width = MAX_WIDTH;
                     canvas.height = img.height * scaleSize;
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                    callback(canvas.toDataURL('image/jpeg', 0.7));
+                    callback(canvas.toDataURL('image/jpeg', 0.5));
                 };
             };
         }
@@ -205,7 +209,6 @@
             const corpo = document.getElementById('tabelaVistoria');
             corpo.innerHTML = "";
             historicoLocal.forEach(i => {
-                // AJUSTE: Exibe tanto o campo antigo 'vigilante' quanto o novo 'nome' para não bugar o histórico
                 const nomeExibicao = i.nome || i.vigilante || "---";
                 corpo.innerHTML += `<tr>
                     <td>${i.dataExibicao ? i.dataExibicao.split(' ')[0] : '---'}</td>
@@ -236,8 +239,8 @@
                 await addDoc(collection(db, "vistorias"), {
                     veiculo: vtrVal,
                     km: Number(km),
-                    nome: nomeVal, // Novo campo padrão
-                    vigilante: nomeVal, // Mantido para compatibilidade com relatórios antigos
+                    nome: nomeVal,
+                    vigilante: nomeVal,
                     checkList: checks.join(" | "),
                     obs: document.getElementById('v_obs').value.toUpperCase() || "SEM OBS",
                     foto: fotoBase64,
@@ -290,7 +293,6 @@
                 docPdf.setFont(undefined, 'bold');
                 docPdf.text(`KM:`, 10, y);
                 docPdf.setFont(undefined, 'normal');
-                // AJUSTE: No PDF agora aparece "Colaborador" em vez de "Vigilante"
                 const resp = i.nome || i.vigilante || "---";
                 docPdf.text(`${i.km} | Colaborador: ${resp}`, 20, y);
                 y += 6;
@@ -333,15 +335,24 @@
             if(!iniStr || !fimStr) return alert("Preencha as datas.");
             const dInicio = new Date(iniStr).getTime();
             const dFim = new Date(fimStr).getTime();
+            
+            const btn = document.getElementById('btnFiltrar');
+            btn.innerText = "BUSCANDO...";
+            btn.disabled = true;
+
             const q = query(collection(db, "vistorias"), orderBy("timestamp", "desc"));
             const snap = await getDocs(q);
             const todos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            
             historicoLocal = todos.filter(i => {
                 const dono = i.usuario === auth.currentUser.email;
                 const noPeriodo = i.timestamp >= dInicio && i.timestamp <= dFim;
                 return dono && noPeriodo;
             });
+            
             renderizar(); 
+            btn.innerText = "FILTRAR";
+            btn.disabled = false;
         };
     </script>
 </body>
