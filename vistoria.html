@@ -14,6 +14,8 @@
     <link rel="apple-touch-icon" href="icons/icon-192x192.png">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     
     <style>
         :root { --primary: #e63946; --bg: #121212; --card: #1a1a1a; --text: #ffffff; }
@@ -36,6 +38,8 @@
         
         .btn-acao { padding: 8px; border-radius: 6px; color: white; border: none; margin-top: 5px; }
         .btn-foto { background: #3498db; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; margin-top: 5px; }
+        .stats { display: grid; grid-template-columns: 1fr; gap: 10px; padding: 10px 10px 0 10px; }
+        .stat-box { background: #1a1a1a; padding: 10px; border-radius: 8px; text-align: center; border-bottom: 3px solid #3498db; }
     </style>
 </head>
 <body>
@@ -48,6 +52,13 @@
         <div style="width: 50px;"></div>
     </header>
 
+    <div class="stats">
+        <div class="stat-box">
+            <small style="color:#888; font-size:0.6rem;">VISTORIAS EXIBIDAS</small>
+            <div id="resumoQtd" style="font-weight:bold;">0</div>
+        </div>
+    </div>
+
     <div class="card">
         <h3 style="color:var(--primary); margin: 0 0 15px 0; font-size: 1rem;"><i class="fas fa-clipboard-check"></i> Nova Vistoria</h3>
         
@@ -55,8 +66,16 @@
         <input list="listaVeiculos" id="v_veiculo" class="modern-input" placeholder="Selecione a placa...">
         <datalist id="listaVeiculos"></datalist>
         
-        <label style="font-size:0.7rem; color:#888; margin-top:10px; display:block;">KM ATUAL</label>
-        <input type="number" id="v_km" class="modern-input" placeholder="Ex: 150000">
+        <div style="display: flex; gap: 10px; margin-top: 10px;">
+            <div style="flex:1">
+                <label style="font-size:0.7rem; color:#888;">DATA/HORA</label>
+                <input type="datetime-local" id="v_data" class="modern-input">
+            </div>
+            <div style="flex:1">
+                <label style="font-size:0.7rem; color:#888;">KM ATUAL</label>
+                <input type="number" id="v_km" class="modern-input" placeholder="Ex: 150000">
+            </div>
+        </div>
 
         <label style="font-size:0.7rem; color:#888; margin-top:10px; display:block;">OBSERVAÇÕES / DANOS ENCONTRADOS</label>
         <input type="text" id="v_obs" class="modern-input" placeholder="Ex: Arranhão no para-choque dianteiro">
@@ -69,8 +88,20 @@
         </button>
     </div>
 
+    <div class="card" style="border-left: 4px solid #3498db;">
+        <label style="font-size:0.7rem; color:#3498db; font-weight:bold;">FILTRAR HISTÓRICO POR DATA</label>
+        <div style="display: flex; gap: 5px; margin-top: 5px;">
+            <input type="date" id="f_ini" class="modern-input">
+            <input type="date" id="f_fim" class="modern-input">
+            <button id="btnFiltrar" style="background:#3498db; color:white; padding:0 15px; margin-top:5px;"><i class="fas fa-search"></i></button>
+        </div>
+    </div>
+
     <div class="card">
-        <h3 style="margin:0 0 10px 0; font-size: 1rem;">Histórico Recente (Últimas 20)</h3>
+        <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <h3 style="margin:0; font-size: 1rem;">Histórico</h3>
+            <button id="btnPDF" style="background:#27ae60; color:white; padding:5px 10px; font-size:0.7rem;"><i class="fas fa-file-pdf"></i> GERAR RELATÓRIO</button>
+        </div>
         <div id="status" style="font-size:0.8rem; color:#888; text-align:center;">Carregando...</div>
         <table>
             <thead>
@@ -85,7 +116,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, query, where, orderBy, limit, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, query, where, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
@@ -126,22 +157,26 @@
         async function carregarHistorico() {
             const corpo = document.getElementById('tabelaCorpo');
             const status = document.getElementById('status');
+            const dataIni = document.getElementById('f_ini').value;
+            const dataFim = document.getElementById('f_fim').value;
             
             try {
-                // OTIMIZAÇÃO: Traz apenas as últimas 20 vistorias direto ordenadas do banco
-                const q = query(
-                    collection(db, "vistorias"), 
-                    where("usuario", "==", auth.currentUser.email),
-                    orderBy("timestamp", "desc"),
-                    limit(20)
-                );
+                const q = query(collection(db, "vistorias"), where("usuario", "==", auth.currentUser.email));
                 const snap = await getDocs(q);
                 corpo.innerHTML = "";
                 dadosLocais = [];
 
                 snap.forEach(d => {
-                    dadosLocais.push({ id: d.id, ...d.data() });
+                    const item = { id: d.id, ...d.data() };
+                    const dataItem = item.dataISO ? item.dataISO.split('T')[0] : "";
+                    const filtroData = (!dataIni || dataItem >= dataIni) && (!dataFim || dataItem <= dataFim);
+                    
+                    if (filtroData) {
+                        dadosLocais.push(item);
+                    }
                 });
+
+                dadosLocais.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
 
                 if (dadosLocais.length === 0) {
                     status.innerText = "Nenhuma vistoria encontrada.";
@@ -157,7 +192,7 @@
                                 <td>
                                     <small style="color:#888; font-size:0.65rem;">${item.dataExibicao}</small><br>
                                     <b style="color:var(--primary)">${item.veiculo}</b><br>
-                                    <span>${item.observacoes || 'Sem avarias'}</span><br>
+                                    <span>${item.observacoes || 'Sem observações'}</span><br>
                                     <small style="color:#3498db">KM: ${item.km || '-'}</small><br>
                                     ${linkFoto}
                                 </td>
@@ -169,49 +204,11 @@
                         `;
                     });
                 }
-            } catch (e) { 
-                // Fallback caso o índice no Firestore ainda não esteja criado
-                console.warn("Consulta otimizada falhou, tentando fallback simples...", e);
-                carregarHistoricoFallback();
-            }
+                document.getElementById('resumoQtd').innerText = dadosLocais.length;
+            } catch (e) { status.innerText = "Erro ao carregar histórico."; }
         }
 
-        async function carregarHistoricoFallback() {
-            const corpo = document.getElementById('tabelaCorpo');
-            const status = document.getElementById('status');
-            const q = query(collection(db, "vistorias"), where("usuario", "==", auth.currentUser.email));
-            const snap = await getDocs(q);
-            corpo.innerHTML = "";
-            dadosLocais = [];
-            snap.forEach(d => dadosLocais.push({ id: d.id, ...d.data() }));
-            dadosLocais.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-            dadosLocais = dadosLocais.slice(0, 20);
-            
-            if (dadosLocais.length === 0) {
-                status.innerText = "Nenhuma vistoria encontrada.";
-            } else {
-                status.innerText = "";
-                dadosLocais.forEach(item => {
-                    const linkFoto = item.fotoUrl ? `<a href="${item.fotoUrl}" target="_blank" class="btn-foto"><i class="fas fa-camera"></i> FOTO</a>` : '';
-                    corpo.innerHTML += `
-                        <tr>
-                            <td>
-                                <small style="color:#888; font-size:0.65rem;">${item.dataExibicao}</small><br>
-                                <b style="color:var(--primary)">${item.veiculo}</b><br>
-                                <span>${item.observacoes || 'Sem avarias'}</span><br>
-                                <small style="color:#3498db">KM: ${item.km || '-'}</small><br>
-                                ${linkFoto}
-                            </td>
-                            <td style="text-align:right;">
-                                <button onclick="window.editar('${item.id}')" class="btn-acao" style="background:#3498db;"><i class="fas fa-edit"></i></button>
-                                <button onclick="window.excluir('${item.id}')" class="btn-acao" style="background:#e63946;"><i class="fas fa-trash"></i></button>
-                            </td>
-                        </tr>`;
-                });
-            }
-        }
-
-        // OTIMIZAÇÃO: Função para redimensionar e comprimir imagens antes do upload
+        // Compressor leve para envio rápido no celular
         function comprimirImagem(file, maxWidth = 1024, quality = 0.7) {
             return new Promise((resolve) => {
                 const reader = new FileReader();
@@ -234,9 +231,7 @@
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
 
-                        canvas.toBlob((blob) => {
-                            resolve(blob);
-                        }, 'image/jpeg', quality);
+                        canvas.toBlob((blob) => { resolve(blob); }, 'image/jpeg', quality);
                     };
                 };
             });
@@ -248,9 +243,10 @@
             if(!vtr) return alert("Informe a placa do veículo");
 
             btn.disabled = true;
-            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> PROCESSANDO FOTO...`;
+            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> SALVANDO...`;
 
-            const dObj = new Date();
+            const dataInput = document.getElementById('v_data').value;
+            const dObj = dataInput ? new Date(dataInput) : new Date();
             const kmAtualDigitado = parseInt(document.getElementById('v_km').value) || 0;
             const obsTexto = document.getElementById('v_obs').value;
             const fileInput = document.getElementById('v_foto');
@@ -259,18 +255,12 @@
                 let fotoUrl = fotoUrlExistente;
 
                 if (fileInput.files.length > 0) {
-                    const fileOriginal = fileInput.files[0];
-                    btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> OTIMIZANDO E ENVIANDO...`;
-                    
-                    // Comprime a imagem antes de enviar
-                    const blobComprimido = await comprimirImagem(fileOriginal);
-                    
+                    btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> OTIMIZANDO FOTO...`;
+                    const blobComprimido = await comprimirImagem(fileInput.files[0]);
                     const storageRef = ref(storage, `vistorias/${Date.now()}_foto.jpg`);
                     await uploadBytes(storageRef, blobComprimido);
                     fotoUrl = await getDownloadURL(storageRef);
                 }
-
-                btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> SALVANDO...`;
 
                 const dados = {
                     veiculo: vtr,
@@ -314,6 +304,7 @@
             document.getElementById('v_veiculo').value = d.veiculo;
             document.getElementById('v_km').value = d.km;
             document.getElementById('v_obs').value = d.observacoes;
+            if(d.dataISO) document.getElementById('v_data').value = d.dataISO.substring(0, 16);
             document.getElementById('btnSalvar').innerHTML = "<i class='fas fa-sync'></i> ATUALIZAR";
             window.scrollTo(0,0);
         };
@@ -323,6 +314,47 @@
                 await deleteDoc(doc(db, "vistorias", id)); 
                 carregarHistorico(); 
             }
+        };
+
+        document.getElementById('btnFiltrar').onclick = carregarHistorico;
+
+        // GERAR RELATÓRIO PDF PROFISSIONAL
+        document.getElementById('btnPDF').onclick = () => {
+            const { jsPDF } = window.jspdf;
+            const docPDF = new jsPDF();
+            const corPrimaria = [230, 57, 70]; 
+
+            docPDF.setFillColor(26, 26, 26);
+            docPDF.rect(0, 0, 210, 40, 'F');
+            docPDF.setTextColor(255, 255, 255);
+            docPDF.setFontSize(18);
+            docPDF.text("JAPAN SECURITY", 14, 20);
+            docPDF.setFontSize(10);
+            docPDF.text("RELATÓRIO GERENCIAL DE VISTORIAS VEICULARES", 14, 28);
+            docPDF.text(`Emissão: ${new Date().toLocaleString('pt-BR')}`, 140, 28);
+
+            const linhas = dadosLocais.map(i => [
+                i.dataExibicao ? i.dataExibicao.split(' ')[0] : '-',
+                i.veiculo,
+                i.km || '-',
+                i.observacoes || 'SEM OBSERVAÇÕES'
+            ]);
+
+            docPDF.autoTable({
+                head: [['DATA', 'VIATURA', 'KM ATUAL', 'OBSERVAÇÕES / AVARIAS']],
+                body: linhas,
+                startY: 50,
+                theme: 'striped',
+                headStyles: { fillColor: corPrimaria, halign: 'left' },
+                styles: { fontSize: 8 }
+            });
+
+            const finalY = docPDF.lastAutoTable.finalY + 10;
+            docPDF.setTextColor(40);
+            docPDF.setFont("helvetica", "bold");
+            docPDF.text(`TOTAL DE REGISTROS: ${dadosLocais.length}`, 14, finalY);
+
+            docPDF.save("Relatorio_Vistorias_Japan_Security.pdf");
         };
     </script>
 </body>
