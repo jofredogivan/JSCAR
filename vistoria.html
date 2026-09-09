@@ -100,8 +100,8 @@
         <label style="font-size:0.7rem; color:#888;">NOME DO COLABORADOR / VISTORIADOR</label>
         <input type="text" id="v_colaborador" class="modern-input" placeholder="Ex: JOFRE">
 
-        <label style="font-size:0.7rem; color:#888; margin-top:10px; display:block;">VIATURA (PLACA)</label>
-        <input list="listaVeiculos" id="v_veiculo" class="modern-input" placeholder="Selecione a placa...">
+        <label style="font-size:0.7rem; color:#888; margin-top:10px; display:block;">VIATURA (PLACA - MODELO)</label>
+        <input list="listaVeiculos" id="v_veiculo" class="modern-input" placeholder="Selecione a placa ou veículo...">
         <datalist id="listaVeiculos"></datalist>
         
         <div style="display: flex; gap: 10px; margin-top: 10px;">
@@ -174,7 +174,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, query, where, doc, updateDoc, deleteDoc, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, query, where, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
@@ -210,7 +210,14 @@
                 const snap = await getDocs(collection(db, "veiculos"));
                 const list = document.getElementById('listaVeiculos');
                 list.innerHTML = "";
-                snap.forEach(d => { list.innerHTML += `<option value="${d.data().placa}">`; });
+                snap.forEach(d => { 
+                    const data = d.data();
+                    const placa = data.placa || "";
+                    const nomeOuModelo = data.modelo || data.nome || data.veiculo || "";
+                    const textoExibicao = nomeOuModelo ? `${placa} - ${nomeOuModelo}` : placa;
+                    
+                    list.innerHTML += `<option value="${textoExibicao}">`; 
+                });
             } catch(e) {
                 console.error("Erro ao carregar veículos:", e);
             }
@@ -227,21 +234,11 @@
             const timeFim = fimVal ? new Date(fimVal).getTime() : Infinity;
 
             try {
-                let q;
-                // Otimização: se não houver filtro de data, limita a consulta inicial aos 15 últimos registros
-                if (!iniVal && !fimVal) {
-                    q = query(
-                        collection(db, "vistorias"), 
-                        where("usuario", "==", auth.currentUser.email),
-                        orderBy("timestamp", "desc"),
-                        limit(15)
-                    );
-                } else {
-                    q = query(
-                        collection(db, "vistorias"), 
-                        where("usuario", "==", auth.currentUser.email)
-                    );
-                }
+                // Consulta sem orderBy para eliminar a necessidade de criar um Índice Composto no Firebase
+                const q = query(
+                    collection(db, "vistorias"), 
+                    where("usuario", "==", auth.currentUser.email)
+                );
 
                 const snap = await getDocs(q);
                 corpo.innerHTML = "";
@@ -256,7 +253,13 @@
                     }
                 });
 
+                // Ordena do mais recente para o mais antigo na memória do navegador
                 dadosLocais.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+                // Limita aos 15 últimos registros exibidos se não houver filtro de data ativo
+                if (!iniVal && !fimVal) {
+                    dadosLocais = dadosLocais.slice(0, 15);
+                }
 
                 if (dadosLocais.length === 0) {
                     status.innerText = "Nenhuma vistoria encontrada.";
@@ -303,7 +306,7 @@
                 }
                 document.getElementById('resumoQtd').innerText = dadosLocais.length;
             } catch (e) { 
-                console.error(e);
+                console.error("Erro no histórico:", e);
                 status.innerText = "Erro ao carregar histórico."; 
             }
         }
@@ -338,7 +341,10 @@
 
         document.getElementById('btnSalvar').onclick = async () => {
             const btn = document.getElementById('btnSalvar');
-            const vtr = document.getElementById('v_veiculo').value.toUpperCase().trim();
+            const valorInputVeiculo = document.getElementById('v_veiculo').value.trim();
+            
+            // Extrai somente a placa caso venha no formato "ABC1234 - MODELO"
+            const vtr = valorInputVeiculo.split('-')[0].toUpperCase().trim();
             const colaboradorNome = document.getElementById('v_colaborador').value.toUpperCase().trim();
 
             if(!vtr) return alert("Informe a placa do veículo");
