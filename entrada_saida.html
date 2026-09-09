@@ -15,41 +15,200 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
     <style>
-        :root { --red: #e63946; --green: #2ecc71; --dark: #121212; }
-        body { background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; padding-bottom: 50px; }
+        :root { 
+            --red: #e63946; 
+            --green: #2ecc71; 
+            --dark: #121212; 
+            --card: #1e1e1e;
+            --border: #333;
+        }
+
+        * { 
+            box-sizing: border-box; 
+            -webkit-tap-highlight-color: transparent; 
+        }
+
+        body { 
+            background: #000; 
+            color: #fff; 
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
+            margin: 0; 
+            padding-bottom: 50px; 
+        }
         
         header { 
-            background: #1a1a1a; padding: 15px; text-align: center; 
-            border-bottom: 4px solid var(--red); display: flex; align-items: center; justify-content: space-between;
+            background: #1a1a1a; 
+            padding: 15px; 
+            text-align: center; 
+            border-bottom: 4px solid var(--red); 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between;
         }
-        .btn-voltar { color: white; text-decoration: none; font-size: 0.8rem; font-weight: bold; transition: 0.1s; display: flex; align-items: center; gap: 5px; }
-        .btn-voltar:active { transform: scale(0.9); opacity: 0.7; }
 
-        .container { padding: 15px; max-width: 750px; margin: auto; }
-        .card { background: var(--dark); padding: 18px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #333; position: relative; }
-        label { font-size: 0.7rem; color: var(--red); font-weight: bold; text-transform: uppercase; display: block; margin-bottom: 5px; }
-        .modern-input { width: 100%; padding: 12px; background: #222; border: 1px solid #444; color: #fff; border-radius: 8px; box-sizing: border-box; font-size: 1rem; margin-bottom: 10px; outline: none; }
-        .modern-input:focus { border-color: var(--red); }
-        
-        .btn { border: none; border-radius: 8px; cursor: pointer; font-weight: 800; transition: 0.1s; display: flex; align-items: center; justify-content: center; gap: 8px; text-transform: uppercase; }
-        .btn:active { transform: scale(0.95); opacity: 0.8; }
-        
-        .btn-save { background: var(--green); color: #000; height: 55px; width: 100%; font-size: 1.1rem; box-shadow: 0 4px 0 #27ae60; }
-        .btn-filter { background: #333; color: #fff; height: 42px; width: 100%; border: 1px solid #555; }
-        .btn-pdf { background: var(--red); color: #fff; height: 42px; width: 100%; }
+        .btn-voltar { 
+            color: white; 
+            text-decoration: none; 
+            font-size: 0.8rem; 
+            font-weight: bold; 
+            transition: transform 0.1s; 
+            display: flex; 
+            align-items: center; 
+            gap: 5px; 
+        }
 
+        .btn-voltar:active { 
+            transform: scale(0.9); 
+            opacity: 0.7; 
+        }
+
+        .container { 
+            padding: 15px; 
+            max-width: 750px; 
+            margin: auto; 
+        }
+
+        .card { 
+            background: var(--dark); 
+            padding: 18px; 
+            border-radius: 12px; 
+            margin-bottom: 20px; 
+            border: 1px solid var(--border); 
+            position: relative; 
+        }
+
+        label { 
+            font-size: 0.7rem; 
+            color: var(--red); 
+            font-weight: bold; 
+            text-transform: uppercase; 
+            display: block; 
+            margin-bottom: 5px; 
+        }
+
+        .modern-input { 
+            width: 100%; 
+            padding: 12px; 
+            background: #222; 
+            border: 1px solid #444; 
+            color: #fff; 
+            border-radius: 8px; 
+            box-sizing: border-box; 
+            font-size: 1rem; 
+            margin-bottom: 10px; 
+            outline: none; 
+            transition: border-color 0.2s;
+        }
+
+        .modern-input:focus { 
+            border-color: var(--red); 
+        }
+
+        input[type="date"].modern-input,
+        input[type="time"].modern-input,
+        input[type="datetime-local"].modern-input {
+            color-scheme: dark;
+        }
+        
+        .btn { 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-weight: 800; 
+            transition: transform 0.1s, opacity 0.2s; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 8px; 
+            text-transform: uppercase; 
+        }
+
+        .btn:active { 
+            transform: scale(0.95); 
+            opacity: 0.8; 
+        }
+        
+        .btn-save { 
+            background: var(--green); 
+            color: #000; 
+            height: 55px; 
+            width: 100%; 
+            font-size: 1.1rem; 
+            box-shadow: 0 4px 0 #27ae60; 
+        }
+
+        .btn-filter { 
+            background: #333; 
+            color: #fff; 
+            height: 42px; 
+            width: 100%; 
+            border: 1px solid #555; 
+        }
+
+        .btn-pdf { 
+            background: var(--red); 
+            color: #fff; 
+            height: 42px; 
+            width: 100%; 
+        }
+
+        /* AJUSTE FIXO DO AUTOCOMPLETE PARA ROLAGEM */
         #lista_vtr { 
-            display: none; position: absolute; width: calc(100% - 36px); 
-            background: #222; border: 2px solid var(--red); z-index: 9999; 
-            max-height: 250px; overflow-y: auto; border-radius: 0 0 10px 10px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.8); top: 75px; 
+            display: none; 
+            position: absolute; 
+            width: 100%; 
+            left: 0;
+            top: 100%;
+            background: #222; 
+            border: 2px solid var(--red); 
+            z-index: 99999; 
+            max-height: 200px; 
+            overflow-y: auto; 
+            border-radius: 0 0 10px 10px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.8);
+            box-sizing: border-box;
         }
-        #lista_vtr div { padding: 14px; border-bottom: 1px solid #333; cursor: pointer; font-size: 0.95rem; color: #ccc; }
-        #lista_vtr div:hover { background: var(--red); color: #fff; }
 
-        table { width: 100%; border-collapse: collapse; background: #111; margin-top: 10px; font-size: 0.8rem; }
-        th { background: #222; color: var(--red); padding: 10px; text-align: left; border-bottom: 2px solid var(--red); }
-        td { padding: 10px; border-bottom: 1px solid #222; }
+        #lista_vtr div { 
+            padding: 14px; 
+            border-bottom: 1px solid #333; 
+            cursor: pointer; 
+            font-size: 0.95rem; 
+            color: #ccc; 
+        }
+
+        #lista_vtr div:hover,
+        #lista_vtr div:active { 
+            background: var(--red); 
+            color: #fff; 
+        }
+
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            background: #111; 
+            margin-top: 10px; 
+            font-size: 0.8rem; 
+        }
+
+        th { 
+            background: #222; 
+            color: var(--red); 
+            padding: 10px; 
+            text-align: left; 
+            border-bottom: 2px solid var(--red); 
+        }
+
+        td { 
+            padding: 10px; 
+            border-bottom: 1px solid #222; 
+        }
     </style>
 </head>
 <body>
@@ -112,7 +271,7 @@
         <button id="btnSalvar" class="btn btn-save"><i class="fas fa-save"></i> Confirmar Registro</button>
     </div>
 
-    <div style="overflow-x: auto;">
+    <div class="table-responsive">
         <table>
             <thead>
                 <tr>
@@ -131,7 +290,18 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { 
+        getFirestore, 
+        collection, 
+        addDoc, 
+        getDocs, 
+        doc, 
+        deleteDoc, 
+        updateDoc, 
+        query, 
+        orderBy, 
+        limit 
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
     const firebaseConfig = {
@@ -153,13 +323,13 @@
 
     onAuthStateChanged(auth, (user) => {
         if (user) { 
-            configurarDataHora(); // Define data/hora atual por padrão
+            configurarDataHora();
             carregarVtr().then(() => carregarHistorico()); 
+        } else { 
+            window.location.href = "login.html"; 
         }
-        else { window.location.href = "login.html"; }
     });
 
-    // Seta data e hora atual nos campos de lançamento
     function configurarDataHora() {
         const agora = new Date();
         document.getElementById('es_data').value = agora.toISOString().split('T')[0];
@@ -167,21 +337,25 @@
     }
 
     async function carregarVtr() {
-        const snap = await getDocs(collection(db, "veiculos"));
-        vtrCache = [];
-        snap.forEach(d => {
-            const i = d.data();
-            const placa = i.placa || i.Placa;
-            const nome = i.nome || i.Nome;
-            if(placa && nome) {
-                vtrCache.push({ 
-                    id: d.id, 
-                    placa: placa.toUpperCase(), 
-                    nome: nome.toUpperCase(), 
-                    km: i.kmAtual || 0 
-                });
-            }
-        });
+        try {
+            const snap = await getDocs(collection(db, "veiculos"));
+            vtrCache = [];
+            snap.forEach(d => {
+                const i = d.data();
+                const placa = i.placa || i.Placa;
+                const nome = i.nome || i.Nome;
+                if(placa && nome) {
+                    vtrCache.push({ 
+                        id: d.id, 
+                        placa: placa.toUpperCase(), 
+                        nome: nome.toUpperCase(), 
+                        km: i.kmAtual || 0 
+                    });
+                }
+            });
+        } catch (e) {
+            console.error("Erro ao carregar veículos:", e);
+        }
     }
 
     const inputVtr = document.getElementById('es_vtr');
@@ -194,7 +368,8 @@
             encontrados.forEach(v => {
                 const d = document.createElement('div');
                 d.innerHTML = `<i class="fas fa-car" style="color:var(--red); margin-right:10px;"></i> <b>${v.placa}</b> - ${v.nome}`;
-                d.onmousedown = () => {
+                d.onmousedown = (e) => {
+                    e.preventDefault();
                     inputVtr.value = `${v.placa} - ${v.nome}`;
                     document.getElementById('es_km').value = v.km;
                     boxVtr.style.display = 'none';
@@ -202,27 +377,67 @@
                 boxVtr.appendChild(d);
             });
             boxVtr.style.display = 'block';
-        } else { boxVtr.style.display = 'none'; }
+        } else { 
+            boxVtr.style.display = 'none'; 
+        }
     }
 
     inputVtr.addEventListener('focus', () => mostrarOpcoes(inputVtr.value.toUpperCase()));
     inputVtr.addEventListener('input', () => mostrarOpcoes(inputVtr.value.toUpperCase()));
     inputVtr.addEventListener('blur', () => { setTimeout(() => { boxVtr.style.display = 'none'; }, 200); });
 
+    // BUSCA OTIMIZADA COM LIMITE E FALLBACK
     async function carregarHistorico() {
-        const snap = await getDocs(collection(db, "movimentacoes"));
-        historicoLocal = [];
-        snap.forEach(d => {
-            const info = d.data();
-            if(info.usuario === auth.currentUser.email) { 
-                if (!info.nomeVeiculo || info.nomeVeiculo === "MODELO N/D") {
-                    const find = vtrCache.find(v => v.placa === info.veiculo);
-                    info.nomeVeiculo = find ? find.nome : "NÃO CADASTRADO";
+        const corpo = document.getElementById('tabelaES');
+        corpo.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#888;">Carregando histórico...</td></tr>`;
+
+        try {
+            const q = query(
+                collection(db, "movimentacoes"),
+                orderBy("timestamp", "desc"),
+                limit(30)
+            );
+
+            const snap = await getDocs(q);
+            historicoLocal = [];
+
+            snap.forEach(d => {
+                const info = d.data();
+                if (info.usuario === auth.currentUser.email) {
+                    if (!info.nomeVeiculo || info.nomeVeiculo === "MODELO N/D") {
+                        const find = vtrCache.find(v => v.placa === info.veiculo);
+                        info.nomeVeiculo = find ? find.nome : "NÃO CADASTRADO";
+                    }
+                    historicoLocal.push({ id: d.id, ...info });
                 }
-                historicoLocal.push({ id: d.id, ...info }); 
-            }
-        });
-        renderizar();
+            });
+
+            renderizar();
+        } catch (error) {
+            console.warn("Executando busca fallback sem ordenação por timestamp:", error);
+            carregarHistoricoFallback();
+        }
+    }
+
+    async function carregarHistoricoFallback() {
+        try {
+            const q = query(collection(db, "movimentacoes"), limit(30));
+            const snap = await getDocs(q);
+            historicoLocal = [];
+            snap.forEach(d => {
+                const info = d.data();
+                if (info.usuario === auth.currentUser.email) {
+                    if (!info.nomeVeiculo || info.nomeVeiculo === "MODELO N/D") {
+                        const find = vtrCache.find(v => v.placa === info.veiculo);
+                        info.nomeVeiculo = find ? find.nome : "NÃO CADASTRADO";
+                    }
+                    historicoLocal.push({ id: d.id, ...info });
+                }
+            });
+            renderizar();
+        } catch (e) {
+            console.error("Erro no fallback do histórico:", e);
+        }
     }
 
     function renderizar() {
@@ -232,10 +447,31 @@
         const tsFim = fim ? new Date(fim).getTime() : Infinity;
         const corpo = document.getElementById('tabelaES');
         corpo.innerHTML = "";
-        filtradosPDF = historicoLocal.filter(i => i.timestamp >= tsIni && i.timestamp <= tsFim).sort((a,b) => b.timestamp - a.timestamp);
+
+        filtradosPDF = historicoLocal
+            .filter(i => i.timestamp >= tsIni && i.timestamp <= tsFim)
+            .sort((a,b) => b.timestamp - a.timestamp);
+
+        if (filtradosPDF.length === 0) {
+            corpo.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#666;">Nenhum registro encontrado.</td></tr>`;
+            return;
+        }
+
         filtradosPDF.forEach(i => {
             const cor = i.tipo === "SAIDA" ? "#e63946" : "#2ecc71";
-            corpo.innerHTML += `<tr><td style="color:#777; font-size:0.65rem;">${i.dataExibicao}</td><td><b>${i.veiculo}</b><br><small style="color:var(--red)">${i.nomeVeiculo}</small></td><td>${i.vigilante}</td><td>${i.km}</td><td style="color:${cor}; font-weight:bold">${i.tipo}</td><td><button onclick="apagarRegistro('${i.id}')" style="background:none; border:none; color:#444;"><i class="fas fa-trash"></i></button></td></tr>`;
+            corpo.innerHTML += `
+                <tr>
+                    <td style="color:#777; font-size:0.65rem;">${i.dataExibicao}</td>
+                    <td><b>${i.veiculo}</b><br><small style="color:var(--red)">${i.nomeVeiculo}</small></td>
+                    <td>${i.vigilante}</td>
+                    <td>${i.km}</td>
+                    <td style="color:${cor}; font-weight:bold">${i.tipo}</td>
+                    <td>
+                        <button onclick="apagarRegistro('${i.id}')" style="background:none; border:none; color:#444; cursor:pointer;">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>`;
         });
     }
 
@@ -244,7 +480,6 @@
         const km = document.getElementById('es_km').value;
         const vig = document.getElementById('es_vig').value.toUpperCase();
         
-        // Coleta data e hora do formulário
         const dataL = document.getElementById('es_data').value;
         const horaL = document.getElementById('es_hora').value;
 
@@ -254,7 +489,6 @@
         const placaFinal = vEncontrado ? vEncontrado.placa : valorInput;
         const nomeFinal = vEncontrado ? vEncontrado.nome : "Modelo Avulso";
         
-        // Cria o timestamp baseado na data/hora informada
         const dataObjeto = new Date(`${dataL}T${horaL}`);
 
         try {
@@ -268,10 +502,19 @@
                 dataExibicao: dataObjeto.toLocaleString('pt-BR'), 
                 usuario: auth.currentUser.email 
             });
-            if(vEncontrado) await updateDoc(doc(db, "veiculos", vEncontrado.id), { kmAtual: Number(km) });
+
+            if(vEncontrado) {
+                await updateDoc(doc(db, "veiculos", vEncontrado.id), { kmAtual: Number(km) });
+            }
+
             alert("✓ Registro Salvo com Sucesso!"); 
-            location.reload(); 
-        } catch (e) { alert("Erro ao salvar no banco de dados."); }
+            carregarHistorico();
+            document.getElementById('es_km').value = "";
+            document.getElementById('es_vig').value = "";
+            inputVtr.value = "";
+        } catch (e) { 
+            alert("Erro ao salvar no banco de dados."); 
+        }
     };
 
     document.getElementById('btnFiltrar').onclick = renderizar;
@@ -290,23 +533,52 @@
         });
 
         let yPos = 20;
-        docPdf.setFontSize(22); docPdf.setTextColor(230, 57, 70); docPdf.text("JAPAN SECURITY", 14, yPos);
-        docPdf.setFontSize(10); docPdf.setTextColor(100); docPdf.text("RELATÓRIO CONSOLIDADO DE MOVIMENTAÇÃO DE FROTA", 14, yPos + 7);
+        docPdf.setFontSize(22); 
+        docPdf.setTextColor(230, 57, 70); 
+        docPdf.text("JAPAN SECURITY", 14, yPos);
+        docPdf.setFontSize(10); 
+        docPdf.setTextColor(100); 
+        docPdf.text("RELATÓRIO CONSOLIDADO DE MOVIMENTAÇÃO DE FROTA", 14, yPos + 7);
         yPos += 20;
 
         Object.keys(grupos).sort().forEach(veiculo => {
             if (yPos > 170) { docPdf.addPage(); yPos = 20; }
-            docPdf.setFillColor(245, 245, 245); docPdf.rect(14, yPos, 269, 8, 'F');
-            docPdf.setFontSize(12); docPdf.setTextColor(0); docPdf.setFont("helvetica", "bold"); docPdf.text(`VEÍCULO: ${veiculo}`, 18, yPos + 6);
+            docPdf.setFillColor(245, 245, 245); 
+            docPdf.rect(14, yPos, 269, 8, 'F');
+            docPdf.setFontSize(12); 
+            docPdf.setTextColor(0); 
+            docPdf.setFont("helvetica", "bold"); 
+            docPdf.text(`VEÍCULO: ${veiculo}`, 18, yPos + 6);
             yPos += 10;
+
             const movs = grupos[veiculo].sort((a, b) => a.timestamp - b.timestamp);
-            const rows = movs.map(m => [m.dataExibicao, m.vigilante, m.km + " KM", { content: m.tipo, styles: { textColor: m.tipo === 'SAIDA' ? [230, 57, 70] : [46, 204, 113], fontStyle: 'bold' } }, m.usuario.split('@')[0].toUpperCase()]);
-            docPdf.autoTable({ head: [["DATA/HORA", "MOTORISTA", "KM", "EVENTO", "OPERADOR"]], body: rows, startY: yPos, theme: 'striped', headStyles: { fillColor: [230, 57, 70] }, margin: { left: 14 }, didDrawPage: (data) => { yPos = data.cursor.y + 15; } });
+            const rows = movs.map(m => [
+                m.dataExibicao, 
+                m.vigilante, 
+                m.km + " KM", 
+                { content: m.tipo, styles: { textColor: m.tipo === 'SAIDA' ? [230, 57, 70] : [46, 204, 113], fontStyle: 'bold' } }, 
+                m.usuario.split('@')[0].toUpperCase()
+            ]);
+
+            docPdf.autoTable({ 
+                head: [["DATA/HORA", "MOTORISTA", "KM", "EVENTO", "OPERADOR"]], 
+                body: rows, 
+                startY: yPos, 
+                theme: 'striped', 
+                headStyles: { fillColor: [230, 57, 70] }, 
+                margin: { left: 14 }, 
+                didDrawPage: (data) => { yPos = data.cursor.y + 15; } 
+            });
         });
         docPdf.save("Relatorio_Japan_Security_Frota.pdf");
     };
 
-    window.apagarRegistro = async (id) => { if(confirm("Deseja realmente excluir este registro?")) { await deleteDoc(doc(db, "movimentacoes", id)); carregarHistorico(); } };
+    window.apagarRegistro = async (id) => { 
+        if(confirm("Deseja realmente excluir este registro?")) { 
+            await deleteDoc(doc(db, "movimentacoes", id)); 
+            carregarHistorico(); 
+        } 
+    };
 </script>
 </body>
 </html>
