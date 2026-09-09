@@ -97,7 +97,10 @@
     <div class="card">
         <h3 style="color:var(--primary); margin: 0 0 15px 0; font-size: 1rem;"><i class="fas fa-clipboard-check"></i> Nova Vistoria</h3>
         
-        <label style="font-size:0.7rem; color:#888;">VIATURA (PLACA)</label>
+        <label style="font-size:0.7rem; color:#888;">NOME DO COLABORADOR / VISTORIADOR</label>
+        <input type="text" id="v_colaborador" class="modern-input" placeholder="Ex: JOFRE">
+
+        <label style="font-size:0.7rem; color:#888; margin-top:10px; display:block;">VIATURA (PLACA)</label>
         <input list="listaVeiculos" id="v_veiculo" class="modern-input" placeholder="Selecione a placa...">
         <datalist id="listaVeiculos"></datalist>
         
@@ -154,7 +157,7 @@
     <!-- HISTÓRICO -->
     <div class="card">
         <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-            <h3 style="margin:0; font-size: 1rem;">Histórico</h3>
+            <h3 style="margin:0; font-size: 1rem;">Histórico <small style="font-size:0.65rem; color:#888;">(Últimos registros)</small></h3>
             <button id="btnPDF" style="background:#27ae60; color:white; padding:8px 12px; font-size:0.75rem;"><i class="fas fa-file-pdf"></i> GERAR RELATÓRIO</button>
         </div>
         <div id="status" style="font-size:0.8rem; color:#888; text-align:center;">Carregando...</div>
@@ -171,7 +174,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, query, where, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, query, where, doc, updateDoc, deleteDoc, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
@@ -203,10 +206,14 @@
         });
 
         async function carregarVeiculos() {
-            const snap = await getDocs(collection(db, "veiculos"));
-            const list = document.getElementById('listaVeiculos');
-            list.innerHTML = "";
-            snap.forEach(d => { list.innerHTML += `<option value="${d.data().placa}">`; });
+            try {
+                const snap = await getDocs(collection(db, "veiculos"));
+                const list = document.getElementById('listaVeiculos');
+                list.innerHTML = "";
+                snap.forEach(d => { list.innerHTML += `<option value="${d.data().placa}">`; });
+            } catch(e) {
+                console.error("Erro ao carregar veículos:", e);
+            }
         }
 
         async function carregarHistorico() {
@@ -220,7 +227,22 @@
             const timeFim = fimVal ? new Date(fimVal).getTime() : Infinity;
 
             try {
-                const q = query(collection(db, "vistorias"), where("usuario", "==", auth.currentUser.email));
+                let q;
+                // Otimização: se não houver filtro de data, limita a consulta inicial aos 15 últimos registros
+                if (!iniVal && !fimVal) {
+                    q = query(
+                        collection(db, "vistorias"), 
+                        where("usuario", "==", auth.currentUser.email),
+                        orderBy("timestamp", "desc"),
+                        limit(15)
+                    );
+                } else {
+                    q = query(
+                        collection(db, "vistorias"), 
+                        where("usuario", "==", auth.currentUser.email)
+                    );
+                }
+
                 const snap = await getDocs(q);
                 corpo.innerHTML = "";
                 dadosLocais = [];
@@ -265,6 +287,7 @@
                                 <td>
                                     <small style="color:#888; font-size:0.65rem;">${item.dataExibicao}</small><br>
                                     <b style="color:var(--primary)">${item.veiculo}</b><br>
+                                    <small style="color:#2ecc71">Colaborador: ${item.colaborador || 'Não informado'}</small><br>
                                     <span>${item.observacoes || 'Sem observações'}</span><br>
                                     <small style="color:#3498db">KM: ${item.km || '-'}</small><br>
                                     ${htmlChecklist}
@@ -279,7 +302,10 @@
                     });
                 }
                 document.getElementById('resumoQtd').innerText = dadosLocais.length;
-            } catch (e) { status.innerText = "Erro ao carregar histórico."; }
+            } catch (e) { 
+                console.error(e);
+                status.innerText = "Erro ao carregar histórico."; 
+            }
         }
 
         function comprimirImagem(file, maxWidth = 1024, quality = 0.7) {
@@ -313,7 +339,10 @@
         document.getElementById('btnSalvar').onclick = async () => {
             const btn = document.getElementById('btnSalvar');
             const vtr = document.getElementById('v_veiculo').value.toUpperCase().trim();
+            const colaboradorNome = document.getElementById('v_colaborador').value.toUpperCase().trim();
+
             if(!vtr) return alert("Informe a placa do veículo");
+            if(!colaboradorNome) return alert("Informe o nome do colaborador");
 
             btn.disabled = true;
             btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> SALVANDO...`;
@@ -346,6 +375,7 @@
 
                 const dados = {
                     veiculo: vtr,
+                    colaborador: colaboradorNome,
                     km: kmAtualDigitado || "",
                     checklist: checklistObj,
                     observacoes: obsTexto,
@@ -384,6 +414,7 @@
             const d = dadosLocais.find(x => x.id === id);
             editId = id;
             fotoUrlExistente = d.fotoUrl || "";
+            document.getElementById('v_colaborador').value = d.colaborador || "";
             document.getElementById('v_veiculo').value = d.veiculo;
             document.getElementById('v_km').value = d.km;
             document.getElementById('v_obs').value = d.observacoes;
@@ -439,19 +470,18 @@
             let posY = 35;
 
             dadosLocais.forEach((item, index) => {
-                // Quebra de página se não houver espaço suficiente para o próximo bloco
                 if (posY > 255) {
                     docPDF.addPage();
                     posY = 20;
                 }
 
-                // VTR / Placa (Cor Vermelha e Negrito)
+                // VTR / Placa
                 docPDF.setFontSize(11);
                 docPDF.setFont("helvetica", "bold");
                 docPDF.setTextColor(...corVermelha);
                 docPDF.text(`VTR: ${item.veiculo}`, 14, posY);
 
-                // Data / Hora alinhado à direita
+                // Data / Hora
                 docPDF.setFontSize(9);
                 docPDF.setFont("helvetica", "bold");
                 docPDF.setTextColor(0, 0, 0);
@@ -465,12 +495,12 @@
                 docPDF.text("KM: ", 14, posY);
                 
                 docPDF.setFont("helvetica", "normal");
-                const nomeUsuario = item.usuario ? item.usuario.split('@')[0].toUpperCase() : 'N/I';
-                docPDF.text(`${item.km || '-'}  |  Colaborador: ${nomeUsuario}`, 23, posY);
+                const nomeColaborador = item.colaborador ? item.colaborador.toUpperCase() : (item.usuario ? item.usuario.split('@')[0].toUpperCase() : 'N/I');
+                docPDF.text(`${item.km || '-'}  |  Colaborador: ${nomeColaborador}`, 23, posY);
 
                 posY += 6;
 
-                // Checklist em Linha
+                // Checklist
                 docPDF.setFont("helvetica", "bold");
                 docPDF.text("CHECKLIST: ", 14, posY);
 
@@ -492,7 +522,7 @@
 
                 posY += 8;
 
-                // Linha Divisória Fina entre os Blocos
+                // Linha Divisória Fina
                 if (index < dadosLocais.length - 1) {
                     docPDF.setDrawColor(...corCinza);
                     docPDF.setLineWidth(0.3);
