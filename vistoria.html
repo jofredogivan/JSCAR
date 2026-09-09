@@ -40,6 +40,40 @@
         .btn-foto { background: #3498db; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; margin-top: 5px; }
         .stats { display: grid; grid-template-columns: 1fr; gap: 10px; padding: 10px 10px 0 10px; }
         .stat-box { background: #1a1a1a; padding: 10px; border-radius: 8px; text-align: center; border-bottom: 3px solid #3498db; }
+
+        .checklist-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+            background: #222;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            color: #ccc;
+        }
+        .checklist-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--primary);
+        }
+        .badge-chk {
+            display: inline-block;
+            background: #222;
+            border: 1px solid #444;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.65rem;
+            margin-top: 4px;
+            margin-right: 2px;
+        }
+        .badge-ok { color: #2ecc71; border-color: #2ecc71; }
+        .badge-nok { color: #e74c3c; border-color: #e74c3c; }
     </style>
 </head>
 <body>
@@ -75,6 +109,16 @@
                 <label style="font-size:0.7rem; color:#888;">KM ATUAL</label>
                 <input type="number" id="v_km" class="modern-input" placeholder="Ex: 150000">
             </div>
+        </div>
+
+        <label style="font-size:0.7rem; color:#888; margin-top:15px; display:block;"><i class="fas fa-tasks"></i> CHECKLIST DE VERIFICAÇÃO</label>
+        <div class="checklist-grid">
+            <label class="checklist-item"><input type="checkbox" id="chk_pneus" checked> Pneus / Estepe</label>
+            <label class="checklist-item"><input type="checkbox" id="chk_oleo" checked> Nível de Óleo</label>
+            <label class="checklist-item"><input type="checkbox" id="chk_agua" checked> Nível de Água</label>
+            <label class="checklist-item"><input type="checkbox" id="chk_farois" checked> Faróis / Lanternas</label>
+            <label class="checklist-item"><input type="checkbox" id="chk_funilaria" checked> Lataria / Pintura</label>
+            <label class="checklist-item"><input type="checkbox" id="chk_limpeza" checked> Limpeza / Interna</label>
         </div>
 
         <label style="font-size:0.7rem; color:#888; margin-top:10px; display:block;">OBSERVAÇÕES / DANOS ENCONTRADOS</label>
@@ -187,6 +231,21 @@
                             ? `<a href="${item.fotoUrl}" target="_blank" class="btn-foto"><i class="fas fa-camera"></i> FOTO</a>` 
                             : '';
 
+                        const chk = item.checklist || {};
+                        const renderBadge = (label, statusOk) => 
+                            `<span class="badge-chk ${statusOk ? 'badge-ok' : 'badge-nok'}">${label}: ${statusOk ? 'OK' : 'NOK'}</span>`;
+
+                        const htmlChecklist = `
+                            <div style="margin-top: 5px;">
+                                ${renderBadge('Pneus', chk.pneus)}
+                                ${renderBadge('Óleo', chk.oleo)}
+                                ${renderBadge('Água', chk.agua)}
+                                ${renderBadge('Faróis', chk.farois)}
+                                ${renderBadge('Lataria', chk.funilaria)}
+                                ${renderBadge('Limpeza', chk.limpeza)}
+                            </div>
+                        `;
+
                         corpo.innerHTML += `
                             <tr>
                                 <td>
@@ -194,6 +253,7 @@
                                     <b style="color:var(--primary)">${item.veiculo}</b><br>
                                     <span>${item.observacoes || 'Sem observações'}</span><br>
                                     <small style="color:#3498db">KM: ${item.km || '-'}</small><br>
+                                    ${htmlChecklist}
                                     ${linkFoto}
                                 </td>
                                 <td style="text-align:right;">
@@ -208,7 +268,7 @@
             } catch (e) { status.innerText = "Erro ao carregar histórico."; }
         }
 
-        // Compressor leve para envio rápido no celular
+        // Compressor de imagem via Canvas para acelerar o envio no celular
         function comprimirImagem(file, maxWidth = 1024, quality = 0.7) {
             return new Promise((resolve) => {
                 const reader = new FileReader();
@@ -251,6 +311,15 @@
             const obsTexto = document.getElementById('v_obs').value;
             const fileInput = document.getElementById('v_foto');
 
+            const checklistObj = {
+                pneus: document.getElementById('chk_pneus').checked,
+                oleo: document.getElementById('chk_oleo').checked,
+                agua: document.getElementById('chk_agua').checked,
+                farois: document.getElementById('chk_farois').checked,
+                funilaria: document.getElementById('chk_funilaria').checked,
+                limpeza: document.getElementById('chk_limpeza').checked
+            };
+
             try {
                 let fotoUrl = fotoUrlExistente;
 
@@ -265,6 +334,7 @@
                 const dados = {
                     veiculo: vtr,
                     km: kmAtualDigitado || "",
+                    checklist: checklistObj,
                     observacoes: obsTexto,
                     dataExibicao: dObj.toLocaleString('pt-BR'),
                     dataISO: dObj.toISOString(),
@@ -305,6 +375,15 @@
             document.getElementById('v_km').value = d.km;
             document.getElementById('v_obs').value = d.observacoes;
             if(d.dataISO) document.getElementById('v_data').value = d.dataISO.substring(0, 16);
+            
+            const chk = d.checklist || {};
+            document.getElementById('chk_pneus').checked = chk.pneus ?? true;
+            document.getElementById('chk_oleo').checked = chk.oleo ?? true;
+            document.getElementById('chk_agua').checked = chk.agua ?? true;
+            document.getElementById('chk_farois').checked = chk.farois ?? true;
+            document.getElementById('chk_funilaria').checked = chk.funilaria ?? true;
+            document.getElementById('chk_limpeza').checked = chk.limpeza ?? true;
+
             document.getElementById('btnSalvar').innerHTML = "<i class='fas fa-sync'></i> ATUALIZAR";
             window.scrollTo(0,0);
         };
@@ -318,7 +397,7 @@
 
         document.getElementById('btnFiltrar').onclick = carregarHistorico;
 
-        // GERAR RELATÓRIO PDF PROFISSIONAL
+        // GERAR RELATÓRIO PDF PROFISSIONAL COM DETALHES DO CHECKLIST
         document.getElementById('btnPDF').onclick = () => {
             const { jsPDF } = window.jspdf;
             const docPDF = new jsPDF();
@@ -333,20 +412,26 @@
             docPDF.text("RELATÓRIO GERENCIAL DE VISTORIAS VEICULARES", 14, 28);
             docPDF.text(`Emissão: ${new Date().toLocaleString('pt-BR')}`, 140, 28);
 
-            const linhas = dadosLocais.map(i => [
-                i.dataExibicao ? i.dataExibicao.split(' ')[0] : '-',
-                i.veiculo,
-                i.km || '-',
-                i.observacoes || 'SEM OBSERVAÇÕES'
-            ]);
+            const linhas = dadosLocais.map(i => {
+                const c = i.checklist || {};
+                const resumoChk = `Pneus:${c.pneus?'OK':'NOK'} | Óleo:${c.oleo?'OK':'NOK'} | Água:${c.agua?'OK':'NOK'}\nFaróis:${c.farois?'OK':'NOK'} | Lataria:${c.funilaria?'OK':'NOK'} | Limpeza:${c.limpeza?'OK':'NOK'}`;
+
+                return [
+                    i.dataExibicao ? i.dataExibicao.split(' ')[0] : '-',
+                    i.veiculo,
+                    i.km || '-',
+                    resumoChk,
+                    i.observacoes || 'SEM OBSERVAÇÕES'
+                ];
+            });
 
             docPDF.autoTable({
-                head: [['DATA', 'VIATURA', 'KM ATUAL', 'OBSERVAÇÕES / AVARIAS']],
+                head: [['DATA', 'VIATURA', 'KM', 'CHECKLIST', 'OBSERVAÇÕES / AVARIAS']],
                 body: linhas,
                 startY: 50,
                 theme: 'striped',
                 headStyles: { fillColor: corPrimaria, halign: 'left' },
-                styles: { fontSize: 8 }
+                styles: { fontSize: 7, cellPadding: 3 }
             });
 
             const finalY = docPDF.lastAutoTable.finalY + 10;
