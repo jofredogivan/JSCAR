@@ -385,8 +385,7 @@
         corpo.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#888;">Carregando histórico...</td></tr>`;
 
         try {
-            // Busca segura dos últimos 30 registros sem exigir índices compostos
-            const q = query(collection(db, "movimentacoes"), limit(30));
+            const q = query(collection(db, "movimentacoes"), limit(100));
             const snap = await getDocs(q);
             historicoLocal = [];
 
@@ -409,22 +408,37 @@
     }
 
     function renderizar() {
-        const ini = document.getElementById('f_ini').value;
-        const fim = document.getElementById('f_fim').value;
-        const tsIni = ini ? new Date(ini).getTime() : 0;
-        const tsFim = fim ? new Date(fim).getTime() : Infinity;
+        const iniVal = document.getElementById('f_ini').value;
+        const fimVal = document.getElementById('f_fim').value;
+
+        // Trata data e hora para não ignorar milissegundos nem horários do próprio dia
+        const tsIni = iniVal ? new Date(iniVal).getTime() : 0;
+        let tsFim = Infinity;
+
+        if (fimVal) {
+            const dataFim = new Date(fimVal);
+            // Se o usuário não definiu horário de fim específico, considera o final do dia (23:59:59)
+            if (fimVal.length <= 10) { 
+                dataFim.setHours(23, 59, 59, 999); 
+            }
+            tsFim = dataFim.getTime();
+        }
+
         const corpo = document.getElementById('tabelaES');
         
-        let html = "";
         filtradosPDF = historicoLocal
-            .filter(i => i.timestamp >= tsIni && i.timestamp <= tsFim)
-            .sort((a,b) => b.timestamp - a.timestamp);
+            .filter(i => {
+                const t = Number(i.timestamp);
+                return t >= tsIni && t <= tsFim;
+            })
+            .sort((a,b) => Number(b.timestamp) - Number(a.timestamp));
 
         if (filtradosPDF.length === 0) {
-            corpo.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#666;">Nenhum registro encontrado.</td></tr>`;
+            corpo.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#666;">Nenhum registro encontrado para este período.</td></tr>`;
             return;
         }
 
+        let html = "";
         filtradosPDF.forEach(i => {
             const cor = i.tipo === "SAIDA" ? "#e63946" : "#2ecc71";
             html += `
@@ -491,6 +505,7 @@
 
     document.getElementById('btnPDF').onclick = () => {
         if (filtradosPDF.length === 0) return alert("Sem dados para o período selecionado!");
+        
         const { jsPDF } = window.jspdf;
         const docPdf = new jsPDF('l', 'mm', 'a4');
         const grupos = {};
@@ -521,13 +536,13 @@
             docPdf.text(`VEÍCULO: ${veiculo}`, 18, yPos + 6);
             yPos += 10;
 
-            const movs = grupos[veiculo].sort((a, b) => a.timestamp - b.timestamp);
+            const movs = grupos[veiculo].sort((a, b) => Number(a.timestamp) - Number(b.timestamp));
             const rows = movs.map(m => [
                 m.dataExibicao, 
                 m.vigilante, 
                 m.km + " KM", 
                 { content: m.tipo, styles: { textColor: m.tipo === 'SAIDA' ? [230, 57, 70] : [46, 204, 113], fontStyle: 'bold' } }, 
-                m.usuario.split('@')[0].toUpperCase()
+                m.usuario ? m.usuario.split('@')[0].toUpperCase() : 'SISTEMA'
             ]);
 
             docPdf.autoTable({ 
@@ -540,6 +555,7 @@
                 didDrawPage: (data) => { yPos = data.cursor.y + 15; } 
             });
         });
+
         docPdf.save("Relatorio_Japan_Security_Frota.pdf");
     };
 
