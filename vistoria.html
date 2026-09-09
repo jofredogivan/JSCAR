@@ -4,108 +4,90 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Japan Security | Vistoria</title>
-    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png">
+    
     <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#121212">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-
     <style>
-        :root { --red: #e63946; --red-dark: #b91c1c; --dark: #121212; }
-        body { background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; padding-bottom: 50px; }
-        header { background: #1a1a1a; padding: 15px; text-align: center; border-bottom: 2px solid var(--red); position: sticky; top: 0; z-index: 1000; }
-        .container { padding: 15px; max-width: 800px; margin: auto; }
-        .card { background: #1a1a1a; padding: 18px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #333; }
-        label { font-size: 0.7rem; color: var(--red); font-weight: bold; text-transform: uppercase; display: block; margin-bottom: 5px; }
-        .modern-input { width: 100%; padding: 12px; background: #222; border: 1px solid #444; color: #fff; border-radius: 8px; box-sizing: border-box; font-size: 1rem; margin-bottom: 10px; }
-        .btn-primary { border: none; border-radius: 8px; cursor: pointer; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 8px; text-transform: uppercase; width: 100%; padding: 15px; transition: all 0.1s; }
-        .btn-primary:active { transform: scale(0.96); opacity: 0.8; }
+        :root { --primary: #e63946; --bg: #121212; --card: #1a1a1a; --text: #ffffff; }
+        body { background: var(--bg); color: var(--text); font-family: sans-serif; margin: 0; padding: 0; }
         
-        #lista_vtr { display: none; position: absolute; width: 100%; background: #222; border: 2px solid var(--red); z-index: 9999; max-height: 250px; overflow-y: auto; border-radius: 8px; top: 70px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
-        #lista_vtr div { padding: 14px; border-bottom: 1px solid #333; cursor: pointer; color: #ccc; }
-        #lista_vtr div:hover { background: var(--red); color: #fff; }
+        header { 
+            background: #1a1a1a; padding: 15px; display: flex; align-items: center; 
+            justify-content: space-between; border-bottom: 4px solid #e63946; 
+            position: sticky; top: 0; z-index: 1000; 
+        }
 
-        .checklist-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #222; padding: 15px; border-radius: 10px; }
-        .check-container { display: flex; align-items: center; gap: 8px; color: #ccc; font-size: 0.85rem; cursor: pointer; background: #2a2a2a; padding: 8px; border-radius: 5px; }
-        .check-container input { width: 18px; height: 18px; accent-color: var(--red); }
-        #preview-foto { width: 100%; max-height: 250px; object-fit: cover; border-radius: 8px; margin-bottom: 15px; display: none; border: 2px solid var(--red); }
-        table { width: 100%; border-collapse: collapse; background: #111; font-size: 0.75rem; margin-top: 10px; }
-        th { background: #222; color: var(--red); padding: 10px; text-align: left; border-bottom: 2px solid var(--red); }
-        td { padding: 10px; border-bottom: 1px solid #222; }
-        .btn-excluir { color: #444; background: none; border: none; cursor: pointer; float: right; padding: 5px; }
+        .card { background: var(--card); border-radius: 12px; padding: 15px; margin: 10px; border: 1px solid #333; }
+        .modern-input { width: 100%; padding: 12px; background: #252525; border: 1px solid #444; color: white; border-radius: 8px; box-sizing: border-box; margin-top: 5px; }
+        
+        button { cursor: pointer; border: none; border-radius: 8px; font-weight: bold; transition: 0.3s; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th { text-align: left; color: var(--primary); font-size: 0.7rem; padding: 10px; border-bottom: 2px solid #333; text-transform: uppercase; }
+        td { padding: 12px; border-bottom: 1px solid #222; font-size: 0.85rem; vertical-align: top; }
+        
+        .btn-acao { padding: 8px; border-radius: 6px; color: white; border: none; margin-top: 5px; }
+        .btn-foto { background: #3498db; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; margin-top: 5px; }
     </style>
 </head>
 <body>
 
     <header>
-        <div style="display: flex; align-items: center; justify-content: space-between;">
-            <a href="dashboard.html" style="color: white; text-decoration: none; font-size: 0.8rem;"><i class="fas fa-chevron-left"></i> VOLTAR</a>
-            <div style="color: var(--red); font-weight: 900; letter-spacing: 2px;">VISTORIA TÉCNICA</div>
-            <div style="width: 50px;"></div>
-        </div>
+        <a href="dashboard.html" style="color: white; text-decoration: none; font-size: 0.9rem; font-weight: bold; display: flex; align-items: center; gap: 8px;">
+            <i class="fas fa-chevron-left" style="color: #e63946;"></i> VOLTAR
+        </a>
+        <div style="color: #e63946; font-weight: 900; font-size: 0.8rem; letter-spacing: 2px;">VISTORIA VEICULAR</div>
+        <div style="width: 50px;"></div>
     </header>
 
-    <main class="container">
-        <div class="card" style="border-color: var(--red);">
-            <label><i class="fas fa-filter"></i> Período do Relatório</label>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                <input type="datetime-local" id="f_ini" class="modern-input">
-                <input type="datetime-local" id="f_fim" class="modern-input">
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                <button id="btnFiltrar" class="btn-primary" style="background: #333; padding: 10px; color: #fff;">FILTRAR</button>
-                <button id="btnExportarPDF" class="btn-primary" style="background: #34495e; padding: 10px; color: #fff;"><i class="fas fa-file-pdf"></i> GERAR PDF</button>
-            </div>
-        </div>
+    <div class="card">
+        <h3 style="color:var(--primary); margin: 0 0 15px 0; font-size: 1rem;"><i class="fas fa-clipboard-check"></i> Nova Vistoria</h3>
+        
+        <label style="font-size:0.7rem; color:#888;">VIATURA (PLACA)</label>
+        <input list="listaVeiculos" id="v_veiculo" class="modern-input" placeholder="Selecione a placa...">
+        <datalist id="listaVeiculos"></datalist>
+        
+        <label style="font-size:0.7rem; color:#888; margin-top:10px; display:block;">KM ATUAL</label>
+        <input type="number" id="v_km" class="modern-input" placeholder="Ex: 150000">
 
-        <div class="card">
-            <div style="position: relative;">
-                <label>Viatura</label>
-                <input type="text" id="v_veiculo" class="modern-input" placeholder="Selecione a viatura..." autocomplete="off">
-                <div id="lista_vtr"></div>
-            </div>
+        <label style="font-size:0.7rem; color:#888; margin-top:10px; display:block;">OBSERVAÇÕES / DANOS ENCONTRADOS</label>
+        <input type="text" id="v_obs" class="modern-input" placeholder="Ex: Arranhão no para-choque dianteiro">
 
-            <div style="display: flex; gap: 10px;">
-                <div style="flex: 1;"><label>KM Atual</label><input type="number" id="v_km" class="modern-input"></div>
-                <div style="flex: 1;"><label>Nome</label><input type="text" id="v_nome" class="modern-input" placeholder="Responsável"></div>
-            </div>
+        <!-- FOTO DO VEÍCULO / DANO (ABRE A CÂMERA DIRETAMENTE NO CELULAR) -->
+        <label style="font-size:0.7rem; color:#888; margin-top:10px; display:block;"><i class="fas fa-camera"></i> TIRAR FOTO DO VEÍCULO / AVARIA</label>
+        <input type="file" id="v_foto" accept="image/*" capture="environment" class="modern-input">
+        
+        <button id="btnSalvar" style="width:100%; background:var(--primary); color:white; padding: 15px; margin-top:20px;">
+            <i class="fas fa-save"></i> SALVAR VISTORIA
+        </button>
+    </div>
 
-            <label>Checklist Completo</label>
-            <div class="checklist-grid">
-                <label class="check-container"><input type="checkbox" class="v_chk" data-label="Água"> Água</label>
-                <label class="check-container"><input type="checkbox" class="v_chk" data-label="Óleo"> Óleo</label>
-                <label class="check-container"><input type="checkbox" class="v_chk" data-label="Macaco"> Macaco</label>
-                <label class="check-container"><input type="checkbox" class="v_chk" data-label="Triângulo"> Triângulo</label>
-                <label class="check-container"><input type="checkbox" class="v_chk" data-label="Farol Esq."> Farol Esq.</label>
-                <label class="check-container"><input type="checkbox" class="v_chk" data-label="Farol Dir."> Farol Dir.</label>
-                <label class="check-container"><input type="checkbox" class="v_chk" data-label="Lant. Esq."> Lant. Esq.</label>
-                <label class="check-container"><input type="checkbox" class="v_chk" data-label="Lant. Dir."> Lant. Dir.</label>
-                <label class="check-container"><input type="checkbox" class="v_chk" data-label="Pneus"> Pneus</label>
-                <label class="check-container"><input type="checkbox" class="v_chk" data-label="Limpeza"> Limpeza</label>
-            </div>
-
-            <label style="margin-top: 15px;">Observações</label>
-            <textarea id="v_obs" class="modern-input" rows="2"></textarea>
-
-            <button class="btn-primary" id="btnCâmera" style="background: #333; margin-bottom: 10px;"><i class="fas fa-camera"></i> FOTO DA VTR</button>
-            <input type="file" id="input_foto" accept="image/*" capture="camera" style="display: none;">
-            <img id="preview-foto">
-
-            <button class="btn-primary" id="btnSalvarVistoria" style="background: var(--red); color: white;">
-                <i class="fas fa-save"></i> FINALIZAR VISTORIA
-            </button>
-        </div>
-
-        <table id="minhaTabela">
-            <thead><tr><th>Data</th><th>Viatura</th><th>Nome</th><th>KM</th></tr></thead>
-            <tbody id="tabelaVistoria"></tbody>
+    <div class="card">
+        <h3 style="margin:0 0 10px 0; font-size: 1rem;">Histórico de Vistorias</h3>
+        <div id="status" style="font-size:0.8rem; color:#888; text-align:center;">Carregando...</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Detalhes</th>
+                    <th style="text-align:right;">Ações</th>
+                </tr>
+            </thead>
+            <tbody id="tabelaCorpo"></tbody>
         </table>
-    </main>
+    </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, query, where, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
@@ -119,240 +101,148 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const storage = getStorage(app);
         const auth = getAuth(app);
 
-        let vtrCache = [];
-        let historicoLocal = [];
-        let fotoBase64 = "";
+        let editId = null;
+        let fotoUrlExistente = "";
+        let dadosLocais = [];
 
-        onAuthStateChanged(auth, (u) => { if(u) { carregarVeiculos(); carregarHistorico(); } else { window.location.href="login.html"; }});
+        onAuthStateChanged(auth, (user) => {
+            if (user) { 
+                carregarVeiculos();
+                carregarHistorico(); 
+            } else { 
+                window.location.href = "login.html"; 
+            }
+        });
 
         async function carregarVeiculos() {
             const snap = await getDocs(collection(db, "veiculos"));
-            vtrCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            const list = document.getElementById('listaVeiculos');
+            list.innerHTML = "";
+            snap.forEach(d => { list.innerHTML += `<option value="${d.data().placa}">`; });
         }
 
         async function carregarHistorico() {
-            const q = query(
-                collection(db, "vistorias"), 
-                orderBy("timestamp", "desc"),
-                limit(15)
-            );
-            const snap = await getDocs(q);
-            historicoLocal = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(i => i.usuario === auth.currentUser.email);
-            renderizar();
-        }
+            const corpo = document.getElementById('tabelaCorpo');
+            const status = document.getElementById('status');
+            
+            try {
+                const q = query(collection(db, "vistorias"), where("usuario", "==", auth.currentUser.email));
+                const snap = await getDocs(q);
+                corpo.innerHTML = "";
+                dadosLocais = [];
 
-        function formatarNomeVeiculo(vtrTexto) {
-            if (!vtrTexto) return "---";
-            const busca = vtrCache.find(v => v.placa === vtrTexto.split(' - ')[0].trim());
-            return busca ? `${busca.placa} - ${busca.nome}` : vtrTexto;
-        }
-
-        function comprimirFoto(file, callback) {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = (event) => {
-                const img = new Image();
-                img.src = event.target.result;
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 600;
-                    const scaleSize = MAX_WIDTH / img.width;
-                    canvas.width = MAX_WIDTH;
-                    canvas.height = img.height * scaleSize;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                    callback(canvas.toDataURL('image/jpeg', 0.5));
-                };
-            };
-        }
-
-        const inputVtr = document.getElementById('v_veiculo');
-        const boxVtr = document.getElementById('lista_vtr');
-        inputVtr.onfocus = () => exibirSugestoes(inputVtr.value.toUpperCase());
-        inputVtr.oninput = (e) => exibirSugestoes(e.target.value.toUpperCase());
-
-        function exibirSugestoes(val) {
-            boxVtr.innerHTML = "";
-            const filtrados = vtrCache.filter(v => v.placa.includes(val) || v.nome.toUpperCase().includes(val));
-            filtrados.forEach(v => {
-                const d = document.createElement('div');
-                d.innerHTML = `<b>${v.placa}</b> - ${v.nome}`;
-                d.onmousedown = (e) => {
-                    e.preventDefault();
-                    inputVtr.value = `${v.placa} - ${v.nome}`;
-                    document.getElementById('v_km').value = v.kmAtual || 0;
-                    boxVtr.style.display = 'none';
-                };
-                boxVtr.appendChild(d);
-            });
-            boxVtr.style.display = filtrados.length ? 'block' : 'none';
-        }
-
-        document.getElementById('btnCâmera').onclick = () => document.getElementById('input_foto').click();
-        document.getElementById('input_foto').onchange = (e) => {
-            if (e.target.files[0]) {
-                comprimirFoto(e.target.files[0], (base64) => {
-                    fotoBase64 = base64;
-                    document.getElementById('preview-foto').src = base64;
-                    document.getElementById('preview-foto').style.display = 'block';
+                snap.forEach(d => {
+                    dadosLocais.push({ id: d.id, ...d.data() });
                 });
-            }
-        };
 
-        window.excluirVistoria = async (id) => {
-            if(confirm("Excluir esta vistoria?")) { await deleteDoc(doc(db, "vistorias", id)); carregarHistorico(); }
-        };
+                dadosLocais.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
 
-        function renderizar() {
-            const corpo = document.getElementById('tabelaVistoria');
-            corpo.innerHTML = "";
-            historicoLocal.forEach(i => {
-                const nomeExibicao = i.nome || i.vigilante || "---";
-                corpo.innerHTML += `<tr>
-                    <td>${i.dataExibicao ? i.dataExibicao.split(' ')[0] : '---'}</td>
-                    <td><b>${formatarNomeVeiculo(i.veiculo)}</b></td>
-                    <td>${nomeExibicao}</td>
-                    <td>${i.km} <button class="btn-excluir" onclick="excluirVistoria('${i.id}')"><i class="fas fa-trash"></i></button></td>
-                </tr>`;
-            });
+                if (dadosLocais.length === 0) {
+                    status.innerText = "Nenhuma vistoria encontrada.";
+                } else {
+                    status.innerText = "";
+                    dadosLocais.forEach(item => {
+                        const linkFoto = item.fotoUrl 
+                            ? `<a href="${item.fotoUrl}" target="_blank" class="btn-foto"><i class="fas fa-camera"></i> FOTO</a>` 
+                            : '';
+
+                        corpo.innerHTML += `
+                            <tr>
+                                <td>
+                                    <small style="color:#888; font-size:0.65rem;">${item.dataExibicao}</small><br>
+                                    <b style="color:var(--primary)">${item.veiculo}</b><br>
+                                    <span>${item.observacoes || 'Sem avarias'}</span><br>
+                                    <small style="color:#3498db">KM: ${item.km || '-'}</small><br>
+                                    ${linkFoto}
+                                </td>
+                                <td style="text-align:right;">
+                                    <button onclick="window.editar('${item.id}')" class="btn-acao" style="background:#3498db;"><i class="fas fa-edit"></i></button>
+                                    <button onclick="window.excluir('${item.id}')" class="btn-acao" style="background:#e63946;"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                }
+            } catch (e) { status.innerText = "Erro ao carregar histórico."; }
         }
 
-        document.getElementById('btnSalvarVistoria').onclick = async () => {
-            const btn = document.getElementById('btnSalvarVistoria');
-            const vtrVal = inputVtr.value.toUpperCase();
-            const km = document.getElementById('v_km').value;
-            const nomeVal = document.getElementById('v_nome').value.toUpperCase();
-
-            if(!vtrVal || !km || !nomeVal) return alert("Preencha Viatura, KM e Nome!");
+        document.getElementById('btnSalvar').onclick = async () => {
+            const btn = document.getElementById('btnSalvar');
+            const vtr = document.getElementById('v_veiculo').value.toUpperCase().trim();
+            if(!vtr) return alert("Informe a placa do veículo");
 
             btn.disabled = true;
-            btn.innerHTML = "SALVANDO...";
+            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> SALVANDO...`;
 
-            const checks = [];
-            document.querySelectorAll('.v_chk').forEach(c => {
-                checks.push(`${c.dataset.label}: ${c.checked ? 'OK' : 'X'}`);
-            });
+            const dObj = new Date();
+            const kmAtualDigitado = parseInt(document.getElementById('v_km').value) || 0;
+            const obsTexto = document.getElementById('v_obs').value;
+            const fileInput = document.getElementById('v_foto');
 
             try {
-                await addDoc(collection(db, "vistorias"), {
-                    veiculo: vtrVal,
-                    km: Number(km),
-                    nome: nomeVal,
-                    vigilante: nomeVal,
-                    checkList: checks.join(" | "),
-                    obs: document.getElementById('v_obs').value.toUpperCase() || "SEM OBS",
-                    foto: fotoBase64,
-                    timestamp: Date.now(),
-                    dataExibicao: new Date().toLocaleString('pt-BR'),
+                let fotoUrl = fotoUrlExistente;
+
+                if (fileInput.files.length > 0) {
+                    const file = fileInput.files[0];
+                    const storageRef = ref(storage, `vistorias/${Date.now()}_${file.name}`);
+                    await uploadBytes(storageRef, file);
+                    fotoUrl = await getDownloadURL(storageRef);
+                }
+
+                const dados = {
+                    veiculo: vtr,
+                    km: kmAtualDigitado || "",
+                    observacoes: obsTexto,
+                    dataExibicao: dObj.toLocaleString('pt-BR'),
+                    dataISO: dObj.toISOString(),
+                    timestamp: dObj.getTime(),
+                    fotoUrl: fotoUrl,
                     usuario: auth.currentUser.email
-                });
-                alert("Vistoria salva com sucesso!");
+                };
+
+                if(editId) {
+                    await updateDoc(doc(db, "vistorias", editId), dados);
+                } else {
+                    await addDoc(collection(db, "vistorias"), dados);
+                }
+
+                if(kmAtualDigitado > 0) {
+                    const qVeiculo = query(collection(db, "veiculos"), where("placa", "==", vtr));
+                    const snapVeiculo = await getDocs(qVeiculo);
+                    if (!snapVeiculo.empty) {
+                        const veiculoDoc = snapVeiculo.docs[0];
+                        await updateDoc(doc(db, "veiculos", veiculoDoc.id), { kmAtual: kmAtualDigitado });
+                    }
+                }
+
                 location.reload();
-            } catch (e) { 
-                console.error(e);
-                alert("Erro ao salvar!"); 
+            } catch (e) {
+                console.error("Erro ao salvar vistoria: ", e);
+                alert("Erro ao salvar.");
                 btn.disabled = false;
-                btn.innerHTML = "FINALIZAR VISTORIA";
+                btn.innerHTML = `<i class="fas fa-save"></i> SALVAR VISTORIA`;
             }
         };
 
-        document.getElementById('btnExportarPDF').onclick = () => {
-            const { jsPDF } = window.jspdf;
-            const docPdf = new jsPDF();
-            
-            docPdf.setFillColor(185, 28, 28); 
-            docPdf.rect(0, 0, 210, 30, 'F');
-            docPdf.setTextColor(255);
-            docPdf.setFontSize(16);
-            docPdf.setFont(undefined, 'bold');
-            docPdf.text("JAPAN SECURITY - RELATÓRIO TÉCNICO", 105, 15, { align: 'center' });
-            
-            const f_ini = document.getElementById('f_ini').value || "---";
-            const f_fim = document.getElementById('f_fim').value || "---";
-            docPdf.setFontSize(10);
-            docPdf.setFont(undefined, 'normal');
-            docPdf.text(`Período: ${f_ini} até ${f_fim}`, 105, 23, { align: 'center' });
-
-            let y = 40;
-
-            historicoLocal.forEach((i) => {
-                if(y > 230) { docPdf.addPage(); y = 20; }
-
-                docPdf.setTextColor(185, 28, 28);
-                docPdf.setFontSize(11);
-                docPdf.setFont(undefined, 'bold');
-                docPdf.text(`VTR: ${formatarNomeVeiculo(i.veiculo)}`, 10, y);
-                
-                docPdf.setTextColor(0);
-                docPdf.setFontSize(9);
-                docPdf.text(`DATA: ${i.dataExibicao}`, 140, y);
-                y += 7;
-
-                docPdf.setFont(undefined, 'bold');
-                docPdf.text(`KM:`, 10, y);
-                docPdf.setFont(undefined, 'normal');
-                const resp = i.nome || i.vigilante || "---";
-                docPdf.text(`${i.km} | Colaborador: ${resp}`, 20, y);
-                y += 6;
-
-                docPdf.setFont(undefined, 'bold');
-                docPdf.text(`CHECKLIST:`, 10, y);
-                docPdf.setFont(undefined, 'normal');
-                const checkLines = docPdf.splitTextToSize(i.checkList, 170);
-                docPdf.text(checkLines, 35, y);
-                
-                y += (checkLines.length * 5) + 2; 
-
-                docPdf.setFont(undefined, 'bold');
-                docPdf.text(`OBSERVAÇÕES:`, 10, y);
-                docPdf.setFont(undefined, 'italic');
-                const obsLines = docPdf.splitTextToSize(i.obs || "SEM OBS", 165);
-                docPdf.text(obsLines, 38, y);
-                
-                y += (obsLines.length * 5) + 5;
-
-                if(i.foto) {
-                    try {
-                        if (y > 230) { docPdf.addPage(); y = 20; }
-                        docPdf.addImage(i.foto, 'JPEG', 10, y, 65, 48); 
-                        y += 55;
-                    } catch(e) { y += 5; }
-                }
-
-                docPdf.setDrawColor(200);
-                docPdf.line(10, y, 200, y);
-                y += 10;
-            });
-
-            docPdf.save(`Relatorio_Japan_${new Date().getTime()}.pdf`);
+        window.editar = (id) => {
+            const d = dadosLocais.find(x => x.id === id);
+            editId = id;
+            fotoUrlExistente = d.fotoUrl || "";
+            document.getElementById('v_veiculo').value = d.veiculo;
+            document.getElementById('v_km').value = d.km;
+            document.getElementById('v_obs').value = d.observacoes;
+            document.getElementById('btnSalvar').innerHTML = "<i class='fas fa-sync'></i> ATUALIZAR";
+            window.scrollTo(0,0);
         };
 
-        document.getElementById('btnFiltrar').onclick = async () => {
-            const iniStr = document.getElementById('f_ini').value;
-            const fimStr = document.getElementById('f_fim').value;
-            if(!iniStr || !fimStr) return alert("Preencha as datas.");
-            const dInicio = new Date(iniStr).getTime();
-            const dFim = new Date(fimStr).getTime();
-            
-            const btn = document.getElementById('btnFiltrar');
-            btn.innerText = "BUSCANDO...";
-            btn.disabled = true;
-
-            const q = query(collection(db, "vistorias"), orderBy("timestamp", "desc"));
-            const snap = await getDocs(q);
-            const todos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-            
-            historicoLocal = todos.filter(i => {
-                const dono = i.usuario === auth.currentUser.email;
-                const noPeriodo = i.timestamp >= dInicio && i.timestamp <= dFim;
-                return dono && noPeriodo;
-            });
-            
-            renderizar(); 
-            btn.innerText = "FILTRAR";
-            btn.disabled = false;
+        window.excluir = async (id) => {
+            if(confirm("Deseja excluir este registro de vistoria?")) { 
+                await deleteDoc(doc(db, "vistorias", id)); 
+                carregarHistorico(); 
+            }
         };
     </script>
 </body>
