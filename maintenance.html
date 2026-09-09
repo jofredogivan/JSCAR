@@ -95,8 +95,8 @@
             </div>
         </div>
 
-        <!-- FOTO DA NOTA FISCAL -->
-        <label style="font-size:0.7rem; color:#888; margin-top:10px; display:block;"><i class="fas fa-camera"></i> FOTO DA NOTA FISCAL / COMPROVANTE</label>
+        <!-- FOTO DA NOTA FISCAL (ABRE A CÂMERA DIRETAMENTE NO CELULAR) -->
+        <label style="font-size:0.7rem; color:#888; margin-top:10px; display:block;"><i class="fas fa-camera"></i> TIRAR FOTO DA NOTA FISCAL</label>
         <input type="file" id="m_foto" accept="image/*" capture="environment" class="modern-input">
         
         <button id="btnSalvar" style="width:100%; background:var(--primary); color:white; padding: 15px; margin-top:20px;">
@@ -249,7 +249,6 @@
             try {
                 let fotoUrl = fotoUrlExistente;
 
-                // UPLOAD DE NOVA IMAGEM CASO SELECIONADA
                 if (fileInput.files.length > 0) {
                     const file = fileInput.files[0];
                     const storageRef = ref(storage, `notas_fiscais/${Date.now()}_${file.name}`);
@@ -270,14 +269,12 @@
                     usuario: auth.currentUser.email
                 };
 
-                // 1. SALVA OU ATUALIZA O LOG NA COLEÇÃO DE MANUTENÇÕES
                 if(editId) {
                     await updateDoc(doc(db, "manutencoes", editId), dados);
                 } else {
                     await addDoc(collection(db, "manutencoes"), dados);
                 }
 
-                // 2. LOGICA DE ATUALIZAÇÃO AUTOMÁTICA DO VEÍCULO (PREVENTIVA)
                 const qVeiculo = query(collection(db, "veiculos"), where("placa", "==", vtr));
                 const snapVeiculo = await getDocs(qVeiculo);
                 
@@ -333,13 +330,11 @@
 
         document.getElementById('btnFiltrar').onclick = carregarHistorico;
         
-        // FUNÇÃO PDF PROFISSIONAL
         document.getElementById('btnPDF').onclick = () => {
             const { jsPDF } = window.jspdf;
             const docPDF = new jsPDF();
             const corPrimaria = [230, 57, 70]; 
 
-            // Cabeçalho
             docPDF.setFillColor(26, 26, 26);
             docPDF.rect(0, 0, 210, 40, 'F');
             docPDF.setTextColor(255, 255, 255);
