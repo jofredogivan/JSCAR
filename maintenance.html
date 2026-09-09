@@ -37,6 +37,7 @@
         td { padding: 12px; border-bottom: 1px solid #222; font-size: 0.85rem; vertical-align: top; }
         
         .btn-acao { padding: 8px; border-radius: 6px; color: white; border: none; margin-top: 5px; }
+        .btn-nota { background: #27ae60; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; margin-top: 5px; }
         .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px; }
         .stat-box { background: #1a1a1a; padding: 10px; border-radius: 8px; text-align: center; border-bottom: 3px solid var(--primary); }
     </style>
@@ -93,6 +94,10 @@
                 <input type="number" id="m_proxima" class="modern-input">
             </div>
         </div>
+
+        <!-- FOTO DA NOTA FISCAL -->
+        <label style="font-size:0.7rem; color:#888; margin-top:10px; display:block;"><i class="fas fa-camera"></i> FOTO DA NOTA FISCAL / COMPROVANTE</label>
+        <input type="file" id="m_foto" accept="image/*" capture="environment" class="modern-input">
         
         <button id="btnSalvar" style="width:100%; background:var(--primary); color:white; padding: 15px; margin-top:20px;">
             <i class="fas fa-save"></i> SALVAR REGISTRO
@@ -128,6 +133,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, query, where, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
@@ -141,6 +147,7 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const storage = getStorage(app);
         const auth = getAuth(app);
 
         if ('serviceWorker' in navigator) {
@@ -148,6 +155,7 @@
         }
 
         let editId = null;
+        let fotoUrlExistente = "";
         let dadosLocais = [];
 
         onAuthStateChanged(auth, (user) => {
@@ -197,16 +205,21 @@
                 } else {
                     status.innerText = "";
                     dadosLocais.forEach(item => {
+                        const linkNota = item.fotoUrl 
+                            ? `<a href="${item.fotoUrl}" target="_blank" class="btn-nota"><i class="fas fa-image"></i> NOTA</a>` 
+                            : '';
+
                         corpo.innerHTML += `
                             <tr>
                                 <td>
                                     <small style="color:#888; font-size:0.65rem;">${item.dataExibicao}</small><br>
                                     <b style="color:var(--primary)">${item.veiculo}</b><br>
                                     <b>${item.servico}</b><br>
-                                    <small style="color:#3498db">KM: ${item.km || '-'} | Prox: ${item.proxima_km || '-'}</small>
+                                    <small style="color:#3498db">KM: ${item.km || '-'} | Prox: ${item.proxima_km || '-'}</small><br>
+                                    ${linkNota}
                                 </td>
                                 <td style="text-align:right;">
-                                    <b>R$ ${parseFloat(item.valor).toFixed(2)}</b><br>
+                                    <b>R$ ${parseFloat(item.valor || 0).toFixed(2)}</b><br>
                                     <button onclick="window.editar('${item.id}')" class="btn-acao" style="background:#3498db;"><i class="fas fa-edit"></i></button>
                                     <button onclick="window.excluir('${item.id}')" class="btn-acao" style="background:#e63946;"><i class="fas fa-trash"></i></button>
                                 </td>
@@ -225,26 +238,38 @@
             if(!vtr) return alert("Placa necessária");
 
             btn.disabled = true;
-            btn.innerText = "SALVANDO...";
+            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> SALVANDO...`;
 
             const dataInput = document.getElementById('m_data').value;
             const dObj = dataInput ? new Date(dataInput) : new Date();
             const kmAtualDigitado = parseInt(document.getElementById('m_km').value) || 0;
             const servicoTexto = document.getElementById('m_servico').value.toUpperCase();
-
-            const dados = {
-                veiculo: vtr,
-                valor: parseFloat(document.getElementById('m_valor').value) || 0,
-                servico: servicoTexto,
-                km: kmAtualDigitado || "",
-                proxima_km: document.getElementById('m_proxima').value || "",
-                dataExibicao: dObj.toLocaleString('pt-BR'),
-                dataISO: dObj.toISOString(),
-                timestamp: dObj.getTime(),
-                usuario: auth.currentUser.email
-            };
+            const fileInput = document.getElementById('m_foto');
 
             try {
+                let fotoUrl = fotoUrlExistente;
+
+                // UPLOAD DE NOVA IMAGEM CASO SELECIONADA
+                if (fileInput.files.length > 0) {
+                    const file = fileInput.files[0];
+                    const storageRef = ref(storage, `notas_fiscais/${Date.now()}_${file.name}`);
+                    await uploadBytes(storageRef, file);
+                    fotoUrl = await getDownloadURL(storageRef);
+                }
+
+                const dados = {
+                    veiculo: vtr,
+                    valor: parseFloat(document.getElementById('m_valor').value) || 0,
+                    servico: servicoTexto,
+                    km: kmAtualDigitado || "",
+                    proxima_km: document.getElementById('m_proxima').value || "",
+                    dataExibicao: dObj.toLocaleString('pt-BR'),
+                    dataISO: dObj.toISOString(),
+                    timestamp: dObj.getTime(),
+                    fotoUrl: fotoUrl,
+                    usuario: auth.currentUser.email
+                };
+
                 // 1. SALVA OU ATUALIZA O LOG NA COLEÇÃO DE MANUTENÇÕES
                 if(editId) {
                     await updateDoc(doc(db, "manutencoes", editId), dados);
@@ -253,30 +278,24 @@
                 }
 
                 // 2. LOGICA DE ATUALIZAÇÃO AUTOMÁTICA DO VEÍCULO (PREVENTIVA)
-                // Procura na coleção 'veiculos' o documento que pertence a placa digitada
                 const qVeiculo = query(collection(db, "veiculos"), where("placa", "==", vtr));
                 const snapVeiculo = await getDocs(qVeiculo);
                 
                 if (!snapVeiculo.empty) {
-                    // Pega o primeiro veículo correspondente encontrado
                     const veiculoDoc = snapVeiculo.docs[0];
                     const veiculoRef = doc(db, "veiculos", veiculoDoc.id);
-                    
                     const camposAtualizacao = {};
                     
-                    // Sempre atualiza o KM Geral do carro para bater com o último informado
                     if(kmAtualDigitado > 0) {
                         camposAtualizacao.kmAtual = kmAtualDigitado;
                     }
 
-                    // Se a descrição contiver "OLEO" ou "ÓLEO", define esse KM como a última troca
                     if(servicoTexto.includes("OLEO") || servicoTexto.includes("ÓLEO")) {
                         if(kmAtualDigitado > 0) {
                             camposAtualizacao.kmUltimaTroca = kmAtualDigitado;
                         }
                     }
 
-                    // Se houver algum campo para atualizar, executa no documento do veículo
                     if(Object.keys(camposAtualizacao).length > 0) {
                         await updateDoc(veiculoRef, camposAtualizacao);
                     }
@@ -287,13 +306,14 @@
                 console.error("Erro ao salvar lançamento/sincronizar veículo: ", e);
                 alert("Erro ao salvar.");
                 btn.disabled = false;
-                btn.innerText = "SALVAR REGISTRO";
+                btn.innerHTML = `<i class="fas fa-save"></i> SALVAR REGISTRO`;
             }
         };
 
         window.editar = (id) => {
             const d = dadosLocais.find(x => x.id === id);
             editId = id;
+            fotoUrlExistente = d.fotoUrl || "";
             document.getElementById('m_veiculo').value = d.veiculo;
             document.getElementById('m_valor').value = d.valor;
             document.getElementById('m_servico').value = d.servico;
@@ -334,7 +354,7 @@
                 i.veiculo,
                 i.servico,
                 i.km || '-',
-                `R$ ${parseFloat(i.valor).toFixed(2)}`
+                `R$ ${parseFloat(i.valor || 0).toFixed(2)}`
             ]);
 
             docPDF.autoTable({
@@ -347,7 +367,7 @@
                 styles: { fontSize: 8 }
             });
 
-            const total = dadosLocais.reduce((acc, curr) => acc + parseFloat(curr.valor), 0);
+            const total = dadosLocais.reduce((acc, curr) => acc + parseFloat(curr.valor || 0), 0);
             const finalY = docPDF.lastAutoTable.finalY + 10;
             docPDF.setTextColor(40);
             docPDF.setFont("helvetica", "bold");
