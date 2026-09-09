@@ -19,7 +19,6 @@
             --red: #e63946; 
             --green: #2ecc71; 
             --dark: #121212; 
-            --card: #1e1e1e;
             --border: #333;
         }
 
@@ -51,7 +50,6 @@
             text-decoration: none; 
             font-size: 0.8rem; 
             font-weight: bold; 
-            transition: transform 0.1s; 
             display: flex; 
             align-items: center; 
             gap: 5px; 
@@ -97,7 +95,6 @@
             font-size: 1rem; 
             margin-bottom: 10px; 
             outline: none; 
-            transition: border-color 0.2s;
         }
 
         .modern-input:focus { 
@@ -115,7 +112,6 @@
             border-radius: 8px; 
             cursor: pointer; 
             font-weight: 800; 
-            transition: transform 0.1s, opacity 0.2s; 
             display: flex; 
             align-items: center; 
             justify-content: center; 
@@ -152,7 +148,6 @@
             width: 100%; 
         }
 
-        /* AJUSTE FIXO DO AUTOCOMPLETE PARA ROLAGEM */
         #lista_vtr { 
             display: none; 
             position: absolute; 
@@ -177,8 +172,7 @@
             color: #ccc; 
         }
 
-        #lista_vtr div:hover,
-        #lista_vtr div:active { 
+        #lista_vtr div:hover { 
             background: var(--red); 
             color: #fff; 
         }
@@ -299,7 +293,6 @@
         deleteDoc, 
         updateDoc, 
         query, 
-        orderBy, 
         limit 
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -321,10 +314,11 @@
     let historicoLocal = [];
     let filtradosPDF = [];
 
-    onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(auth, async (user) => {
         if (user) { 
             configurarDataHora();
-            carregarVtr().then(() => carregarHistorico()); 
+            await carregarVtr();
+            await carregarHistorico();
         } else { 
             window.location.href = "login.html"; 
         }
@@ -386,18 +380,13 @@
     inputVtr.addEventListener('input', () => mostrarOpcoes(inputVtr.value.toUpperCase()));
     inputVtr.addEventListener('blur', () => { setTimeout(() => { boxVtr.style.display = 'none'; }, 200); });
 
-    // BUSCA OTIMIZADA COM LIMITE E FALLBACK
     async function carregarHistorico() {
         const corpo = document.getElementById('tabelaES');
         corpo.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#888;">Carregando histórico...</td></tr>`;
 
         try {
-            const q = query(
-                collection(db, "movimentacoes"),
-                orderBy("timestamp", "desc"),
-                limit(30)
-            );
-
+            // Busca segura dos últimos 30 registros sem exigir índices compostos
+            const q = query(collection(db, "movimentacoes"), limit(30));
             const snap = await getDocs(q);
             historicoLocal = [];
 
@@ -414,29 +403,8 @@
 
             renderizar();
         } catch (error) {
-            console.warn("Executando busca fallback sem ordenação por timestamp:", error);
-            carregarHistoricoFallback();
-        }
-    }
-
-    async function carregarHistoricoFallback() {
-        try {
-            const q = query(collection(db, "movimentacoes"), limit(30));
-            const snap = await getDocs(q);
-            historicoLocal = [];
-            snap.forEach(d => {
-                const info = d.data();
-                if (info.usuario === auth.currentUser.email) {
-                    if (!info.nomeVeiculo || info.nomeVeiculo === "MODELO N/D") {
-                        const find = vtrCache.find(v => v.placa === info.veiculo);
-                        info.nomeVeiculo = find ? find.nome : "NÃO CADASTRADO";
-                    }
-                    historicoLocal.push({ id: d.id, ...info });
-                }
-            });
-            renderizar();
-        } catch (e) {
-            console.error("Erro no fallback do histórico:", e);
+            console.error("Erro ao carregar histórico:", error);
+            corpo.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#e63946;">Erro ao carregar os dados.</td></tr>`;
         }
     }
 
@@ -446,8 +414,8 @@
         const tsIni = ini ? new Date(ini).getTime() : 0;
         const tsFim = fim ? new Date(fim).getTime() : Infinity;
         const corpo = document.getElementById('tabelaES');
-        corpo.innerHTML = "";
-
+        
+        let html = "";
         filtradosPDF = historicoLocal
             .filter(i => i.timestamp >= tsIni && i.timestamp <= tsFim)
             .sort((a,b) => b.timestamp - a.timestamp);
@@ -459,7 +427,7 @@
 
         filtradosPDF.forEach(i => {
             const cor = i.tipo === "SAIDA" ? "#e63946" : "#2ecc71";
-            corpo.innerHTML += `
+            html += `
                 <tr>
                     <td style="color:#777; font-size:0.65rem;">${i.dataExibicao}</td>
                     <td><b>${i.veiculo}</b><br><small style="color:var(--red)">${i.nomeVeiculo}</small></td>
@@ -473,6 +441,8 @@
                     </td>
                 </tr>`;
         });
+
+        corpo.innerHTML = html;
     }
 
     document.getElementById('btnSalvar').onclick = async () => {
@@ -508,10 +478,10 @@
             }
 
             alert("✓ Registro Salvo com Sucesso!"); 
-            carregarHistorico();
             document.getElementById('es_km').value = "";
             document.getElementById('es_vig').value = "";
             inputVtr.value = "";
+            carregarHistorico();
         } catch (e) { 
             alert("Erro ao salvar no banco de dados."); 
         }
