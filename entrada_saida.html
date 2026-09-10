@@ -326,8 +326,14 @@
 
     function configurarDataHora() {
         const agora = new Date();
-        document.getElementById('es_data').value = agora.toISOString().split('T')[0];
-        document.getElementById('es_hora').value = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', hour12: false });
+        const ano = agora.getFullYear();
+        const mes = String(agora.getMonth() + 1).padStart(2, '0');
+        const dia = String(agora.getDate()).padStart(2, '0');
+        const horas = String(agora.getHours()).padStart(2, '0');
+        const minutos = String(agora.getMinutes()).padStart(2, '0');
+
+        document.getElementById('es_data').value = `${ano}-${mes}-${dia}`;
+        document.getElementById('es_hora').value = `${horas}:${minutos}`;
     }
 
     async function carregarVtr() {
@@ -336,14 +342,14 @@
             vtrCache = [];
             snap.forEach(d => {
                 const i = d.data();
-                const placa = i.placa || i.Placa;
-                const nome = i.nome || i.Nome;
-                if(placa && nome) {
+                const placa = i.placa || i.Placa || "";
+                const nome = i.modelo || i.Nome || i.nome || i.veiculo || "";
+                if (placa) {
                     vtrCache.push({ 
                         id: d.id, 
-                        placa: placa.toUpperCase(), 
-                        nome: nome.toUpperCase(), 
-                        km: i.kmAtual || 0 
+                        placa: placa.toString().trim().toUpperCase(), 
+                        nome: nome.toString().trim().toUpperCase(), 
+                        km: i.kmAtual || i.km || 0 
                     });
                 }
             });
@@ -361,10 +367,11 @@
         if (encontrados.length > 0) {
             encontrados.forEach(v => {
                 const d = document.createElement('div');
-                d.innerHTML = `<i class="fas fa-car" style="color:var(--red); margin-right:10px;"></i> <b>${v.placa}</b> - ${v.nome}`;
+                const textoNome = v.nome ? ` - ${v.nome}` : '';
+                d.innerHTML = `<i class="fas fa-car" style="color:var(--red); margin-right:10px;"></i> <b>${v.placa}</b>${textoNome}`;
                 d.onmousedown = (e) => {
                     e.preventDefault();
-                    inputVtr.value = `${v.placa} - ${v.nome}`;
+                    inputVtr.value = v.nome ? `${v.placa} - ${v.nome}` : v.placa;
                     document.getElementById('es_km').value = v.km;
                     boxVtr.style.display = 'none';
                 };
@@ -411,13 +418,11 @@
         const iniVal = document.getElementById('f_ini').value;
         const fimVal = document.getElementById('f_fim').value;
 
-        // Trata data e hora para não ignorar milissegundos nem horários do próprio dia
         const tsIni = iniVal ? new Date(iniVal).getTime() : 0;
         let tsFim = Infinity;
 
         if (fimVal) {
             const dataFim = new Date(fimVal);
-            // Se o usuário não definiu horário de fim específico, considera o final do dia (23:59:59)
             if (fimVal.length <= 10) { 
                 dataFim.setHours(23, 59, 59, 999); 
             }
@@ -443,13 +448,13 @@
             const cor = i.tipo === "SAIDA" ? "#e63946" : "#2ecc71";
             html += `
                 <tr>
-                    <td style="color:#777; font-size:0.65rem;">${i.dataExibicao}</td>
-                    <td><b>${i.veiculo}</b><br><small style="color:var(--red)">${i.nomeVeiculo}</small></td>
+                    <td style="color:#777; font-size:0.65rem;">${i.dataExibicao || '-'}</td>
+                    <td><b>${i.veiculo}</b><br><small style="color:var(--red)">${i.nomeVeiculo || ''}</small></td>
                     <td>${i.vigilante}</td>
                     <td>${i.km}</td>
                     <td style="color:${cor}; font-weight:bold">${i.tipo}</td>
                     <td>
-                        <button onclick="apagarRegistro('${i.id}')" style="background:none; border:none; color:#444; cursor:pointer;">
+                        <button onclick="window.apagarRegistro('${i.id}')" style="background:none; border:none; color:#444; cursor:pointer;">
                             <i class="fas fa-trash"></i>
                         </button>
                     </td>
@@ -460,20 +465,31 @@
     }
 
     document.getElementById('btnSalvar').onclick = async () => {
-        const valorInput = inputVtr.value.toUpperCase();
+        const btn = document.getElementById('btnSalvar');
+        const valorInput = inputVtr.value.toUpperCase().trim();
         const km = document.getElementById('es_km').value;
-        const vig = document.getElementById('es_vig').value.toUpperCase();
+        const vig = document.getElementById('es_vig').value.toUpperCase().trim();
         
         const dataL = document.getElementById('es_data').value;
         const horaL = document.getElementById('es_hora').value;
 
-        if(!valorInput || !km || !vig || !dataL || !horaL) return alert("Preencha todos os campos!");
+        if (!valorInput || !km || !vig || !dataL || !horaL) {
+            return alert("Preencha todos os campos!");
+        }
+
+        btn.disabled = true;
+        btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> GRAVANDO...`;
+
+        // Extrai a placa do input (caso venha no formato "ABC1234 - MODELO")
+        const placaDig = valorInput.split('-')[0].trim();
+        const vEncontrado = vtrCache.find(v => v.placa === placaDig || valorInput.includes(v.placa));
         
-        const vEncontrado = vtrCache.find(v => valorInput.includes(v.placa));
-        const placaFinal = vEncontrado ? vEncontrado.placa : valorInput;
+        const placaFinal = vEncontrado ? vEncontrado.placa : placaDig;
         const nomeFinal = vEncontrado ? vEncontrado.nome : "Modelo Avulso";
         
-        const dataObjeto = new Date(`${dataL}T${horaL}`);
+        // Garante formato aceito no construtor Date
+        const dataFormatada = `${dataL}T${horaL.length === 5 ? horaL + ':00' : horaL}`;
+        const dataObjeto = new Date(dataFormatada);
 
         try {
             await addDoc(collection(db, "movimentacoes"), { 
@@ -487,17 +503,27 @@
                 usuario: auth.currentUser.email 
             });
 
-            if(vEncontrado) {
-                await updateDoc(doc(db, "veiculos", vEncontrado.id), { kmAtual: Number(km) });
+            if (vEncontrado) {
+                try {
+                    await updateDoc(doc(db, "veiculos", vEncontrado.id), { kmAtual: Number(km) });
+                } catch (errKm) {
+                    console.warn("Aviso ao atualizar KM no veículo:", errKm);
+                }
             }
 
             alert("✓ Registro Salvo com Sucesso!"); 
             document.getElementById('es_km').value = "";
             document.getElementById('es_vig').value = "";
             inputVtr.value = "";
-            carregarHistorico();
+            
+            await carregarVtr();
+            await carregarHistorico();
         } catch (e) { 
-            alert("Erro ao salvar no banco de dados."); 
+            console.error("Erro ao salvar movimentação:", e);
+            alert("Erro ao salvar no banco de dados: " + e.message); 
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = `<i class="fas fa-save"></i> Confirmar Registro`;
         }
     };
 
@@ -538,7 +564,7 @@
 
             const movs = grupos[veiculo].sort((a, b) => Number(a.timestamp) - Number(b.timestamp));
             const rows = movs.map(m => [
-                m.dataExibicao, 
+                m.dataExibicao || '-', 
                 m.vigilante, 
                 m.km + " KM", 
                 { content: m.tipo, styles: { textColor: m.tipo === 'SAIDA' ? [230, 57, 70] : [46, 204, 113], fontStyle: 'bold' } }, 
@@ -560,7 +586,7 @@
     };
 
     window.apagarRegistro = async (id) => { 
-        if(confirm("Deseja realmente excluir este registro?")) { 
+        if (confirm("Deseja realmente excluir este registro?")) { 
             await deleteDoc(doc(db, "movimentacoes", id)); 
             carregarHistorico(); 
         } 
