@@ -3,212 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Japan Security | Movimentação</title>
+    <title>Japan Security | Fleet Control</title>
     
-    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png">
-    <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512x512.png">
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#121212">
-
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
     <style>
-        :root { 
-            --red: #e63946; 
-            --green: #2ecc71; 
-            --dark: #121212; 
-            --border: #333;
-        }
-
-        * { 
-            box-sizing: border-box; 
-            -webkit-tap-highlight-color: transparent; 
-        }
-
-        body { 
-            background: #000; 
-            color: #fff; 
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
-            margin: 0; 
-            padding-bottom: 50px; 
-        }
+        :root { --red: #e63946; --green: #2ecc71; --dark: #121212; }
+        body { background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; padding-bottom: 50px; }
         
+        /* Cabeçalho Ajustado com Botão Voltar */
         header { 
-            background: #1a1a1a; 
-            padding: 15px; 
-            text-align: center; 
-            border-bottom: 4px solid var(--red); 
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between;
+            background: #1a1a1a; padding: 15px; text-align: center; 
+            border-bottom: 4px solid var(--red); display: flex; align-items: center; justify-content: space-between;
         }
+        .btn-voltar { color: white; text-decoration: none; font-size: 0.8rem; font-weight: bold; transition: 0.1s; display: flex; align-items: center; gap: 5px; }
+        .btn-voltar:active { transform: scale(0.9); opacity: 0.7; }
 
-        .btn-voltar { 
-            color: white; 
-            text-decoration: none; 
-            font-size: 0.8rem; 
-            font-weight: bold; 
-            display: flex; 
-            align-items: center; 
-            gap: 5px; 
-        }
-
-        .btn-voltar:active { 
-            transform: scale(0.9); 
-            opacity: 0.7; 
-        }
-
-        .container { 
-            padding: 15px; 
-            max-width: 750px; 
-            margin: auto; 
-        }
-
-        .card { 
-            background: var(--dark); 
-            padding: 18px; 
-            border-radius: 12px; 
-            margin-bottom: 20px; 
-            border: 1px solid var(--border); 
-            position: relative; 
-        }
-
-        label { 
-            font-size: 0.7rem; 
-            color: var(--red); 
-            font-weight: bold; 
-            text-transform: uppercase; 
-            display: block; 
-            margin-bottom: 5px; 
-        }
-
-        .modern-input { 
-            width: 100%; 
-            padding: 12px; 
-            background: #222; 
-            border: 1px solid #444; 
-            color: #fff; 
-            border-radius: 8px; 
-            box-sizing: border-box; 
-            font-size: 1rem; 
-            margin-bottom: 10px; 
-            outline: none; 
-        }
-
-        .modern-input:focus { 
-            border-color: var(--red); 
-        }
-
-        input[type="date"].modern-input,
-        input[type="time"].modern-input,
-        input[type="datetime-local"].modern-input {
-            color-scheme: dark;
-        }
+        .container { padding: 15px; max-width: 750px; margin: auto; }
+        .card { background: var(--dark); padding: 18px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #333; position: relative; }
+        label { font-size: 0.7rem; color: var(--red); font-weight: bold; text-transform: uppercase; display: block; margin-bottom: 5px; }
+        .modern-input { width: 100%; padding: 12px; background: #222; border: 1px solid #444; color: #fff; border-radius: 8px; box-sizing: border-box; font-size: 1rem; margin-bottom: 10px; }
         
-        .btn { 
-            border: none; 
-            border-radius: 8px; 
-            cursor: pointer; 
-            font-weight: 800; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 8px; 
-            text-transform: uppercase; 
-        }
-
-        .btn:active { 
-            transform: scale(0.95); 
-            opacity: 0.8; 
-        }
+        /* Melhoria nos Botões */
+        .btn { border: none; border-radius: 8px; cursor: pointer; font-weight: 800; transition: 0.1s; display: flex; align-items: center; justify-content: center; gap: 8px; text-transform: uppercase; }
+        .btn:active { transform: scale(0.95); opacity: 0.8; }
         
-        .btn-save { 
-            background: var(--green); 
-            color: #000; 
-            height: 55px; 
-            width: 100%; 
-            font-size: 1.1rem; 
-            box-shadow: 0 4px 0 #27ae60; 
-        }
-
-        .btn-filter { 
-            background: #333; 
-            color: #fff; 
-            height: 42px; 
-            width: 100%; 
-            border: 1px solid #555; 
-        }
-
-        .btn-pdf { 
-            background: var(--red); 
-            color: #fff; 
-            height: 42px; 
-            width: 100%; 
-        }
+        .btn-save { background: var(--green); color: #000; height: 55px; width: 100%; font-size: 1.1rem; box-shadow: 0 4px 0 #27ae60; }
+        .btn-filter { background: #333; color: #fff; height: 42px; width: 100%; border: 1px solid #555; }
+        .btn-pdf { background: var(--red); color: #fff; height: 42px; width: 100%; }
 
         #lista_vtr { 
-            display: none; 
-            position: absolute; 
-            width: 100%; 
-            left: 0;
-            top: 100%;
-            background: #222; 
-            border: 2px solid var(--red); 
-            z-index: 99999; 
-            max-height: 200px; 
-            overflow-y: auto; 
-            border-radius: 0 0 10px 10px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.8);
-            box-sizing: border-box;
+            display: none; position: absolute; width: calc(100% - 36px); 
+            background: #222; border: 2px solid var(--red); z-index: 9999; 
+            max-height: 250px; overflow-y: auto; border-radius: 0 0 10px 10px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.8); top: 75px; 
         }
+        #lista_vtr div { padding: 14px; border-bottom: 1px solid #333; cursor: pointer; font-size: 0.95rem; color: #ccc; }
+        #lista_vtr div:hover { background: var(--red); color: #fff; }
 
-        #lista_vtr div { 
-            padding: 14px; 
-            border-bottom: 1px solid #333; 
-            cursor: pointer; 
-            font-size: 0.95rem; 
-            color: #ccc; 
-        }
-
-        #lista_vtr div:hover { 
-            background: var(--red); 
-            color: #fff; 
-        }
-
-        .table-responsive {
-            width: 100%;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        table { 
-            width: 100%; 
-            border-collapse: collapse; 
-            background: #111; 
-            margin-top: 10px; 
-            font-size: 0.8rem; 
-        }
-
-        th { 
-            background: #222; 
-            color: var(--red); 
-            padding: 10px; 
-            text-align: left; 
-            border-bottom: 2px solid var(--red); 
-        }
-
-        td { 
-            padding: 10px; 
-            border-bottom: 1px solid #222; 
-        }
+        table { width: 100%; border-collapse: collapse; background: #111; margin-top: 10px; font-size: 0.8rem; }
+        th { background: #222; color: var(--red); padding: 10px; text-align: left; border-bottom: 2px solid var(--red); }
+        td { padding: 10px; border-bottom: 1px solid #222; }
     </style>
 </head>
 <body>
 
 <header>
-    <a href="dashboard.html" class="btn-voltar">
+    <a href="index.html" class="btn-voltar">
         <i class="fas fa-chevron-left" style="color: var(--red);"></i> VOLTAR
     </a>
     <div style="flex-grow: 1; text-align: center; margin-right: 60px;">
@@ -231,12 +74,6 @@
     </div>
 
     <div class="card" style="border-left: 5px solid var(--red);">
-        <label>Data e Hora do Lançamento</label>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 5px;">
-            <input type="date" id="es_data" class="modern-input">
-            <input type="time" id="es_hora" class="modern-input">
-        </div>
-
         <div style="position: relative;">
             <label>Viatura (Placa ou Nome)</label>
             <input type="text" id="es_vtr" class="modern-input" placeholder="Clique para selecionar..." autocomplete="off">
@@ -265,7 +102,7 @@
         <button id="btnSalvar" class="btn btn-save"><i class="fas fa-save"></i> Confirmar Registro</button>
     </div>
 
-    <div class="table-responsive">
+    <div style="overflow-x: auto;">
         <table>
             <thead>
                 <tr>
@@ -284,17 +121,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { 
-        getFirestore, 
-        collection, 
-        addDoc, 
-        getDocs, 
-        doc, 
-        deleteDoc, 
-        updateDoc, 
-        query, 
-        limit 
-    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, updateDoc, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
     const firebaseConfig = {
@@ -314,48 +141,27 @@
     let historicoLocal = [];
     let filtradosPDF = [];
 
-    onAuthStateChanged(auth, async (user) => {
-        if (user) { 
-            configurarDataHora();
-            await carregarVtr();
-            await carregarHistorico();
-        } else { 
-            window.location.href = "login.html"; 
-        }
+    onAuthStateChanged(auth, (user) => {
+        if (user) { carregarVtr().then(() => carregarHistorico()); }
+        else { window.location.href = "login.html"; }
     });
 
-    function configurarDataHora() {
-        const agora = new Date();
-        const ano = agora.getFullYear();
-        const mes = String(agora.getMonth() + 1).padStart(2, '0');
-        const dia = String(agora.getDate()).padStart(2, '0');
-        const horas = String(agora.getHours()).padStart(2, '0');
-        const minutos = String(agora.getMinutes()).padStart(2, '0');
-
-        document.getElementById('es_data').value = `${ano}-${mes}-${dia}`;
-        document.getElementById('es_hora').value = `${horas}:${minutos}`;
-    }
-
     async function carregarVtr() {
-        try {
-            const snap = await getDocs(collection(db, "veiculos"));
-            vtrCache = [];
-            snap.forEach(d => {
-                const i = d.data();
-                const placa = i.placa || i.Placa || "";
-                const nome = i.modelo || i.Nome || i.nome || i.veiculo || "";
-                if (placa) {
-                    vtrCache.push({ 
-                        id: d.id, 
-                        placa: placa.toString().trim().toUpperCase(), 
-                        nome: nome.toString().trim().toUpperCase(), 
-                        km: i.kmAtual || i.km || 0 
-                    });
-                }
-            });
-        } catch (e) {
-            console.error("Erro ao carregar veículos:", e);
-        }
+        const snap = await getDocs(collection(db, "veiculos"));
+        vtrCache = [];
+        snap.forEach(d => {
+            const i = d.data();
+            const placa = i.placa || i.Placa;
+            const nome = i.nome || i.Nome;
+            if(placa && nome) {
+                vtrCache.push({ 
+                    id: d.id, 
+                    placa: placa.toUpperCase(), 
+                    nome: nome.toUpperCase(), 
+                    km: i.kmAtual || 0 
+                });
+            }
+        });
     }
 
     const inputVtr = document.getElementById('es_vtr');
@@ -367,20 +173,16 @@
         if (encontrados.length > 0) {
             encontrados.forEach(v => {
                 const d = document.createElement('div');
-                const textoNome = v.nome ? ` - ${v.nome}` : '';
-                d.innerHTML = `<i class="fas fa-car" style="color:var(--red); margin-right:10px;"></i> <b>${v.placa}</b>${textoNome}`;
-                d.onmousedown = (e) => {
-                    e.preventDefault();
-                    inputVtr.value = v.nome ? `${v.placa} - ${v.nome}` : v.placa;
+                d.innerHTML = `<i class="fas fa-car" style="color:var(--red); margin-right:10px;"></i> <b>${v.placa}</b> - ${v.nome}`;
+                d.onmousedown = () => {
+                    inputVtr.value = `${v.placa} - ${v.nome}`;
                     document.getElementById('es_km').value = v.km;
                     boxVtr.style.display = 'none';
                 };
                 boxVtr.appendChild(d);
             });
             boxVtr.style.display = 'block';
-        } else { 
-            boxVtr.style.display = 'none'; 
-        }
+        } else { boxVtr.style.display = 'none'; }
     }
 
     inputVtr.addEventListener('focus', () => mostrarOpcoes(inputVtr.value.toUpperCase()));
@@ -388,173 +190,73 @@
     inputVtr.addEventListener('blur', () => { setTimeout(() => { boxVtr.style.display = 'none'; }, 200); });
 
     async function carregarHistorico() {
-        const corpo = document.getElementById('tabelaES');
-        corpo.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#888;">Carregando histórico...</td></tr>`;
-
-        try {
-            const q = query(collection(db, "movimentacoes"), limit(100));
-            const snap = await getDocs(q);
-            historicoLocal = [];
-
-            const userEmailAtual = auth.currentUser ? auth.currentUser.email.toLowerCase().trim() : "";
-
-            snap.forEach(d => {
-                const info = d.data();
-                const emailRegistro = (info.usuario || "").toLowerCase().trim();
-
-                // Exibe os registros do usuário atual (ou sem e-mail atribuído)
-                if (!emailRegistro || emailRegistro === userEmailAtual) {
-                    if (!info.nomeVeiculo || info.nomeVeiculo === "MODELO N/D" || info.nomeVeiculo === "Modelo Avulso") {
-                        const find = vtrCache.find(v => v.placa === info.veiculo);
-                        if (find && find.nome) {
-                            info.nomeVeiculo = find.nome;
-                        }
-                    }
-                    historicoLocal.push({ id: d.id, ...info });
+        // Traz apenas os últimos 100 registros para otimizar a velocidade de carregamento
+        const q = query(collection(db, "movimentacoes"), orderBy("timestamp", "desc"), limit(100));
+        const snap = await getDocs(q);
+        historicoLocal = [];
+        snap.forEach(d => {
+            const info = d.data();
+            if(info.usuario === auth.currentUser.email) { 
+                if (!info.nomeVeiculo || info.nomeVeiculo === "MODELO N/D") {
+                    const find = vtrCache.find(v => v.placa === info.veiculo);
+                    info.nomeVeiculo = find ? find.nome : "NÃO CADASTRADO";
                 }
-            });
-
-            renderizar();
-        } catch (error) {
-            console.error("Erro ao carregar histórico:", error);
-            corpo.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#e63946;">Erro ao carregar os dados.</td></tr>`;
-        }
+                historicoLocal.push({ id: d.id, ...info }); 
+            }
+        });
+        renderizar();
     }
 
     function renderizar() {
-        const iniVal = document.getElementById('f_ini').value;
-        const fimVal = document.getElementById('f_fim').value;
-
-        const tsIni = iniVal ? new Date(iniVal).getTime() : 0;
-        let tsFim = Infinity;
-
-        if (fimVal) {
-            const dataFim = new Date(fimVal);
-            if (fimVal.length <= 10) { 
-                dataFim.setHours(23, 59, 59, 999); 
-            }
-            tsFim = dataFim.getTime();
-        }
-
+        const ini = document.getElementById('f_ini').value;
+        const fim = document.getElementById('f_fim').value;
+        const tsIni = ini ? new Date(ini).getTime() : 0;
+        const tsFim = fim ? new Date(fim).getTime() : Infinity;
         const corpo = document.getElementById('tabelaES');
-        
-        filtradosPDF = historicoLocal
-            .filter(i => {
-                const t = Number(i.timestamp) || 0;
-                // Se não houver filtro de datas ativo, exibe todos os registros salvos
-                if (!iniVal && !fimVal) return true;
-                return t >= tsIni && t <= tsFim;
-            })
-            .sort((a,b) => (Number(b.timestamp) || 0) - (Number(a.timestamp) || 0));
-
-        if (filtradosPDF.length === 0) {
-            corpo.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#666;">Nenhum registro encontrado no período.</td></tr>`;
-            return;
-        }
-
-        let html = "";
+        corpo.innerHTML = "";
+        filtradosPDF = historicoLocal.filter(i => i.timestamp >= tsIni && i.timestamp <= tsFim).sort((a,b) => b.timestamp - a.timestamp);
         filtradosPDF.forEach(i => {
             const cor = i.tipo === "SAIDA" ? "#e63946" : "#2ecc71";
-            html += `
-                <tr>
-                    <td style="color:#777; font-size:0.65rem;">${i.dataExibicao || '-'}</td>
-                    <td><b>${i.veiculo}</b><br><small style="color:var(--red)">${i.nomeVeiculo || ''}</small></td>
-                    <td>${i.vigilante}</td>
-                    <td>${i.km}</td>
-                    <td style="color:${cor}; font-weight:bold">${i.tipo}</td>
-                    <td>
-                        <button onclick="window.apagarRegistro('${i.id}')" style="background:none; border:none; color:#444; cursor:pointer;">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </td>
-                </tr>`;
+            corpo.innerHTML += `<tr><td style="color:#777; font-size:0.65rem;">${i.dataExibicao}</td><td><b>${i.veiculo}</b><br><small style="color:var(--red)">${i.nomeVeiculo}</small></td><td>${i.vigilante}</td><td>${i.km}</td><td style="color:${cor}; font-weight:bold">${i.tipo}</td><td><button onclick="window.apagarRegistro('${i.id}')" style="background:none; border:none; color:#444;"><i class="fas fa-trash"></i></button></td></tr>`;
         });
-
-        corpo.innerHTML = html;
     }
 
     document.getElementById('btnSalvar').onclick = async () => {
-        const btn = document.getElementById('btnSalvar');
-        const valorInput = inputVtr.value.toUpperCase().trim();
+        const valorInput = inputVtr.value.toUpperCase();
         const km = document.getElementById('es_km').value;
-        const vig = document.getElementById('es_vig').value.toUpperCase().trim();
+        const vig = document.getElementById('es_vig').value.toUpperCase();
+        if(!valorInput || !km || !vig) return alert("Preencha tudo!");
         
-        const dataL = document.getElementById('es_data').value;
-        const horaL = document.getElementById('es_hora').value;
-
-        if (!valorInput || !km || !vig || !dataL || !horaL) {
-            return alert("Atenção: Preencha todos os campos antes de salvar!");
-        }
-
-        btn.disabled = true;
-        btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> GRAVANDO...`;
-
+        const vEncontrado = vtrCache.find(v => valorInput.includes(v.placa));
+        const placaFinal = vEncontrado ? vEncontrado.placa : valorInput;
+        const nomeFinal = vEncontrado ? vEncontrado.nome : "Modelo Avulso";
+        
         try {
-            const placaDig = valorInput.split('-')[0].trim();
-            const vEncontrado = vtrCache.find(v => v.placa === placaDig || valorInput.includes(v.placa));
-            
-            const placaFinal = vEncontrado ? vEncontrado.placa : placaDig;
-            const nomeFinal = vEncontrado ? vEncontrado.nome : (valorInput.split('-')[1] ? valorInput.split('-')[1].trim() : "");
-            
-            const partesData = dataL.split('-');
-            const partesHora = horaL.split(':');
-            
-            const ano = parseInt(partesData[0], 10);
-            const mes = parseInt(partesData[1], 10) - 1;
-            const dia = parseInt(partesData[2], 10);
-            const hora = parseInt(partesHora[0], 10);
-            const min = parseInt(partesHora[1], 10);
-
-            const dataObjeto = new Date(ano, mes, dia, hora, min, 0);
-            const tsCalculado = dataObjeto.getTime();
-
-            if (isNaN(tsCalculado)) {
-                throw new Error("Formato de data/hora inválido.");
-            }
-
-            const novoRegistro = { 
+            await addDoc(collection(db, "movimentacoes"), { 
                 veiculo: placaFinal, 
                 nomeVeiculo: nomeFinal, 
                 km: Number(km), 
                 vigilante: vig, 
                 tipo: document.getElementById('es_tipo').value, 
-                timestamp: tsCalculado, 
-                dataExibicao: dataObjeto.toLocaleString('pt-BR'), 
+                timestamp: new Date().getTime(), 
+                dataExibicao: new Date().toLocaleString('pt-BR'), 
                 usuario: auth.currentUser.email 
-            };
-
-            await addDoc(collection(db, "movimentacoes"), novoRegistro);
-
-            if (vEncontrado && vEncontrado.id) {
-                try {
-                    await updateDoc(doc(db, "veiculos", vEncontrado.id), { kmAtual: Number(km) });
-                } catch (eKm) {
-                    console.warn("Aviso ao atualizar KM do veículo:", eKm);
-                }
-            }
-
-            alert("✓ Movimentação salva com sucesso!"); 
+            });
+            if(vEncontrado) await updateDoc(doc(db, "veiculos", vEncontrado.id), { kmAtual: Number(km) });
+            alert("✓ Salvo!"); 
+            
+            // Limpa os campos e atualiza apenas o histórico sem dar reload completo
+            inputVtr.value = "";
             document.getElementById('es_km').value = "";
             document.getElementById('es_vig').value = "";
-            inputVtr.value = "";
-            
-            await carregarVtr();
             await carregarHistorico();
-
-        } catch (e) { 
-            console.error("Erro detalhado do Firestore:", e);
-            alert("Erro ao gravar no banco: " + (e.message || e)); 
-        } finally {
-            btn.disabled = false;
-            btn.innerHTML = `<i class="fas fa-save"></i> Confirmar Registro`;
-        }
+        } catch (e) { alert("Erro ao salvar."); }
     };
 
     document.getElementById('btnFiltrar').onclick = renderizar;
 
     document.getElementById('btnPDF').onclick = () => {
-        if (filtradosPDF.length === 0) return alert("Sem dados para o período selecionado!");
-        
+        if (filtradosPDF.length === 0) return alert("Sem dados!");
         const { jsPDF } = window.jspdf;
         const docPdf = new jsPDF('l', 'mm', 'a4');
         const grupos = {};
@@ -567,55 +269,26 @@
         });
 
         let yPos = 20;
-        docPdf.setFontSize(22); 
-        docPdf.setTextColor(230, 57, 70); 
-        docPdf.text("JAPAN SECURITY", 14, yPos);
-        docPdf.setFontSize(10); 
-        docPdf.setTextColor(100); 
-        docPdf.text("RELATÓRIO CONSOLIDADO DE MOVIMENTAÇÃO DE FROTA", 14, yPos + 7);
+        docPdf.setFontSize(22); docPdf.setTextColor(230, 57, 70); docPdf.text("JAPAN SECURITY", 14, yPos);
+        docPdf.setFontSize(10); docPdf.setTextColor(100); docPdf.text("RELATÓRIO CONSOLIDADO DE MOVIMENTAÇÃO DE FROTA", 14, yPos + 7);
         yPos += 20;
 
         Object.keys(grupos).sort().forEach(veiculo => {
             if (yPos > 170) { docPdf.addPage(); yPos = 20; }
-            docPdf.setFillColor(245, 245, 245); 
-            docPdf.rect(14, yPos, 269, 8, 'F');
-            docPdf.setFontSize(12); 
-            docPdf.setTextColor(0); 
-            docPdf.setFont("helvetica", "bold"); 
-            docPdf.text(`VEÍCULO: ${veiculo}`, 18, yPos + 6);
+            docPdf.setFillColor(245, 245, 245); docPdf.rect(14, yPos, 269, 8, 'F');
+            docPdf.setFontSize(12); docPdf.setTextColor(0); docPdf.setFont("helvetica", "bold"); docPdf.text(`VEÍCULO: ${veiculo}`, 18, yPos + 6);
             yPos += 10;
-
-            const movs = grupos[veiculo].sort((a, b) => (Number(a.timestamp) || 0) - (Number(b.timestamp) || 0));
-            const rows = movs.map(m => [
-                m.dataExibicao || '-', 
-                m.vigilante, 
-                m.km + " KM", 
-                { content: m.tipo, styles: { textColor: m.tipo === 'SAIDA' ? [230, 57, 70] : [46, 204, 113], fontStyle: 'bold' } }, 
-                m.usuario ? m.usuario.split('@')[0].toUpperCase() : 'SISTEMA'
-            ]);
-
-            docPdf.autoTable({ 
-                head: [["DATA/HORA", "MOTORISTA", "KM", "EVENTO", "OPERADOR"]], 
-                body: rows, 
-                startY: yPos, 
-                theme: 'striped', 
-                headStyles: { fillColor: [230, 57, 70] }, 
-                margin: { left: 14 }, 
-                didDrawPage: (data) => { yPos = data.cursor.y + 15; } 
-            });
+            const movs = grupos[veiculo].sort((a, b) => a.timestamp - b.timestamp);
+            const rows = movs.map(m => [m.dataExibicao, m.vigilante, m.km + " KM", { content: m.tipo, styles: { textColor: m.tipo === 'SAIDA' ? [230, 57, 70] : [46, 204, 113], fontStyle: 'bold' } }, m.usuario.split('@')[0].toUpperCase()]);
+            docPdf.autoTable({ head: [["DATA/HORA", "MOTORISTA", "KM", "EVENTO", "OPERADOR"]], body: rows, startY: yPos, theme: 'striped', headStyles: { fillColor: [230, 57, 70] }, margin: { left: 14 }, didDrawPage: (data) => { yPos = data.cursor.y + 15; } });
         });
-
-        docPdf.save("Relatorio_Japan_Security_Frota.pdf");
+        docPdf.save("Relatorio_Japan_Security.pdf");
     };
 
     window.apagarRegistro = async (id) => { 
-        if (confirm("Deseja realmente excluir este registro?")) { 
-            try {
-                await deleteDoc(doc(db, "movimentacoes", id)); 
-                carregarHistorico(); 
-            } catch (err) {
-                alert("Erro ao excluir registro: " + err.message);
-            }
+        if(confirm("Excluir?")) { 
+            await deleteDoc(doc(db, "movimentacoes", id)); 
+            carregarHistorico(); 
         } 
     };
 </script>
