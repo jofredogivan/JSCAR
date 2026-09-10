@@ -26,6 +26,12 @@
         label { font-size: 0.7rem; color: var(--red); font-weight: bold; text-transform: uppercase; display: block; margin-bottom: 5px; }
         .modern-input { width: 100%; padding: 12px; background: #222; border: 1px solid #444; color: #fff; border-radius: 8px; box-sizing: border-box; font-size: 1rem; margin-bottom: 10px; }
         
+        input[type="date"].modern-input,
+        input[type="time"].modern-input,
+        input[type="datetime-local"].modern-input {
+            color-scheme: dark;
+        }
+
         /* Melhoria nos Botões */
         .btn { border: none; border-radius: 8px; cursor: pointer; font-weight: 800; transition: 0.1s; display: flex; align-items: center; justify-content: center; gap: 8px; text-transform: uppercase; }
         .btn:active { transform: scale(0.95); opacity: 0.8; }
@@ -74,6 +80,12 @@
     </div>
 
     <div class="card" style="border-left: 5px solid var(--red);">
+        <label>Data e Hora do Registro</label>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <input type="date" id="es_data" class="modern-input">
+            <input type="time" id="es_hora" class="modern-input">
+        </div>
+
         <div style="position: relative;">
             <label>Viatura (Placa ou Nome)</label>
             <input type="text" id="es_vtr" class="modern-input" placeholder="Clique para selecionar..." autocomplete="off">
@@ -142,9 +154,25 @@
     let filtradosPDF = [];
 
     onAuthStateChanged(auth, (user) => {
-        if (user) { carregarVtr().then(() => carregarHistorico()); }
-        else { window.location.href = "login.html"; }
+        if (user) { 
+            atualizarDataHora();
+            carregarVtr().then(() => carregarHistorico()); 
+        } else { 
+            window.location.href = "login.html"; 
+        }
     });
+
+    function atualizarDataHora() {
+        const agora = new Date();
+        const ano = agora.getFullYear();
+        const mes = String(agora.getMonth() + 1).padStart(2, '0');
+        const dia = String(agora.getDate()).padStart(2, '0');
+        const hora = String(agora.getHours()).padStart(2, '0');
+        const min = String(agora.getMinutes()).padStart(2, '0');
+
+        document.getElementById('es_data').value = `${ano}-${mes}-${dia}`;
+        document.getElementById('es_hora').value = `${hora}:${min}`;
+    }
 
     async function carregarVtr() {
         const snap = await getDocs(collection(db, "veiculos"));
@@ -190,7 +218,6 @@
     inputVtr.addEventListener('blur', () => { setTimeout(() => { boxVtr.style.display = 'none'; }, 200); });
 
     async function carregarHistorico() {
-        // Traz apenas os últimos 100 registros para otimizar a velocidade de carregamento
         const q = query(collection(db, "movimentacoes"), orderBy("timestamp", "desc"), limit(100));
         const snap = await getDocs(q);
         historicoLocal = [];
@@ -225,8 +252,18 @@
         const valorInput = inputVtr.value.toUpperCase();
         const km = document.getElementById('es_km').value;
         const vig = document.getElementById('es_vig').value.toUpperCase();
-        if(!valorInput || !km || !vig) return alert("Preencha tudo!");
+        const dataVal = document.getElementById('es_data').value;
+        const horaVal = document.getElementById('es_hora').value;
+
+        if(!valorInput || !km || !vig || !dataVal || !horaVal) return alert("Preencha todos os campos!");
+
+        const [ano, mes, dia] = dataVal.split('-').map(Number);
+        const [hora, min] = horaVal.split(':').map(Number);
+        const dataObj = new Date(ano, mes - 1, dia, hora, min, 0);
         
+        const timestampFinal = dataObj.getTime();
+        const dataExibicaoFinal = `${String(dia).padStart(2,'0')}/${String(mes).padStart(2,'0')}/${ano} ${String(hora).padStart(2,'0')}:${String(min).padStart(2,'0')}`;
+
         const vEncontrado = vtrCache.find(v => valorInput.includes(v.placa));
         const placaFinal = vEncontrado ? vEncontrado.placa : valorInput;
         const nomeFinal = vEncontrado ? vEncontrado.nome : "Modelo Avulso";
@@ -238,17 +275,17 @@
                 km: Number(km), 
                 vigilante: vig, 
                 tipo: document.getElementById('es_tipo').value, 
-                timestamp: new Date().getTime(), 
-                dataExibicao: new Date().toLocaleString('pt-BR'), 
+                timestamp: timestampFinal, 
+                dataExibicao: dataExibicaoFinal, 
                 usuario: auth.currentUser.email 
             });
             if(vEncontrado) await updateDoc(doc(db, "veiculos", vEncontrado.id), { kmAtual: Number(km) });
             alert("✓ Salvo!"); 
             
-            // Limpa os campos e atualiza apenas o histórico sem dar reload completo
             inputVtr.value = "";
             document.getElementById('es_km').value = "";
             document.getElementById('es_vig').value = "";
+            atualizarDataHora();
             await carregarHistorico();
         } catch (e) { alert("Erro ao salvar."); }
     };
