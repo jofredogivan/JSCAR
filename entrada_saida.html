@@ -396,12 +396,19 @@
             const snap = await getDocs(q);
             historicoLocal = [];
 
+            const userEmailAtual = auth.currentUser ? auth.currentUser.email.toLowerCase().trim() : "";
+
             snap.forEach(d => {
                 const info = d.data();
-                if (info.usuario === auth.currentUser.email) {
-                    if (!info.nomeVeiculo || info.nomeVeiculo === "MODELO N/D") {
+                const emailRegistro = (info.usuario || "").toLowerCase().trim();
+
+                // Exibe os registros do usuário atual (ou sem e-mail atribuído)
+                if (!emailRegistro || emailRegistro === userEmailAtual) {
+                    if (!info.nomeVeiculo || info.nomeVeiculo === "MODELO N/D" || info.nomeVeiculo === "Modelo Avulso") {
                         const find = vtrCache.find(v => v.placa === info.veiculo);
-                        info.nomeVeiculo = find ? find.nome : "NÃO CADASTRADO";
+                        if (find && find.nome) {
+                            info.nomeVeiculo = find.nome;
+                        }
                     }
                     historicoLocal.push({ id: d.id, ...info });
                 }
@@ -434,12 +441,14 @@
         filtradosPDF = historicoLocal
             .filter(i => {
                 const t = Number(i.timestamp) || 0;
+                // Se não houver filtro de datas ativo, exibe todos os registros salvos
+                if (!iniVal && !fimVal) return true;
                 return t >= tsIni && t <= tsFim;
             })
             .sort((a,b) => (Number(b.timestamp) || 0) - (Number(a.timestamp) || 0));
 
         if (filtradosPDF.length === 0) {
-            corpo.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#666;">Nenhum registro encontrado para este período.</td></tr>`;
+            corpo.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#666;">Nenhum registro encontrado no período.</td></tr>`;
             return;
         }
 
@@ -481,14 +490,12 @@
         btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> GRAVANDO...`;
 
         try {
-            // Extrai a placa do input
             const placaDig = valorInput.split('-')[0].trim();
             const vEncontrado = vtrCache.find(v => v.placa === placaDig || valorInput.includes(v.placa));
             
             const placaFinal = vEncontrado ? vEncontrado.placa : placaDig;
-            const nomeFinal = vEncontrado ? vEncontrado.nome : "Modelo Avulso";
+            const nomeFinal = vEncontrado ? vEncontrado.nome : (valorInput.split('-')[1] ? valorInput.split('-')[1].trim() : "");
             
-            // Garantia de data válida sem NaN
             const partesData = dataL.split('-');
             const partesHora = horaL.split(':');
             
@@ -505,8 +512,7 @@
                 throw new Error("Formato de data/hora inválido.");
             }
 
-            // 1. Grava o registro principal
-            await addDoc(collection(db, "movimentacoes"), { 
+            const novoRegistro = { 
                 veiculo: placaFinal, 
                 nomeVeiculo: nomeFinal, 
                 km: Number(km), 
@@ -515,9 +521,10 @@
                 timestamp: tsCalculado, 
                 dataExibicao: dataObjeto.toLocaleString('pt-BR'), 
                 usuario: auth.currentUser.email 
-            });
+            };
 
-            // 2. Atualiza o KM no cadastro do veículo (se encontrado)
+            await addDoc(collection(db, "movimentacoes"), novoRegistro);
+
             if (vEncontrado && vEncontrado.id) {
                 try {
                     await updateDoc(doc(db, "veiculos", vEncontrado.id), { kmAtual: Number(km) });
